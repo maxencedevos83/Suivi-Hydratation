@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="fr">
+HTML
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Suivi Hydrique Pro</title>
+  
+  <!-- ICÔNE AUTOMATIQUE POUR LE RACCOURCI CHROME -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💧</text></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💧</text></svg>">
+  <!-- Chargement de la bibliothèque de graphique Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --water-plain: #0284c7;
+      --water-sro: #0d9488;
+      --urine: #ca8a04;
+      --stool: #9333ea;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; max-width: 450px; margin: auto; background: var(--bg); color: #1e293b; }
+    
+    .tabs { display: flex; gap: 8px; margin-bottom: 15px; background: #e2e8f0; padding: 4px; border-radius: 12px; }
+    .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; background: transparent; color: #64748b; transition: 0.2s; }
+    .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .card { background: var(--card-bg); padding: 16px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .card-title { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 700; margin-bottom: 8px; }
+    
+    .grid-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; }
+    .stat-box { padding: 10px; border-radius: 10px; background: #f1f5f9; }
+    .stat-value { font-size: 1.3rem; font-weight: bold; }
+    .stat-label { font-size: 0.75rem; color: #64748b; }
+    
+    .total-banner { text-align: center; font-size: 1.8rem; font-weight: bold; color: var(--primary); margin: 5px 0 15px 0; }
+
+    .action-row { display: flex; gap: 6px; margin-bottom: 8px; align-items: center; }
+    .action-label { font-size: 0.8rem; font-weight: 600; margin-top: 6px; margin-bottom: 4px; }
+    
+    button.btn-add { flex: 2; padding: 12px; border: none; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; }
+    button.btn-sub { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: 600; font-size: 0.85rem; cursor: pointer; background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+    button:active { transform: scale(0.97); }
+
+    .btn-plain { background: #e0f2fe; color: var(--water-plain); }
+    .btn-sro { background: #ccfbf1; color: var(--water-sro); }
+    .btn-urine { background: #fef9c3; color: var(--urine); }
+    .btn-stool { background: #f3e8ff; color: var(--stool); }
+
+    .status-badge { text-align: center; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 0.95rem; margin-top: 5px; }
+    .status-deficit { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .status-ok { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+
+    .date-picker-input { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 0.9rem; box-sizing: border-box; margin-top: 5px; font-family: inherit; }
+    
+    .history-list { display: flex; flex-direction: column; gap: 8px; }
+    .history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: white; border-radius: 10px; border-left: 4px solid #cbd5e1; font-size: 0.85rem; }
+    .item-plain { border-left-color: var(--water-plain); }
+    .item-sro { border-left-color: var(--water-sro); }
+    .item-urine { border-left-color: var(--urine); }
+    .item-stool { border-left-color: var(--stool); }
+    
+    .item-time { color: #94a3b8; font-size: 0.75rem; }
+    .item-title { font-weight: 600; }
+  </style>
+ </head>
+<body>
+
+  <!-- Navigation -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('today')">Aujourd'hui</button>
+    <button class="tab-btn" onclick="switchTab('history')">Historique</button>
+  </div>
+
+  <!-- ONGLET 1 : AUJOURD'HUI -->
+  <div id="tab-today" class="tab-content active">
+    
+    <div class="card">
+      <div class="card-title" style="text-align: center;">Total Liquides Bu</div>
+      <div class="total-banner" id="total-fluid">0 ml</div>
+      <div class="grid-stats">
+        <div class="stat-box">
+          <div class="stat-value" style="color: var(--water-plain)" id="stat-plain">0 ml</div>
+          <div class="stat-label">Eau Claire</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" style="color: var(--water-sro)" id="stat-sro">0 ml</div>
+          <div class="stat-label">Eau SRO</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">1. Saisie Boissons</div>
+      <div class="action-label" style="color: var(--water-plain);">💧 Eau Claire</div>
+      <div class="action-row">
+        <button class="btn-add btn-plain" onclick="addLog('eau_claire', 200, 'Verre +200 ml')">+ 200 ml</button>
+        <button class="btn-sub" onclick="addLog('eau_claire', -200, 'Retrait -200 ml')">- 200 ml</button>
+      </div>
+      <div class="action-row">
+        <button class="btn-add btn-plain" onclick="addLog('eau_claire', 500, 'Gourde +500 ml')">+ 500 ml</button>
+        <button class="btn-sub" onclick="addLog('eau_claire', -500, 'Retrait -500 ml')">- 500 ml</button>
+      </div>
+
+      <div class="action-label" style="color: var(--water-sro); margin-top: 10px;">🧪 Eau Solutionnée / SRO</div>
+      <div class="action-row">
+        <button class="btn-add btn-sro" onclick="addLog('eau_sro', 200, 'Verre +200 ml')">+ 200 ml</button>
+        <button class="btn-sub" onclick="addLog('eau_sro', -200, 'Retrait -200 ml')">- 200 ml</button>
+      </div>
+      <div class="action-row">
+        <button class="btn-add btn-sro" onclick="addLog('eau_sro', 1500, 'Bouteille +1.5 L')">+ 1.5 Litre</button>
+        <button class="btn-sub" onclick="addLog('eau_sro', -1500, 'Retrait -1.5 L')">- 1.5 Litre</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">2. Pertes & Transit</div>
+      <div class="grid-stats" style="margin-bottom: 10px;">
+        <div class="stat-box">
+          <div class="stat-value" style="color: var(--urine)" id="stat-urine">0</div>
+          <div class="stat-label">Urines</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" style="color: var(--stool)" id="stat-stool">0</div>
+          <div class="stat-label">Selles</div>
+        </div>
+      </div>
+      <div class="action-row">
+        <button class="btn-add btn-urine" onclick="addLog('urine', 0, 'Passage Urine')">+ 1 Urine</button>
+        <button class="btn-sub" onclick="addLog('urine_sub', 0, 'Retrait Urine')">- 1 Urine</button>
+      </div>
+      <div class="action-row">
+        <button class="btn-add btn-stool" onclick="addLog('selle', 0, 'Passage Selle')">+ 1 Selle</button>
+        <button class="btn-sub" onclick="addLog('selle_sub', 0, 'Retrait Selle')">- 1 Selle</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">3. Bilan Hydrique du Jour</div>
+      <div style="font-size: 0.85rem; color: #64748b; text-align: center; margin-bottom: 8px;">
+        Bu : <strong id="balance-in">0 ml</strong> | Pertes est. : <strong id="balance-out">0 ml</strong>
+      </div>
+      <div id="balance-status" class="status-badge status-ok">Calcul...</div>
+    </div>
+
+  </div>
+
+  <!-- ONGLET 2 : HISTORIQUE ET COURBE -->
+  <div id="tab-history" class="tab-content">
+    
+    <div class="card">
+      <div class="card-title">📅 Choisir une date</div>
+      <input type="date" id="history-date-picker" class="date-picker-input" onchange="renderHistory()">
+    </div>
+
+    <div class="card">
+      <div class="card-title" id="history-summary-title">Résumé du jour</div>
+      <div class="grid-stats" style="margin-bottom: 8px;">
+        <div class="stat-box">
+          <div class="stat-value" style="color: var(--primary)" id="hist-stat-bu">0 ml</div>
+          <div class="stat-label">Total Bu</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" style="color: #64748b" id="hist-stat-pertes">0 ml</div>
+          <div class="stat-label">Pertes Est.</div>
+        </div>
+      </div>
+      <div id="hist-balance-status" class="status-badge status-ok">--</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Journal de la journée</div>
+      <div id="history-container" class="history-list"></div>
+    </div>
+
+    <!-- COURBE HYDRIQUE -->
+    <div class="card">
+      <div class="card-title">📈 Évolution sur les 7 derniers jours</div>
+      <canvas id="hydraChart" style="width:100%; max-height:220px;"></canvas>
+    </div>
+
+    <!-- CONFIGURATION GOOGLE CLOUD -->
+    <div class="card">
+      <div class="card-title">☁️ Synchro Google Drive / Excel</div>
+      <input type="text" id="webhook-url" class="date-picker-input" placeholder="Coller l'URL Web App Google..." onchange="saveWebhookUrl()">
+      <div style="font-size:0.75rem; color:#64748b; margin-top:6px;">Insérez votre lien Google Web App pour enregistrer chaque saisie dans votre fichier Excel Drive.</div>
+    </div>
+
+  </div>
+
+  <script>
+    let logs = JSON.parse(localStorage.getItem('hydra_logs')) || [];
+    let chartInstance = null;
+
+    // Initialisation
+    const todayIso = new Date().toISOString().split('T')[0];
+    document.getElementById('history-date-picker').value = todayIso;
+    document.getElementById('webhook-url').value = localStorage.getItem('hydra_webhook_url') || '';
+
+    function saveAndRender() {
+      localStorage.setItem('hydra_logs', JSON.stringify(logs));
+      renderToday();
+      renderHistory();
+      renderChart();
+    }
+
+    function saveWebhookUrl() {
+      const url = document.getElementById('webhook-url').value.trim();
+      localStorage.setItem('hydra_webhook_url', url);
+    }
+
+    function sendToGoogleSheets(entry) {
+      const webhookUrl = localStorage.getItem('hydra_webhook_url');
+      if (!webhookUrl) return;
+
+      fetch(webhookUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry)
+      }).catch(err => console.log("Erreur envoi Google Sheets:", err));
+    }
+
+    function addLog(type, volume, label) {
+      const now = new Date();
+      const isoDate = now.toISOString().split('T')[0];
+      const entry = {
+        id: Date.now(),
+        type: type,
+        volume: volume,
+        label: label,
+        isoDate: isoDate,
+        dateStr: now.toLocaleDateString('fr-FR'),
+        timeStr: now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+      };
+      
+      logs.unshift(entry);
+      saveAndRender();
+      sendToGoogleSheets(entry); // Envoi automatique vers Google Sheets
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      if(tabName === 'today') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('tab-today').classList.add('active');
+      } else {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('tab-history').classList.add('active');
+        renderHistory();
+        renderChart();
+      }
+    }
+
+    function renderToday() {
+      const todayIso = new Date().toISOString().split('T')[0];
+      let totalPlain = 0, totalSro = 0, countUrine = 0, countStool = 0;
+
+      logs.forEach(item => {
+        if (item.isoDate === todayIso) {
+          if (item.type === 'eau_claire') totalPlain += item.volume;
+          if (item.type === 'eau_sro') totalSro += item.volume;
+          if (item.type === 'urine') countUrine += 1;
+          if (item.type === 'urine_sub') countUrine = Math.max(0, countUrine - 1);
+          if (item.type === 'selle') countStool += 1;
+          if (item.type === 'selle_sub') countStool = Math.max(0, countStool - 1);
+        }
+      });
+
+      totalPlain = Math.max(0, totalPlain);
+      totalSro = Math.max(0, totalSro);
+      const totalFluid = totalPlain + totalSro;
+
+      document.getElementById('stat-plain').innerText = totalPlain + ' ml';
+      document.getElementById('stat-sro').innerText = totalSro + ' ml';
+      document.getElementById('total-fluid').innerText = totalFluid + ' ml';
+      document.getElementById('stat-urine').innerText = countUrine;
+      document.getElementById('stat-stool').innerText = countStool;
+
+      const baseLoss = 600;
+      const totalLoss = baseLoss + (countUrine * 250) + (countStool * 200);
+      const diff = totalFluid - totalLoss;
+
+      document.getElementById('balance-in').innerText = totalFluid + ' ml';
+      document.getElementById('balance-out').innerText = totalLoss + ' ml';
+
+      const statusEl = document.getElementById('balance-status');
+      if (diff < 0) {
+        statusEl.className = 'status-badge status-deficit';
+        statusEl.innerHTML = `⚠️ DÉFICIT : ${Math.abs(diff)} ml`;
+      } else {
+        statusEl.className = 'status-badge status-ok';
+        statusEl.innerHTML = `✅ ÉQUILIBRE (+${diff} ml)`;
+      }
+    }
+
+    function renderHistory() {
+      const selectedDate = document.getElementById('history-date-picker').value;
+      const historyContainer = document.getElementById('history-container');
+      historyContainer.innerHTML = '';
+
+      let totalPlain = 0, totalSro = 0, countUrine = 0, countStool = 0, countLogs = 0;
+
+      logs.forEach(item => {
+        if (item.isoDate === selectedDate) {
+          countLogs++;
+          if (item.type === 'eau_claire') totalPlain += item.volume;
+          if (item.type === 'eau_sro') totalSro += item.volume;
+          if (item.type === 'urine') countUrine += 1;
+          if (item.type === 'urine_sub') countUrine = Math.max(0, countUrine - 1);
+          if (item.type === 'selle') countStool += 1;
+          if (item.type === 'selle_sub') countStool = Math.max(0, countStool - 1);
+
+          let cssClass = '', badge = '';
+          if (item.type === 'eau_claire') { cssClass = 'item-plain'; badge = '💧 Eau Claire'; }
+          else if (item.type === 'eau_sro') { cssClass = 'item-sro'; badge = '🧪 Eau SRO'; }
+          else if (item.type === 'urine' || item.type === 'urine_sub') { cssClass = 'item-urine'; badge = '🟡 Urine'; }
+          else if (item.type === 'selle' || item.type === 'selle_sub') { cssClass = 'item-stool'; badge = '🟣 Selle'; }
+
+          const volDisplay = item.volume ? ` (${item.volume > 0 ? '+' : ''}${item.volume} ml)` : '';
+          const div = document.createElement('div');
+          div.className = `history-item ${cssClass}`;
+          div.innerHTML = `<div><div class="item-title">${badge}${volDisplay}</div><div class="item-time">${item.label} à ${item.timeStr}</div></div>`;
+          historyContainer.appendChild(div);
+        }
+      });
+
+      if (countLogs === 0) {
+        historyContainer.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:10px;">Aucun enregistrement pour cette date.</div>';
+      }
+
+      totalPlain = Math.max(0, totalPlain);
+      totalSro = Math.max(0, totalSro);
+      const totalFluid = totalPlain + totalSro;
+      const totalLoss = 600 + (countUrine * 250) + (countStool * 200);
+      const diff = totalFluid - totalLoss;
+
+      document.getElementById('hist-stat-bu').innerText = totalFluid + ' ml';
+      document.getElementById('hist-stat-pertes').innerText = totalLoss + ' ml';
+
+      const statusEl = document.getElementById('hist-balance-status');
+      if (diff < 0) {
+        statusEl.className = 'status-badge status-deficit';
+        statusEl.innerText = `Déficit de ${Math.abs(diff)} ml`;
+      } else {
+        statusEl.className = 'status-badge status-ok';
+        statusEl.innerText = `Équilibre (+${diff} ml)`;
+      }
+    }
+
+    function renderChart() {
+      const dailyMap = {};
+      
+      logs.forEach(item => {
+        if (!dailyMap[item.isoDate]) {
+          dailyMap[item.isoDate] = { bu: 0, urine: 0, selle: 0 };
+        }
+        if (item.type === 'eau_claire' || item.type === 'eau_sro') {
+          dailyMap[item.isoDate].bu += item.volume;
+        }
+        if (item.type === 'urine') dailyMap[item.isoDate].urine += 1;
+        if (item.type === 'urine_sub') dailyMap[item.isoDate].urine = Math.max(0, dailyMap[item.isoDate].urine - 1);
+        if (item.type === 'selle') dailyMap[item.isoDate].selle += 1;
+        if (item.type === 'selle_sub') dailyMap[item.isoDate].selle = Math.max(0, dailyMap[item.isoDate].selle - 1);
+      });
+
+      const dates = Object.keys(dailyMap).sort().slice(-7); // 7 derniers jours
+      const labels = dates.map(d => d.split('-').slice(1).reverse().join('/'));
+      const buData = dates.map(d => Math.max(0, dailyMap[d].bu));
+      const lossesData = dates.map(d => 600 + (dailyMap[d].urine * 250) + (dailyMap[d].selle * 200));
+
+      const ctx = document.getElementById('hydraChart').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Liquide Bu (ml)', data: buData, borderColor: '#2563eb', backgroundColor: '#2563eb', tension: 0.3 },
+            { label: 'Pertes Est. (ml)', data: lossesData, borderColor: '#ef4444', backgroundColor: '#ef4444', tension: 0.3 }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'bottom' } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    renderToday();
+  </script>
+</body>
+</html>

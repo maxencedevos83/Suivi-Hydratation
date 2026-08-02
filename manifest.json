@@ -1,0 +1,16 @@
+{
+  "name": "Suivi Hydrique Pro",
+  "short_name": "HydraTrack",
+  "start_url": "./suivi.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,💧",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
