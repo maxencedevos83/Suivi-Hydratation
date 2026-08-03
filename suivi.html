@@ -200,8 +200,16 @@
     let logs = JSON.parse(localStorage.getItem('hydra_logs')) || [];
     let chartInstance = null;
 
+    // Fonction pour obtenir la date locale au format YYYY-MM-DD
+    function getLocalIsoDate(date = new Date()) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
     // Initialisation
-    const todayIso = new Date().toISOString().split('T')[0];
+    const todayIso = getLocalIsoDate();
     document.getElementById('history-date-picker').value = todayIso;
     document.getElementById('webhook-url').value = localStorage.getItem('hydra_webhook_url') || '';
 
@@ -231,7 +239,7 @@
 
     function addLog(type, volume, label) {
       const now = new Date();
-      const isoDate = now.toISOString().split('T')[0];
+      const isoDate = getLocalIsoDate(now);
       const entry = {
         id: Date.now(),
         type: type,
@@ -263,7 +271,7 @@
     }
 
     function renderToday() {
-      const todayIso = new Date().toISOString().split('T')[0];
+      const todayIso = getLocalIsoDate();
       let totalPlain = 0, totalSro = 0, countUrine = 0, countStool = 0;
 
       logs.forEach(item => {
@@ -277,7 +285,6 @@
         }
       });
 
-      // Appliquer les limites à zéro après avoir tout calculé
       totalPlain = Math.max(0, totalPlain);
       totalSro = Math.max(0, totalSro);
       countUrine = Math.max(0, countUrine);
@@ -381,11 +388,9 @@
         if (item.type === 'selle_sub') dailyMap[item.isoDate].selle -= 1;
       });
 
-      const dates = Object.keys(dailyMap).sort().slice(-7); // 7 derniers jours
+      const dates = Object.keys(dailyMap).sort().slice(-7);
       const labels = dates.map(d => d.split('-').slice(1).reverse().join('/'));
       const buData = dates.map(d => Math.max(0, dailyMap[d].bu));
-      
-      // On applique ici aussi la sécurité pour ne pas avoir de valeurs négatives dans le graphique
       const lossesData = dates.map(d => {
         const u = Math.max(0, dailyMap[d].urine);
         const s = Math.max(0, dailyMap[d].selle);
