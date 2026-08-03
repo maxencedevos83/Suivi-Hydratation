@@ -228,8 +228,7 @@
 
     let draftUrine = 0;
     let draftStool = 0;
-
-    // FONCTION 1 : RECEVOIR LES DONNÉES DU CLOUD (Pull)
+// FONCTION 1 : RECEVOIR LES DONNÉES DU CLOUD
     async function receiveData() {
       const btn = document.getElementById('receive-btn');
       const statusEl = document.getElementById('sync-status');
@@ -246,11 +245,10 @@
       }
 
       try {
-        const response = await fetch(WEBHOOK_URL);
+        const response = await fetch(WEBHOOK_URL + '?action=get');
         const cloudLogs = await response.json();
         
         if (Array.isArray(cloudLogs) && cloudLogs.length > 0) {
-          // Fusion sécurisée par ID pour ne perdre aucune donnée locale récente
           const logMap = new Map();
           logs.forEach(item => logMap.set(item.id, item));
           cloudLogs.forEach(item => logMap.set(item.id, item));
@@ -264,22 +262,18 @@
           renderChart();
         }
 
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage({ type: 'FORCE_RECEIVE' });
-        }
-
         const nowStr = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         statusEl.textContent = `Données reçues avec succès à ${nowStr}`;
       } catch (err) {
         console.error("Erreur réception cloud :", err);
-        statusEl.textContent = 'Erreur réseau (Vérifiez les bloqueurs sur PC)';
+        statusEl.textContent = 'Erreur réseau lors de la réception';
       }
 
       btn.textContent = '📥 Recevoir';
       btn.disabled = false;
     }
 
-    // FONCTION 2 : ENVOYER LES DONNÉES VERS LE CLOUD (Push)
+    // FONCTION 2 : ENVOYER LES DONNÉES VERS LE CLOUD
     async function sendData() {
       const btn = document.getElementById('send-btn');
       const statusEl = document.getElementById('sync-status');
@@ -296,31 +290,21 @@
       }
 
       try {
-        // Envoi de l'ensemble des logs stockés localement
         for (let entry of logs) {
-          await fetch(WEBHOOK_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(entry)
-          });
-        }
-
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage({ type: 'FORCE_SEND' });
+          await fetch(`${WEBHOOK_URL}?action=save&data=${encodeURIComponent(JSON.stringify(entry))}`);
         }
 
         const nowStr = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         statusEl.textContent = `Données envoyées avec succès à ${nowStr}`;
       } catch (err) {
         console.error("Erreur envoi cloud :", err);
-        statusEl.textContent = 'Erreur lors de l\'envoi (Vérifiez les bloqueurs)';
+        statusEl.textContent = 'Erreur lors de l\'envoi';
       }
 
       btn.textContent = '📤 Envoyer';
       btn.disabled = false;
     }
-
+   
     // Lancement automatique discret de la réception au démarrage
     receiveData();
 
