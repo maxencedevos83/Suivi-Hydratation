@@ -75,12 +75,18 @@
 </head>
 <body>
 
-  <!-- Bouton de synchronisation manuelle -->
-  <div class="card" style="padding: 10px; text-align: center; background: #eff6ff; border: 1px solid #bfdbfe; margin-bottom: 15px;">
-    <button id="sync-btn" onclick="manualSync()" style="width: 100%; padding: 10px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
-      🔄 Synchroniser avec le Cloud
-    </button>
-    <div id="sync-status" style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">Dernière synchro : Jamais</div>
+  <!-- Bloc de synchronisation avec 2 boutons distincts -->
+  <div class="card" style="padding: 12px; background: #eff6ff; border: 1px solid #bfdbfe; margin-bottom: 15px;">
+    <div class="card-title" style="text-align: center; margin-bottom: 8px;">Synchronisation Cloud</div>
+    <div style="display: flex; gap: 8px;">
+      <button id="send-btn" onclick="sendData()" style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: 600; cursor: pointer; font-size: 0.85rem;">
+        📤 Envoyer
+      </button>
+      <button id="receive-btn" onclick="receiveData()" style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: #0d9488; color: white; font-weight: 600; cursor: pointer; font-size: 0.85rem;">
+        📥 Recevoir
+      </button>
+    </div>
+    <div id="sync-status" style="font-size: 0.75rem; color: #64748b; text-align: center; margin-top: 6px;">Statut : Prêt</div>
   </div>
 
   <!-- Navigation -->
@@ -205,6 +211,15 @@
   </div>
 
   <script>
+    // Enregistrement automatique du Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./ws.js')
+          .then((reg) => console.log('Service Worker enregistré, scope :', reg.scope))
+          .catch((err) => console.log('Échec Service Worker :', err));
+      });
+    }
+
     // URL Google Sheets intégrée en dur
     const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzl_Fq5YbC2vGCPkt-Ep5PNO-TnxAdtgVZcd6JlIeonorWzIXE9DoJYzgyCdGAWr0hL9A/exec";
 
@@ -214,14 +229,28 @@
     let draftUrine = 0;
     let draftStool = 0;
 
-    // Synchronisation intelligente (Fusion locale/cloud pour éviter d'effacer les données)
-    async function syncFromCloud() {
-      if (!WEBHOOK_URL) return;
+    // FONCTION 1 : RECEVOIR LES DONNÉES DU CLOUD (Pull)
+    async function receiveData() {
+      const btn = document.getElementById('receive-btn');
+      const statusEl = document.getElementById('sync-status');
+      
+      btn.textContent = '📥 Réception...';
+      btn.disabled = true;
+      statusEl.textContent = 'Récupération depuis le cloud...';
+
+      if (!WEBHOOK_URL) {
+        statusEl.textContent = 'Erreur : URL Webhook manquante';
+        btn.textContent = '📥 Recevoir';
+        btn.disabled = false;
+        return;
+      }
+
       try {
         const response = await fetch(WEBHOOK_URL);
         const cloudLogs = await response.json();
+        
         if (Array.isArray(cloudLogs) && cloudLogs.length > 0) {
-          // Fusion sécurisée par ID pour ne perdre aucune saisie locale récente
+          // Fusion sécurisée par ID pour ne perdre aucune donnée locale récente
           const logMap = new Map();
           logs.forEach(item => logMap.set(item.id, item));
           cloudLogs.forEach(item => logMap.set(item.id, item));
@@ -234,44 +263,66 @@
           renderHistory();
           renderChart();
         }
+
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({ type: 'FORCE_RECEIVE' });
+        }
+
+        const nowStr = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        statusEl.textContent = `Données reçues avec succès à ${nowStr}`;
       } catch (err) {
-        console.log("Mode hors-ligne : utilisation du cache local", err);
-      }
-    }
-
-    // Bouton de synchronisation manuelle
-    async function manualSync() {
-      const btn = document.getElementById('sync-btn');
-      const statusEl = document.getElementById('sync-status');
-      
-      btn.textContent = '🔄 Synchronisation...';
-      btn.disabled = true;
-      statusEl.textContent = 'Récupération des données cloud...';
-
-      await syncFromCloud();
-
-      // Notifier le Service Worker si présent
-      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({ type: 'FORCE_SYNC' });
+        console.error("Erreur réception cloud :", err);
+        statusEl.textContent = 'Erreur réseau (Vérifiez les bloqueurs sur PC)';
       }
 
-      const nowStr = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-      statusEl.textContent = `Dernière synchro : Aujourd'hui à ${nowStr}`;
-      btn.textContent = '🔄 Synchroniser avec le Cloud';
+      btn.textContent = '📥 Recevoir';
       btn.disabled = false;
     }
 
-    // Écouter la réponse du Service Worker lorsque le cache est rafraîchi
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('message', (event) => {
-        if (event.data && event.data.type === 'SYNC_COMPLETE') {
-          console.log('Cache PWA mis à jour par le Service Worker.');
+    // FONCTION 2 : ENVOYER LES DONNÉES VERS LE CLOUD (Push)
+    async function sendData() {
+      const btn = document.getElementById('send-btn');
+      const statusEl = document.getElementById('sync-status');
+      
+      btn.textContent = '📤 Envoi...';
+      btn.disabled = true;
+      statusEl.textContent = 'Envoi des données locales...';
+
+      if (!WEBHOOK_URL) {
+        statusEl.textContent = 'Erreur : URL Webhook manquante';
+        btn.textContent = '📤 Envoyer';
+        btn.disabled = false;
+        return;
+      }
+
+      try {
+        // Envoi de l'ensemble des logs stockés localement
+        for (let entry of logs) {
+          await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(entry)
+          });
         }
-      });
+
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({ type: 'FORCE_SEND' });
+        }
+
+        const nowStr = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        statusEl.textContent = `Données envoyées avec succès à ${nowStr}`;
+      } catch (err) {
+        console.error("Erreur envoi cloud :", err);
+        statusEl.textContent = 'Erreur lors de l\'envoi (Vérifiez les bloqueurs)';
+      }
+
+      btn.textContent = '📤 Envoyer';
+      btn.disabled = false;
     }
 
-    // Lancer la synchronisation discrète dès le chargement
-    syncFromCloud();
+    // Lancement automatique discret de la réception au démarrage
+    receiveData();
 
     function getLocalIsoDate(date = new Date()) {
       const year = date.getFullYear();
@@ -280,7 +331,6 @@
       return `${year}-${month}-${day}`;
     }
 
-    // Initialisation date
     const todayIso = getLocalIsoDate();
     document.getElementById('history-date-picker').value = todayIso;
 
