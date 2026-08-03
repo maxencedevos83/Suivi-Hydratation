@@ -193,16 +193,12 @@
       <canvas id="hydraChart" style="width:100%; max-height:220px;"></canvas>
     </div>
 
-    <!-- CONFIGURATION GOOGLE CLOUD -->
-    <div class="card">
-      <div class="card-title">☁️ Synchro Google Drive / Excel</div>
-      <input type="text" id="webhook-url" class="date-picker-input" placeholder="Coller l'URL Web App Google..." onchange="saveWebhookUrl()">
-      <div style="font-size:0.75rem; color:#64748b; margin-top:6px;">Insérez votre lien Google Web App pour enregistrer chaque saisie dans votre fichier Excel Drive.</div>
-    </div>
-
   </div>
 
   <script>
+    // URL Google Sheets intégrée en dur
+    const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwQ7EgHUaiXFvmH5edE6fwIgrbMnZZK8YmpS9jlmN1-hzIcvcNW6QzwBWdTDBrZ1pKu/exec";
+
     let logs = JSON.parse(localStorage.getItem('hydra_logs')) || [];
     let chartInstance = null;
 
@@ -219,10 +215,9 @@
     // Initialisation
     const todayIso = getLocalIsoDate();
     document.getElementById('history-date-picker').value = todayIso;
-    document.getElementById('webhook-url').value = localStorage.getItem('hydra_webhook_url') || '';
 
     function initDraftsForToday() {
-      const todayIso =getLocalIsoDate();
+      const todayIso = getLocalIsoDate();
       let u = 0, s = 0;
       logs.forEach(item => {
         if (item.isoDate === todayIso) {
@@ -301,16 +296,10 @@
       renderChart();
     }
 
-    function saveWebhookUrl() {
-      const url = document.getElementById('webhook-url').value.trim();
-      localStorage.setItem('hydra_webhook_url', url);
-    }
-
     function sendToGoogleSheets(entry) {
-      const webhookUrl = localStorage.getItem('hydra_webhook_url');
-      if (!webhookUrl) return;
+      if (!WEBHOOK_URL) return;
 
-      fetch(webhookUrl, {
+      fetch(WEBHOOK_URL, {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
