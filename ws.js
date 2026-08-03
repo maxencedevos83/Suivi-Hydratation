@@ -1,6 +1,6 @@
 const CACHE_NAME = 'hydra-pwa-v2';
 const ASSETS = [
-  './suivi.html',
+  './index.html',
   './manifest.json',
   'https://cdn.jsdelivr.net/npm/chart.js'
 ];
