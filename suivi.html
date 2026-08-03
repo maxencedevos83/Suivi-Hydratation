@@ -12,13 +12,7 @@
 
   <!-- Pour lier votre manifest PWA -->
   <link rel="manifest" href="./manifest.json">
-  <!-- Bouton de synchronisation manuelle -->
-    <div class="card" style="padding: 10px; text-align: center; background: #eff6ff; border: 1px solid #bfdbfe;">
-      <button id="sync-btn" onclick="manualSync()" style="width: 100%; padding: 10px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
-        🔄 Synchroniser avec le Cloud
-      </button>
-      <div id="sync-status" style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">Dernière synchro : Jamais</div>
-    </div>
+  
   <!-- Chargement de la bibliothèque de graphique Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -80,6 +74,14 @@
   </style>
 </head>
 <body>
+
+  <!-- Bouton de synchronisation manuelle -->
+  <div class="card" style="padding: 10px; text-align: center; background: #eff6ff; border: 1px solid #bfdbfe; margin-bottom: 15px;">
+    <button id="sync-btn" onclick="manualSync()" style="width: 100%; padding: 10px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
+      🔄 Synchroniser avec le Cloud
+    </button>
+    <div id="sync-status" style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">Dernière synchro : Jamais</div>
+  </div>
 
   <!-- Navigation -->
   <div class="tabs">
@@ -212,15 +214,21 @@
     let draftUrine = 0;
     let draftStool = 0;
 
-    // Synchronisation automatique depuis Google Sheets au démarrage
+    // Synchronisation intelligente (Fusion locale/cloud pour éviter d'effacer les données)
     async function syncFromCloud() {
       if (!WEBHOOK_URL) return;
       try {
         const response = await fetch(WEBHOOK_URL);
         const cloudLogs = await response.json();
         if (Array.isArray(cloudLogs) && cloudLogs.length > 0) {
-          logs = cloudLogs;
+          // Fusion sécurisée par ID pour ne perdre aucune saisie locale récente
+          const logMap = new Map();
+          logs.forEach(item => logMap.set(item.id, item));
+          cloudLogs.forEach(item => logMap.set(item.id, item));
+          
+          logs = Array.from(logMap.values()).sort((a, b) => b.id - a.id);
           localStorage.setItem('hydra_logs', JSON.stringify(logs));
+          
           initDraftsForToday();
           renderToday();
           renderHistory();
@@ -231,7 +239,38 @@
       }
     }
 
-    // Lancer la synchronisation dès le chargement de l'application
+    // Bouton de synchronisation manuelle
+    async function manualSync() {
+      const btn = document.getElementById('sync-btn');
+      const statusEl = document.getElementById('sync-status');
+      
+      btn.textContent = '🔄 Synchronisation...';
+      btn.disabled = true;
+      statusEl.textContent = 'Récupération des données cloud...';
+
+      await syncFromCloud();
+
+      // Notifier le Service Worker si présent
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'FORCE_SYNC' });
+      }
+
+      const nowStr = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      statusEl.textContent = `Dernière synchro : Aujourd'hui à ${nowStr}`;
+      btn.textContent = '🔄 Synchroniser avec le Cloud';
+      btn.disabled = false;
+    }
+
+    // Écouter la réponse du Service Worker lorsque le cache est rafraîchi
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'SYNC_COMPLETE') {
+          console.log('Cache PWA mis à jour par le Service Worker.');
+        }
+      });
+    }
+
+    // Lancer la synchronisation discrète dès le chargement
     syncFromCloud();
 
     function getLocalIsoDate(date = new Date()) {
@@ -241,7 +280,7 @@
       return `${year}-${month}-${day}`;
     }
 
-    // Initialisation
+    // Initialisation date
     const todayIso = getLocalIsoDate();
     document.getElementById('history-date-picker').value = todayIso;
 
@@ -279,7 +318,6 @@
 
     function applyPertes() {
       const todayIso = getLocalIsoDate();
-      // Nettoyer les anciennes entrées de pertes pour aujourd'hui
       logs = logs.filter(item => !(item.isoDate === todayIso && (item.type === 'urine' || item.type === 'urine_sub' || item.type === 'urine_summary' || item.type === 'selle' || item.type === 'selle_sub' || item.type === 'selle_summary')));
 
       const now = new Date();
