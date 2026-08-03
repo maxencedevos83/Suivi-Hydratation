@@ -61,37 +61,6 @@ self.addEventListener('message', (e) => {
   }
 });
 
-// 1. Lorsque l'utilisateur clique sur le bouton de synchronisation
-document.getElementById('btn-sync').addEventListener('click', () => {
-  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-    console.log('Déclenchement de la synchronisation...');
-    // Envoi du message au Service Worker
-    navigator.serviceWorker.controller.postMessage({ type: 'FORCE_SYNC' });
-    
-    // Feedback visuel optionnel (ex: afficher un état de chargement)
-    const btn = document.getElementById('btn-sync');
-    btn.textContent = 'Synchronisation...';
-    btn.disabled = true;
-  }
-});
-
-// 2. Écouter la réponse du Service Worker lorsque la synchronisation est finie
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'SYNC_COMPLETE') {
-      console.log('Synchronisation terminée avec succès !');
-      
-      // Restaurer le bouton et notifier l'utilisateur
-      const btn = document.getElementById('btn-sync');
-      if (btn) {
-        btn.textContent = 'Synchronisé ✓';
-        btn.disabled = false;
-        setTimeout(() => { btn.textContent = 'Synchroniser'; }, 3000);
-      }
-    }
-  });
-}
-
 // Interception des requêtes réseau
 self.addEventListener('fetch', (e) => {
   // On ne touche pas aux requêtes vers Google Sheets (laisser passer en direct)
