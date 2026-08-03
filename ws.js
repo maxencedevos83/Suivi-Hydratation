@@ -32,12 +32,11 @@ self.addEventListener('activate', (e) => {
   self.clients.claim();
 });
 
-// Gestion des actions déclenchées depuis l'application (ex: Bouton de synchronisation)
+// Gestion des actions déclenchées depuis l'application (Envoi / Réception)
 self.addEventListener('message', (e) => {
-  if (e.data && e.data.type === 'FORCE_SYNC') {
+  if (e.data && (e.data.type === 'FORCE_SEND' || e.data.type === 'FORCE_RECEIVE')) {
     e.waitUntil(
       caches.open(CACHE_NAME).then((cache) => {
-        // Rafraîchissement forcé des assets principaux depuis le réseau
         return Promise.all(
           ASSETS.map((asset) => 
             fetch(asset, { cache: 'no-store' }).then((response) => {
@@ -49,11 +48,10 @@ self.addEventListener('message', (e) => {
             })
           )
         ).then(() => {
-          // Informe tous les onglets/clients que la synchronisation est terminée
           return self.clients.matchAll();
         }).then((clients) => {
           clients.forEach((client) => {
-            client.postMessage({ type: 'SYNC_COMPLETE' });
+            client.postMessage({ type: 'SYNC_COMPLETE', action: e.data.type });
           });
         });
       })
@@ -70,18 +68,15 @@ self.addEventListener('fetch', (e) => {
 
   e.respondWith(
     caches.match(e.request).then((cachedResponse) => {
-      // Récupération de la version la plus récente sur le réseau en arrière-plan
       const fetchPromise = fetch(e.request).then((networkResponse) => {
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(e.request, networkResponse.clone());
         });
         return networkResponse;
       }).catch(() => {
-        // En cas de panne de réseau, on bascule sur le cache s'il existe
         return cachedResponse;
       });
 
-      // Retourne le cache immédiatement si disponible, sinon attend le réseau
       return cachedResponse || fetchPromise;
     })
   );
