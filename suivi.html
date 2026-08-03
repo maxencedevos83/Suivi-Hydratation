@@ -133,14 +133,20 @@
           <div class="stat-label">Selles</div>
         </div>
       </div>
+
+      <div class="action-label" style="color: var(--urine);">🟡 Urines</div>
       <div class="action-row">
-        <button class="btn-add btn-urine" onclick="addLog('urine', 0, 'Passage Urine')">+ 1 Urine</button>
-        <button class="btn-sub" onclick="addLog('urine_sub', 0, 'Retrait Urine')">- 1 Urine</button>
+        <button class="btn-sub" onclick="adjustDraft('urine', -1)">- 1 Urine</button>
+        <button class="btn-add btn-urine" onclick="adjustDraft('urine', 1)">+ 1 Urine</button>
       </div>
+
+      <div class="action-label" style="color: var(--stool); margin-top: 6px;">🟣 Selles</div>
       <div class="action-row">
-        <button class="btn-add btn-stool" onclick="addLog('selle', 0, 'Passage Selle')">+ 1 Selle</button>
-        <button class="btn-sub" onclick="addLog('selle_sub', 0, 'Retrait Selle')">- 1 Selle</button>
+        <button class="btn-sub" onclick="adjustDraft('selle', -1)">- 1 Selle</button>
+        <button class="btn-add btn-stool" onclick="adjustDraft('selle', 1)">+ 1 Selle</button>
       </div>
+
+      <button class="btn-add" style="width: 100%; margin-top: 12px; background: var(--primary); color: white;" onclick="applyPertes()">💾 Appliquer / Valider</button>
     </div>
 
     <div class="card">
@@ -200,7 +206,9 @@
     let logs = JSON.parse(localStorage.getItem('hydra_logs')) || [];
     let chartInstance = null;
 
-    // Fonction pour obtenir la date locale au format YYYY-MM-DD
+    let draftUrine = 0;
+    let draftStool = 0;
+
     function getLocalIsoDate(date = new Date()) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -212,6 +220,79 @@
     const todayIso = getLocalIsoDate();
     document.getElementById('history-date-picker').value = todayIso;
     document.getElementById('webhook-url').value = localStorage.getItem('hydra_webhook_url') || '';
+
+    function initDraftsForToday() {
+      const todayIso =getLocalIsoDate();
+      let u = 0, s = 0;
+      logs.forEach(item => {
+        if (item.isoDate === todayIso) {
+          if (item.type === 'urine') u += 1;
+          if (item.type === 'urine_sub') u -= 1;
+          if (item.type === 'urine_summary') u = item.count;
+          if (item.type === 'selle') s += 1;
+          if (item.type === 'selle_sub') s -= 1;
+          if (item.type === 'selle_summary') s = item.count;
+        }
+      });
+      draftUrine = Math.max(0, u);
+      draftStool = Math.max(0, s);
+      updateDraftDisplay();
+    }
+
+    function updateDraftDisplay() {
+      document.getElementById('stat-urine').innerText = draftUrine;
+      document.getElementById('stat-stool').innerText = draftStool;
+    }
+
+    function adjustDraft(type, delta) {
+      if (type === 'urine') {
+        draftUrine = Math.max(0, draftUrine + delta);
+      } else if (type === 'selle') {
+        draftStool = Math.max(0, draftStool + delta);
+      }
+      updateDraftDisplay();
+    }
+
+    function applyPertes() {
+      const todayIso = getLocalIsoDate();
+      // Nettoyer les anciennes entrées de pertes pour aujourd'hui
+      logs = logs.filter(item => !(item.isoDate === todayIso && (item.type === 'urine' || item.type === 'urine_sub' || item.type === 'urine_summary' || item.type === 'selle' || item.type === 'selle_sub' || item.type === 'selle_summary')));
+
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+      if (draftUrine > 0) {
+        const entryUrine = {
+          id: Date.now(),
+          type: 'urine_summary',
+          volume: 0,
+          label: `${draftUrine} Urine(s) validée(s)`,
+          isoDate: todayIso,
+          dateStr: now.toLocaleDateString('fr-FR'),
+          timeStr: timeStr,
+          count: draftUrine
+        };
+        logs.unshift(entryUrine);
+        sendToGoogleSheets(entryUrine);
+      }
+
+      if (draftStool > 0) {
+        const entryStool = {
+          id: Date.now() + 1,
+          type: 'selle_summary',
+          volume: 0,
+          label: `${draftStool} Selle(s) validée(s)`,
+          isoDate: todayIso,
+          dateStr: now.toLocaleDateString('fr-FR'),
+          timeStr: timeStr,
+          count: draftStool
+        };
+        logs.unshift(entryStool);
+        sendToGoogleSheets(entryStool);
+      }
+
+      saveAndRender();
+    }
 
     function saveAndRender() {
       localStorage.setItem('hydra_logs', JSON.stringify(logs));
@@ -252,7 +333,7 @@
       
       logs.unshift(entry);
       saveAndRender();
-      sendToGoogleSheets(entry); // Envoi automatique vers Google Sheets
+      sendToGoogleSheets(entry);
     }
 
     function switchTab(tabName) {
@@ -262,6 +343,7 @@
       if(tabName === 'today') {
         document.querySelectorAll('.tab-btn')[0].classList.add('active');
         document.getElementById('tab-today').classList.add('active');
+        initDraftsForToday();
       } else {
         document.querySelectorAll('.tab-btn')[1].classList.add('active');
         document.getElementById('tab-history').classList.add('active');
@@ -280,8 +362,10 @@
           if (item.type === 'eau_sro') totalSro += item.volume;
           if (item.type === 'urine') countUrine += 1;
           if (item.type === 'urine_sub') countUrine -= 1;
+          if (item.type === 'urine_summary') countUrine = item.count;
           if (item.type === 'selle') countStool += 1;
           if (item.type === 'selle_sub') countStool -= 1;
+          if (item.type === 'selle_summary') countStool = item.count;
         }
       });
 
@@ -329,14 +413,16 @@
           if (item.type === 'eau_sro') totalSro += item.volume;
           if (item.type === 'urine') countUrine += 1;
           if (item.type === 'urine_sub') countUrine -= 1;
+          if (item.type === 'urine_summary') countUrine = item.count;
           if (item.type === 'selle') countStool += 1;
           if (item.type === 'selle_sub') countStool -= 1;
+          if (item.type === 'selle_summary') countStool = item.count;
 
           let cssClass = '', badge = '';
           if (item.type === 'eau_claire') { cssClass = 'item-plain'; badge = '💧 Eau Claire'; }
           else if (item.type === 'eau_sro') { cssClass = 'item-sro'; badge = '🧪 Eau SRO'; }
-          else if (item.type === 'urine' || item.type === 'urine_sub') { cssClass = 'item-urine'; badge = '🟡 Urine'; }
-          else if (item.type === 'selle' || item.type === 'selle_sub') { cssClass = 'item-stool'; badge = '🟣 Selle'; }
+          else if (item.type === 'urine' || item.type === 'urine_sub' || item.type === 'urine_summary') { cssClass = 'item-urine'; badge = '🟡 Urine'; }
+          else if (item.type === 'selle' || item.type === 'selle_sub' || item.type === 'selle_summary') { cssClass = 'item-stool'; badge = '🟣 Selle'; }
 
           const volDisplay = item.volume ? ` (${item.volume > 0 ? '+' : ''}${item.volume} ml)` : '';
           const div = document.createElement('div');
@@ -384,8 +470,10 @@
         }
         if (item.type === 'urine') dailyMap[item.isoDate].urine += 1;
         if (item.type === 'urine_sub') dailyMap[item.isoDate].urine -= 1;
+        if (item.type === 'urine_summary') dailyMap[item.isoDate].urine = item.count;
         if (item.type === 'selle') dailyMap[item.isoDate].selle += 1;
         if (item.type === 'selle_sub') dailyMap[item.isoDate].selle -= 1;
+        if (item.type === 'selle_summary') dailyMap[item.isoDate].selle = item.count;
       });
 
       const dates = Object.keys(dailyMap).sort().slice(-7);
@@ -417,6 +505,7 @@
       });
     }
 
+    initDraftsForToday();
     renderToday();
   </script>
 </body>
