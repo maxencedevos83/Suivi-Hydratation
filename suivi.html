@@ -12,6 +12,13 @@
 
   <!-- Pour lier votre manifest PWA -->
   <link rel="manifest" href="./manifest.json">
+  <!-- Bouton de synchronisation manuelle -->
+    <div class="card" style="padding: 10px; text-align: center; background: #eff6ff; border: 1px solid #bfdbfe;">
+      <button id="sync-btn" onclick="manualSync()" style="width: 100%; padding: 10px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
+        🔄 Synchroniser avec le Cloud
+      </button>
+      <div id="sync-status" style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">Dernière synchro : Jamais</div>
+    </div>
   <!-- Chargement de la bibliothèque de graphique Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
