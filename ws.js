@@ -32,6 +32,35 @@ self.addEventListener('activate', (e) => {
   self.clients.claim();
 });
 
+// Gestion des actions déclenchées depuis l'application (ex: Bouton de synchronisation)
+self.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'FORCE_SYNC') {
+    e.waitUntil(
+      caches.open(CACHE_NAME).then((cache) => {
+        // Rafraîchissement forcé des assets principaux depuis le réseau
+        return Promise.all(
+          ASSETS.map((asset) => 
+            fetch(asset, { cache: 'no-store' }).then((response) => {
+              if (response.ok) {
+                return cache.put(asset, response);
+              }
+            }).catch((err) => {
+              console.warn('Échec de la mise à jour en arrière-plan pour :', asset, err);
+            })
+          )
+        ).then(() => {
+          // Informe tous les onglets/clients que la synchronisation est terminée
+          return self.clients.matchAll();
+        }).then((clients) => {
+          clients.forEach((client) => {
+            client.postMessage({ type: 'SYNC_COMPLETE' });
+          });
+        });
+      })
+    );
+  }
+});
+
 // Interception des requêtes réseau
 self.addEventListener('fetch', (e) => {
   // On ne touche pas aux requêtes vers Google Sheets (laisser passer en direct)
