@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Suivi Hydrique Pro</title>
-<!-- Pour l'onglet du navigateur -->
-<link rel="icon" type="image/png" sizes="512x512" href="./logo-512x512.png">
+  <!-- Pour l'onglet du navigateur -->
+  <link rel="icon" type="image/png" sizes="512x512" href="./logo-512x512.png">
 
-<!-- Pour l'icône sur smartphone (iOS/Android) -->
-<link rel="apple-touch-icon" href="./logo-512x512.png">
+  <!-- Pour l'icône sur smartphone (iOS/Android) -->
+  <link rel="apple-touch-icon" href="./logo-512x512.png">
 
-<!-- Pour lier votre manifest PWA -->
-<link rel="manifest" href="./manifest.json">
+  <!-- Pour lier votre manifest PWA -->
+  <link rel="manifest" href="./manifest.json">
   <!-- Chargement de la bibliothèque de graphique Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -271,14 +271,18 @@
           if (item.type === 'eau_claire') totalPlain += item.volume;
           if (item.type === 'eau_sro') totalSro += item.volume;
           if (item.type === 'urine') countUrine += 1;
-          if (item.type === 'urine_sub') countUrine = Math.max(0, countUrine - 1);
+          if (item.type === 'urine_sub') countUrine -= 1;
           if (item.type === 'selle') countStool += 1;
-          if (item.type === 'selle_sub') countStool = Math.max(0, countStool - 1);
+          if (item.type === 'selle_sub') countStool -= 1;
         }
       });
 
+      // Appliquer les limites à zéro après avoir tout calculé
       totalPlain = Math.max(0, totalPlain);
       totalSro = Math.max(0, totalSro);
+      countUrine = Math.max(0, countUrine);
+      countStool = Math.max(0, countStool);
+
       const totalFluid = totalPlain + totalSro;
 
       document.getElementById('stat-plain').innerText = totalPlain + ' ml';
@@ -317,9 +321,9 @@
           if (item.type === 'eau_claire') totalPlain += item.volume;
           if (item.type === 'eau_sro') totalSro += item.volume;
           if (item.type === 'urine') countUrine += 1;
-          if (item.type === 'urine_sub') countUrine = Math.max(0, countUrine - 1);
+          if (item.type === 'urine_sub') countUrine -= 1;
           if (item.type === 'selle') countStool += 1;
-          if (item.type === 'selle_sub') countStool = Math.max(0, countStool - 1);
+          if (item.type === 'selle_sub') countStool -= 1;
 
           let cssClass = '', badge = '';
           if (item.type === 'eau_claire') { cssClass = 'item-plain'; badge = '💧 Eau Claire'; }
@@ -341,6 +345,9 @@
 
       totalPlain = Math.max(0, totalPlain);
       totalSro = Math.max(0, totalSro);
+      countUrine = Math.max(0, countUrine);
+      countStool = Math.max(0, countStool);
+
       const totalFluid = totalPlain + totalSro;
       const totalLoss = 600 + (countUrine * 250) + (countStool * 200);
       const diff = totalFluid - totalLoss;
@@ -369,15 +376,21 @@
           dailyMap[item.isoDate].bu += item.volume;
         }
         if (item.type === 'urine') dailyMap[item.isoDate].urine += 1;
-        if (item.type === 'urine_sub') dailyMap[item.isoDate].urine = Math.max(0, dailyMap[item.isoDate].urine - 1);
+        if (item.type === 'urine_sub') dailyMap[item.isoDate].urine -= 1;
         if (item.type === 'selle') dailyMap[item.isoDate].selle += 1;
-        if (item.type === 'selle_sub') dailyMap[item.isoDate].selle = Math.max(0, dailyMap[item.isoDate].selle - 1);
+        if (item.type === 'selle_sub') dailyMap[item.isoDate].selle -= 1;
       });
 
       const dates = Object.keys(dailyMap).sort().slice(-7); // 7 derniers jours
       const labels = dates.map(d => d.split('-').slice(1).reverse().join('/'));
       const buData = dates.map(d => Math.max(0, dailyMap[d].bu));
-      const lossesData = dates.map(d => 600 + (dailyMap[d].urine * 250) + (dailyMap[d].selle * 200));
+      
+      // On applique ici aussi la sécurité pour ne pas avoir de valeurs négatives dans le graphique
+      const lossesData = dates.map(d => {
+        const u = Math.max(0, dailyMap[d].urine);
+        const s = Math.max(0, dailyMap[d].selle);
+        return 600 + (u * 250) + (s * 200);
+      });
 
       const ctx = document.getElementById('hydraChart').getContext('2d');
       if (chartInstance) chartInstance.destroy();
