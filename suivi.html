@@ -24,7 +24,7 @@
       --bg: #f8fafc;
       --card-bg: #ffffff;
     }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; max-width: 450px; margin: auto; background: var(--bg); color: #1e293b; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; max-width: 450px; margin: auto; background: var(--bg); color: #1e293b; touch-action: pan-y; }
     
     .tabs { display: flex; gap: 8px; margin-bottom: 15px; background: #e2e8f0; padding: 4px; border-radius: 12px; }
     .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; background: transparent; color: #64748b; transition: 0.2s; }
@@ -338,6 +338,33 @@
         document.getElementById('tab-history').classList.add('active');
         renderHistory();
         renderChart();
+      }
+    }
+
+    // Gestion des balayages tactiles (Swipe)
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    document.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, false);
+
+    document.addEventListener('touchend', e => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    }, false);
+
+    function handleSwipe() {
+      const threshold = 50; // Seuil minimum de pixels pour valider le swipe
+      const isTodayActive = document.getElementById('tab-today').classList.contains('active');
+
+      if (touchEndX < touchStartX - threshold) {
+        // Swipe vers la gauche -> Aller vers l'Historique
+        if (isTodayActive) switchTab('history');
+      }
+      if (touchEndX > touchStartX + threshold) {
+        // Swipe vers la droite -> Revenir à Aujourd'hui
+        if (!isTodayActive) switchTab('today');
       }
     }
 
