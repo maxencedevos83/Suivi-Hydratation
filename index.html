@@ -197,6 +197,9 @@
     .med-edit-foot { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
     .med-del { border: none; background: transparent; color: #b91c1c; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; padding: 6px; }
     #med-card .chip.active { background: #4f46e5; border-color: #4f46e5; }
+    .med-reminders:not(:empty) { margin: 4px 0 10px; padding: 10px 12px; border-radius: 12px; background: #eef2ff; border: 1px solid #c7d2fe; }
+    .med-rem-title { font-weight: 700; font-size: 0.85rem; color: #3730a3; margin-bottom: 4px; }
+    .med-rem-status { font-size: 0.82rem; color: #334155; line-height: 1.45; }
 
     /* Nourriture */
     #food-card .chip.active, #food-sheet .chip.active { background: #ea580c; border-color: #ea580c; }
@@ -339,7 +342,7 @@
         <input type="password" id="gate-code-input" class="date-picker-input" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX">
         <button class="sync-btn" type="button" style="margin-top: 8px;" onclick="loginWithCode()">Déverrouiller</button>
       </div>
-      <div class="gate-foot">🔒 Tes données ne sont accessibles qu'avec ton compte.<br>Version 2026-10-04 · v11</div>
+      <div class="gate-foot">🔒 Tes données ne sont accessibles qu'avec ton compte.<br>Version 2026-10-04 · v12</div>
     </div>
   </div>
 
@@ -495,6 +498,7 @@
     <div class="card" id="med-card">
       <div class="card-title">5. Compléments</div>
       <div id="med-moments"></div>
+      <div id="med-reminders" class="med-reminders"></div>
       <button class="drink-more" id="med-editor-btn" onclick="toggleMedEditor()">⚙️ Gérer mes compléments</button>
 
       <div id="med-editor" class="med-editor" style="display: none;">
@@ -519,8 +523,8 @@
         </div>
         <div id="med-editor-msg" class="weight-feedback"></div>
         <div class="sync-note">
-          Rappels par e-mail : le script Google t'écrit à l'heure prévue, puis 30 et 90 minutes après,
-          tant que la prise n'est pas cochée ici.
+          Rappels : notification sur ton téléphone à l'heure prévue, puis 30 et 90 minutes après,
+          tant que la prise n'est pas cochée (ici ou avec le bouton « C'est pris » de la notification).
         </div>
       </div>
     </div>
@@ -761,7 +765,7 @@
 
   <script>
     // ================== SERVICE WORKER ==================
-    const APP_VERSION = '2026-10-04 · v11';
+    const APP_VERSION = '2026-10-04 · v12';
     if ('serviceWorker' in navigator) {
       // Quand une nouvelle version de l'appli est installée, on recharge une fois pour l'afficher
       const hadController = !!navigator.serviceWorker.controller;
@@ -1425,6 +1429,8 @@
       } else {
         bannerEl.classList.remove('show');
       }
+      saveReminderState();
+      renderReminders();
     }
 
     function checkIntakes(meds, moment) {
@@ -3996,6 +4002,233 @@
       input.addEventListener('change', () => onDocFilesChosen(input));
     });
 
+    // ================== RAPPELS : NOTIFICATIONS SUR LE TÉLÉPHONE ==================
+    // Le script Google envoie un signal push au moment du rappel ; le service worker (ws.js)
+    // affiche la notification à partir du plan enregistré ici dans IndexedDB « hydra-sw ».
+    let reminderInfo = null;     // { devices, channel } renvoyé par le script
+    let reminderLoading = false;
+    let pushResynced = false;    // abonnement de ce téléphone renvoyé au script une fois par ouverture
+    let reminderStateTimer = null;
+    const REMINDER_CHANNELS = [
+      { key: 'push', name: '🔔 Notification' },
+      { key: 'both', name: '🔔 + ✉️ Les deux' },
+      { key: 'email', name: '✉️ E-mail seulement' }
+    ];
+
+    function pushSupported() {
+      return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+    }
+
+    function swKvSet(key, value) {
+      return new Promise((resolve, reject) => {
+        const r = indexedDB.open('hydra-sw', 1);
+        r.onupgradeneeded = () => r.result.createObjectStore('kv');
+        r.onerror = () => reject(r.error);
+        r.onsuccess = () => {
+          const db = r.result;
+          const tx = db.transaction('kv', 'readwrite');
+          tx.objectStore('kv').put(value, key);
+          tx.oncomplete = () => { db.close(); resolve(); };
+          tx.onerror = () => { db.close(); reject(tx.error); };
+        };
+      });
+    }
+
+    // Plan, prises du jour et session, pour que le service worker puisse afficher le bon rappel appli fermée
+    function saveReminderState() {
+      clearTimeout(reminderStateTimer);
+      reminderStateTimer = setTimeout(() => {
+        const plan = getMedPlan();
+        const today = getLocalIsoDate();
+        swKvSet('reminder', {
+          url: syncConf.url,
+          session: hasSession() ? syncConf.session.token : null,
+          plan: { times: plan.times, meds: plan.meds },
+          taken: { iso: today, details: Object.keys(getMedIntakes(today)) },
+          updated: Date.now()
+        }).catch(() => {});
+      }, 300);
+    }
+
+    async function sessionCall(payload) {
+      if (!hasSession()) {
+        endSession('Ta session a expiré : reconnecte-toi.');
+        throw new Error('unauthorized');
+      }
+      const data = await apiCall(Object.assign({ session: syncConf.session.token }, payload));
+      if (!data.ok) {
+        if (data.error === 'unauthorized') endSession('Ta session a expiré ou a été fermée : reconnecte-toi.');
+        throw new Error(data.error || 'server');
+      }
+      return data;
+    }
+
+    async function currentPushSub() {
+      if (!pushSupported()) return null;
+      const reg = await navigator.serviceWorker.ready;
+      return reg.pushManager.getSubscription();
+    }
+
+    function deviceLabel() {
+      const ua = navigator.userAgent;
+      const kind = /Android/i.test(ua) ? 'Téléphone Android' : /iPhone|iPad/i.test(ua) ? 'iPhone' : 'Ordinateur';
+      return `${kind} · ajouté le ${new Date().toLocaleDateString('fr-FR')}`;
+    }
+
+    function remMsg(text, kind) {
+      const el = byId('rem-msg');
+      if (!el) return;
+      el.className = 'weight-feedback' + (kind ? ' ' + kind : '');
+      el.textContent = text || '';
+    }
+
+    function remErrorMessage(code) {
+      const messages = {
+        unknown_action: 'Le script Google n\'est pas encore à jour (version 6 nécessaire).',
+        bad_subscription: 'Service de notification non reconnu.',
+        server: 'Le script Google a rencontré une erreur.',
+        format: 'Le script Google ne répond pas comme prévu.'
+      };
+      return messages[code] || (navigator.onLine ? 'Erreur de communication. Réessaie.' : 'Pas de connexion Internet.');
+    }
+
+    async function renderReminders() {
+      const box = byId('med-reminders');
+      if (!box) return;
+      const plan = getMedPlan();
+      if (!plan.meds.length || !hasSession()) { box.innerHTML = ''; return; }
+      if (!reminderInfo && !reminderLoading && navigator.onLine) {
+        reminderLoading = true;
+        sessionCall({ action: 'push_key' })
+          .then(info => { reminderInfo = { devices: info.devices, channel: info.channel, publicKey: info.publicKey }; })
+          .catch(() => { reminderInfo = { devices: 0, channel: null, error: true }; })
+          .finally(() => { reminderLoading = false; renderReminders(); });
+      }
+      const supported = pushSupported();
+      const perm = supported ? Notification.permission : 'unsupported';
+      let sub = null;
+      if (supported && perm === 'granted') { try { sub = await currentPushSub(); } catch (e) { sub = null; } }
+      if (sub && !pushResynced && navigator.onLine) {
+        // Ré-enregistre ce téléphone à chaque ouverture : répare un abonnement expiré ou renouvelé par Android
+        pushResynced = true;
+        sessionCall({ action: 'push_subscribe', subscription: sub.toJSON(), label: deviceLabel() })
+          .then(r => { if (reminderInfo && reminderInfo.devices !== r.devices) { reminderInfo.devices = r.devices; renderReminders(); } })
+          .catch(() => { pushResynced = false; });
+      }
+      let status, buttons = '';
+      if (!supported) {
+        status = 'Ce navigateur ne peut pas recevoir de notifications : les rappels arrivent par e-mail.';
+      } else if (perm === 'denied') {
+        status = '⛔ Notifications bloquées pour cette appli. Pour les autoriser : Paramètres Android › Applications › Chrome (ou Suivi Hydrique Pro) › Notifications, puis reviens ici.';
+      } else if (sub) {
+        status = '✅ Notifications activées sur ce téléphone : à l\'heure prévue, tu reçois une notification avec un bouton « C\'est pris ».';
+        buttons = `<div class="action-row" style="margin-top: 8px;">
+            <button class="btn-add" type="button" id="rem-test" style="background: #e0e7ff; color: #3730a3;">🔔 Tester</button>
+            <button class="btn-sub" type="button" id="rem-off">Désactiver ici</button>
+          </div>`;
+      } else {
+        status = 'Les rappels peuvent s\'afficher comme une notification classique, même appli fermée.';
+        buttons = '<button class="sync-btn" type="button" id="rem-on" style="background: #4f46e5; margin-top: 8px;">🔔 Activer les notifications sur ce téléphone</button>';
+      }
+      box.innerHTML = `
+        <div class="med-rem-title">🔔 Rappels</div>
+        <div class="med-rem-status">${status}</div>
+        ${buttons}
+        ${reminderInfo && reminderInfo.channel ? `<div class="action-label" style="margin-top: 10px;">Recevoir les rappels par</div><div class="chip-row" id="rem-channels"></div>
+          <div class="sync-note" style="margin-top: 6px;">Téléphone(s) avec notifications : ${reminderInfo.devices}. Sans téléphone joignable, le rappel arrive quand même par e-mail.</div>` : ''}
+        <div id="rem-msg" class="weight-feedback"></div>`;
+      if (byId('rem-on')) byId('rem-on').onclick = enablePush;
+      if (byId('rem-test')) byId('rem-test').onclick = testPush;
+      if (byId('rem-off')) byId('rem-off').onclick = disablePush;
+      const chips = byId('rem-channels');
+      if (chips) {
+        REMINDER_CHANNELS.forEach(c => {
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'chip' + (reminderInfo.channel === c.key ? ' active' : '');
+          chip.textContent = c.name;
+          chip.onclick = () => setReminderChannel(c.key);
+          chips.appendChild(chip);
+        });
+      }
+    }
+
+    async function enablePush() {
+      const btn = byId('rem-on');
+      btn.disabled = true;
+      try {
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted') {
+          await renderReminders();
+          remMsg('Notifications refusées : les rappels continueront par e-mail.', 'err');
+          return;
+        }
+        remMsg('Activation…');
+        const info = await sessionCall({ action: 'push_key' });
+        const key = b64uToBuf(info.publicKey);
+        const reg = await navigator.serviceWorker.ready;
+        let sub = await reg.pushManager.getSubscription();
+        if (sub) {
+          const cur = sub.options && sub.options.applicationServerKey ? new Uint8Array(sub.options.applicationServerKey) : null;
+          if (!cur || cur.length !== key.length || cur.some((b, i) => b !== key[i])) { await sub.unsubscribe(); sub = null; }
+        }
+        if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+        const r = await sessionCall({ action: 'push_subscribe', subscription: sub.toJSON(), label: deviceLabel() });
+        reminderInfo = { devices: r.devices, channel: info.channel, publicKey: info.publicKey };
+        saveReminderState();
+        await renderReminders();
+        remMsg('✅ Activé ! Touche « Tester » pour vérifier que la notification arrive.', 'ok');
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        await renderReminders();
+        remMsg(e && e.name === 'NotAllowedError' ? 'Notifications refusées par le téléphone.' : (e && e.name === 'AbortError') ? 'Le service de notification du téléphone ne répond pas. Réessaie plus tard.' : remErrorMessage(e.message), 'err');
+      }
+    }
+
+    async function testPush() {
+      const btn = byId('rem-test');
+      btn.disabled = true;
+      remMsg('Envoi d\'une notification de test…');
+      try {
+        await swKvSet('reminder-test', Date.now());
+        const r = await sessionCall({ action: 'push_test' });
+        reminderInfo = Object.assign({}, reminderInfo, { devices: r.devices });
+        remMsg(r.sent ? `✅ Notification envoyée (${r.sent} appareil${r.sent > 1 ? 's' : ''}). Elle doit apparaître dans quelques secondes.` : 'Aucun téléphone joignable : réactive les notifications.', r.sent ? 'ok' : 'err');
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        remMsg(remErrorMessage(e.message), 'err');
+      } finally {
+        if (byId('rem-test')) byId('rem-test').disabled = false;
+      }
+    }
+
+    async function disablePush() {
+      try {
+        const sub = await currentPushSub();
+        if (sub) {
+          await sessionCall({ action: 'push_unsubscribe', endpoint: sub.endpoint }).catch(() => {});
+          await sub.unsubscribe();
+        }
+        reminderInfo = null;
+        await renderReminders();
+        remMsg('Notifications désactivées sur ce téléphone.');
+      } catch (e) {
+        remMsg(remErrorMessage(e.message), 'err');
+      }
+    }
+
+    async function setReminderChannel(channel) {
+      try {
+        const r = await sessionCall({ action: 'reminder_prefs', channel: channel });
+        reminderInfo = Object.assign({}, reminderInfo, { channel: r.channel });
+        await renderReminders();
+        remMsg(channel === 'email' ? 'Les rappels arriveront uniquement par e-mail.' : channel === 'both' ? 'Rappels par notification et par e-mail.' : 'Rappels par notification (e-mail seulement en secours).', 'ok');
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        remMsg(remErrorMessage(e.message), 'err');
+      }
+    }
+
     // ================== NAVIGATION ==================
     const TABS = ['today', 'food', 'docs', 'history'];
     function switchTab(tabName) {
@@ -4616,6 +4849,7 @@
 
     function endSession(message) {
       syncConf.session = null;
+      saveReminderState();
       saveSyncConf();
       if (window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
       document.getElementById('sync-settings').style.display = 'none';

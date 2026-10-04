@@ -1,5 +1,5 @@
 /**
- * Suivi Hydrique Pro — serveur Google Apps Script (version 5 : dossier médical chiffré)
+ * Suivi Hydrique Pro — serveur Google Apps Script (version 6 : notifications sur le téléphone)
  * =============================================================================
  *
  * MISE À JOUR DEPUIS LA VERSION PRÉCÉDENTE
@@ -33,8 +33,12 @@
  *
  * RAPPELS DE COMPLÉMENTS
  * - Toutes les 5 minutes, le script regarde le plan de compléments enregistré dans l'appli.
- *   À l'heure prévue, puis 30 et 90 minutes après, il vous envoie un e-mail tant que
- *   la prise n'est pas cochée dans l'appli.
+ *   À l'heure prévue, puis 30 et 90 minutes après, il envoie un rappel tant que la prise
+ *   n'est pas cochée dans l'appli.
+ * - Version 6 : le rappel est une NOTIFICATION sur le téléphone (avec un bouton « C'est pris »).
+ *   L'e-mail n'est envoyé qu'en secours (aucun téléphone joignable) ou si vous le choisissez dans l'appli.
+ * - Pour vérifier : activez les notifications dans l'appli (carte « Compléments »), puis exécutez
+ *   « testerNotification » ici, ou utilisez le bouton de test de l'appli.
  */
 
 const SPREADSHEET_ID = '';            // Laisser vide si le script est lié à la feuille
@@ -151,6 +155,18 @@ function doPost(e) {
       return json_({ ok: true });
     }
     if (body.action === 'sync') return json_(sync_(body));
+    if (body.action === 'push_key') {
+      return json_({ ok: true, publicKey: vapidKeys_().pub, devices: loadPushSubs_().length,
+                     channel: PropertiesService.getScriptProperties().getProperty('REMINDER_CHANNEL') || 'push' });
+    }
+    if (body.action === 'push_subscribe') return json_(pushSubscribe_(body));
+    if (body.action === 'push_unsubscribe') return json_(pushUnsubscribe_(body));
+    if (body.action === 'push_test') return json_(Object.assign({ ok: true }, sendPushAll_()));
+    if (body.action === 'reminder_prefs') {
+      const channel = ['push', 'email', 'both'].indexOf(body.channel) >= 0 ? body.channel : 'push';
+      PropertiesService.getScriptProperties().setProperty('REMINDER_CHANNEL', channel);
+      return json_({ ok: true, channel: channel });
+    }
     if (body.action === 'vault_get') return json_({ ok: true, vault: loadVault_() });
     if (body.action === 'vault_set') return json_(vaultSet_(body));
     if (body.action === 'docs_list') return json_(docsList_());
@@ -463,7 +479,7 @@ function verifierPrises() {
         ? 'C\'est l\'heure de tes compléments ' + label + ' :\n\n'
         : 'Ces compléments ' + label + ' (prévus à ' + times[moment] + ') ne sont pas encore cochés :\n\n') +
       list + '\n\nCoche-les dans l\'appli pour arrêter les rappels :\n' + APP_URL;
-    sendAlert_(subject, bodyText);
+    remind_(subject, bodyText);
     props.setProperty(key, String(stage + 1));
   });
 
@@ -623,4 +639,204 @@ function docsUpdate_(file, body) {
   if (!isB64_(m.iv, 32) || !isB64_(m.data, 20000)) return { ok: false, error: 'bad_meta' };
   file.setDescription(JSON.stringify({ enc: 1, v: 1, iv: m.iv, data: m.data, importedAt: d.importedAt || file.getDateCreated().getTime() }));
   return { ok: true, doc: docMeta_(file) };
+}
+
+// ---------------------------------------------------------------------------
+// Notifications push sur le téléphone (Web Push, signature VAPID ES256)
+// Apps Script ne sait pas signer en ECDSA P-256 : la signature est calculée ici en JavaScript pur.
+// ---------------------------------------------------------------------------
+
+const EC_P = BigInt('0xffffffff00000001000000000000000000000000ffffffffffffffffffffffff');
+const EC_N = BigInt('0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551');
+const EC_G = [BigInt('0x6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296'),
+              BigInt('0x4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5')];
+const PUSH_HOSTS = /^https:\/\/(fcm\.googleapis\.com|android\.googleapis\.com|updates\.push\.services\.mozilla\.com|[a-z0-9.-]+\.notify\.windows\.com|web\.push\.apple\.com)\//;
+const MAX_PUSH_DEVICES = 10;
+
+function ecMod_(a, m) { const r = a % m; return r >= 0n ? r : r + m; }
+
+function ecInv_(a, m) {
+  let r0 = ecMod_(a, m), r1 = m, s0 = 1n, s1 = 0n;
+  while (r1 !== 0n) {
+    const q = r0 / r1;
+    [r0, r1] = [r1, r0 - q * r1];
+    [s0, s1] = [s1, s0 - q * s1];
+  }
+  return ecMod_(s0, m);
+}
+
+// Points en coordonnées jacobiennes [X, Y, Z] ; null = point à l'infini
+function ecDouble_(P) {
+  if (!P || P[1] === 0n) return null;
+  const p = EC_P, X = P[0], Y = P[1], Z = P[2];
+  const YY = Y * Y % p, ZZ = Z * Z % p;
+  const S = 4n * X % p * YY % p;
+  const M = 3n * ecMod_(X - ZZ, p) % p * ((X + ZZ) % p) % p;   // a = -3
+  const X3 = ecMod_(M * M - 2n * S, p);
+  const Y3 = ecMod_(M * ecMod_(S - X3, p) - 8n * (YY * YY % p), p);
+  const Z3 = 2n * Y % p * Z % p;
+  return [X3, Y3, Z3];
+}
+
+function ecAdd_(P, Q) {
+  if (!P) return Q;
+  if (!Q) return P;
+  const p = EC_P;
+  const Z1Z1 = P[2] * P[2] % p, Z2Z2 = Q[2] * Q[2] % p;
+  const U1 = P[0] * Z2Z2 % p, U2 = Q[0] * Z1Z1 % p;
+  const S1 = P[1] * Q[2] % p * Z2Z2 % p, S2 = Q[1] * P[2] % p * Z1Z1 % p;
+  const H = ecMod_(U2 - U1, p), R = ecMod_(S2 - S1, p);
+  if (H === 0n) return R === 0n ? ecDouble_(P) : null;
+  const HH = H * H % p, HHH = H * HH % p, V = U1 * HH % p;
+  const X3 = ecMod_(R * R - HHH - 2n * V, p);
+  const Y3 = ecMod_(R * ecMod_(V - X3, p) - S1 * HHH, p);
+  const Z3 = H * P[2] % p * Q[2] % p;
+  return [X3, Y3, Z3];
+}
+
+function ecMul_(k, P) {
+  let R = null, Q = [P[0], P[1], 1n];
+  while (k > 0n) {
+    if (k & 1n) R = ecAdd_(R, Q);
+    Q = ecDouble_(Q);
+    k >>= 1n;
+  }
+  return R;
+}
+
+function ecAffine_(P) {
+  const zi = ecInv_(P[2], EC_P), zi2 = zi * zi % EC_P;
+  return [P[0] * zi2 % EC_P, P[1] * zi2 % EC_P * zi % EC_P];
+}
+
+function u8_(signedBytes) { return signedBytes.map(b => (b + 256) % 256); }
+function s8_(bytes) { return bytes.map(b => (b > 127 ? b - 256 : b)); }
+function bytesToBig_(bytes) { let x = 0n; bytes.forEach(b => { x = (x << 8n) | BigInt(b); }); return x; }
+function bigToBytes_(x, len) { const out = []; for (let i = 0; i < len; i++) { out.unshift(Number(x & 255n)); x >>= 8n; } return out; }
+function b64uBytes_(bytes) { return Utilities.base64EncodeWebSafe(s8_(bytes)).replace(/=+$/, ''); }
+function b64uText_(text) { return Utilities.base64EncodeWebSafe(text, Utilities.Charset.UTF_8).replace(/=+$/, ''); }
+function hmac_(key, data) { return u8_(Utilities.computeHmacSha256Signature(s8_(data), s8_(key))); }
+
+// Nonce déterministe (RFC 6979) : aucune dépendance à un générateur aléatoire
+function rfc6979K_(d, hash) {
+  const x = bigToBytes_(d, 32);
+  const h = bigToBytes_(ecMod_(bytesToBig_(hash), EC_N), 32);
+  let V = new Array(32).fill(1), K = new Array(32).fill(0);
+  K = hmac_(K, V.concat([0], x, h)); V = hmac_(K, V);
+  K = hmac_(K, V.concat([1], x, h)); V = hmac_(K, V);
+  for (;;) {
+    V = hmac_(K, V);
+    const k = bytesToBig_(V);
+    if (k > 0n && k < EC_N) return k;
+    K = hmac_(K, V.concat([0]));
+    V = hmac_(K, V);
+  }
+}
+
+function ecdsaSign_(message, d) {
+  const hash = u8_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, message, Utilities.Charset.UTF_8));
+  const z = bytesToBig_(hash);
+  const k = rfc6979K_(d, hash);
+  const r = ecMod_(ecAffine_(ecMul_(k, EC_G))[0], EC_N);
+  const s = ecMod_(ecInv_(k, EC_N) * ecMod_(z + r * d, EC_N), EC_N);
+  return bigToBytes_(r, 32).concat(bigToBytes_(s, 32));
+}
+
+/** Clés VAPID du serveur (créées une seule fois, la clé privée reste dans les propriétés du script). */
+function vapidKeys_() {
+  const props = PropertiesService.getScriptProperties();
+  const dHex = props.getProperty('VAPID_D'), pub = props.getProperty('VAPID_PUBLIC');
+  if (dHex && pub) return { d: BigInt('0x' + dHex), pub: pub };
+  let seed = String(Date.now());
+  for (let i = 0; i < 6; i++) seed += Utilities.getUuid();
+  const d = ecMod_(bytesToBig_(u8_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, seed, Utilities.Charset.UTF_8))), EC_N - 1n) + 1n;
+  const Q = ecAffine_(ecMul_(d, EC_G));
+  const publicKey = b64uBytes_([4].concat(bigToBytes_(Q[0], 32), bigToBytes_(Q[1], 32)));
+  props.setProperty('VAPID_D', d.toString(16).padStart(64, '0'));
+  props.setProperty('VAPID_PUBLIC', publicKey);
+  return { d: d, pub: publicKey };
+}
+
+function vapidJwt_(audience, keys) {
+  const cache = CacheService.getScriptCache();
+  const cacheKey = 'VAPID_JWT_' + audience;
+  const cached = cache.get(cacheKey);
+  if (cached) return cached;
+  const head = b64uText_(JSON.stringify({ typ: 'JWT', alg: 'ES256' }));
+  const body = b64uText_(JSON.stringify({ aud: audience, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: 'mailto:' + ownerEmail_() }));
+  const jwt = head + '.' + body + '.' + b64uBytes_(ecdsaSign_(head + '.' + body, keys.d));
+  cache.put(cacheKey, jwt, 6 * 3600);
+  return jwt;
+}
+
+function loadPushSubs_() {
+  try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('PUSH_SUBS') || '[]'); } catch (err) { return []; }
+}
+function savePushSubs_(subs) {
+  PropertiesService.getScriptProperties().setProperty('PUSH_SUBS', JSON.stringify(subs.slice(0, MAX_PUSH_DEVICES)));
+}
+
+function pushSubscribe_(body) {
+  const sub = body.subscription || {};
+  const endpoint = String(sub.endpoint || '');
+  if (!PUSH_HOSTS.test(endpoint) || endpoint.length > 1000) return { ok: false, error: 'bad_subscription' };
+  const label = String(body.label || 'Appareil').slice(0, 60);
+  const subs = loadPushSubs_().filter(s => s.endpoint !== endpoint);
+  subs.unshift({ endpoint: endpoint, label: label, created: Date.now() });
+  savePushSubs_(subs);
+  return { ok: true, devices: Math.min(subs.length, MAX_PUSH_DEVICES) };
+}
+
+function pushUnsubscribe_(body) {
+  const endpoint = String(body.endpoint || '');
+  const subs = loadPushSubs_().filter(s => s.endpoint !== endpoint);
+  savePushSubs_(subs);
+  return { ok: true, devices: subs.length };
+}
+
+/** Envoie un signal push (sans contenu) à chaque téléphone abonné : il affiche alors la notification. */
+function sendPushAll_() {
+  const subs = loadPushSubs_();
+  if (!subs.length) return { sent: 0, failed: 0, devices: 0 };
+  const keys = vapidKeys_();
+  let sent = 0, failed = 0;
+  const keep = [];
+  subs.forEach(sub => {
+    let code = 0;
+    try {
+      const audience = sub.endpoint.match(/^https:\/\/[^/]+/)[0];
+      code = UrlFetchApp.fetch(sub.endpoint, {
+        method: 'post',
+        contentType: 'application/octet-stream',
+        payload: '',
+        headers: { TTL: '3600', Urgency: 'high', Authorization: 'vapid t=' + vapidJwt_(audience, keys) + ', k=' + keys.pub },
+        muteHttpExceptions: true
+      }).getResponseCode();
+    } catch (err) {
+      code = 0;
+    }
+    if (code >= 200 && code < 300) { sent++; keep.push(sub); }
+    else if (code === 404 || code === 410) { /* abonnement expiré : retiré */ }
+    else { failed++; keep.push(sub); }
+  });
+  savePushSubs_(keep);
+  return { sent: sent, failed: failed, devices: keep.length };
+}
+
+/** Rappel de compléments : notification sur le téléphone, e-mail en secours (ou selon le choix fait dans l'appli). */
+function remind_(subject, body) {
+  const channel = PropertiesService.getScriptProperties().getProperty('REMINDER_CHANNEL') || 'push';
+  let pushed = 0;
+  if (channel !== 'email') pushed = sendPushAll_().sent;
+  if (channel === 'email' || channel === 'both' || pushed === 0) {
+    sendAlert_(subject, body + (channel !== 'email' && pushed === 0
+      ? '\n\n(Aucune notification n\'a pu être envoyée sur ton téléphone : ce rappel arrive donc par e-mail. Active les notifications dans l\'appli, carte « Compléments ».)'
+      : ''));
+  }
+}
+
+/** À lancer depuis l'éditeur : envoie une notification de test aux téléphones abonnés. */
+function testerNotification() {
+  const r = sendPushAll_();
+  Logger.log('Notification envoyée à ' + r.sent + ' appareil(s) sur ' + r.devices + (r.failed ? ' (' + r.failed + ' échec(s))' : '') + '.');
 }
