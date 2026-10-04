@@ -24,6 +24,7 @@
       --stool: #9333ea;
       --weight-am: #ea580c;
       --weight-pm: #4f46e5;
+      --drink-other: #db2777;
       --bg: #f8fafc;
       --card-bg: #ffffff;
     }
@@ -71,6 +72,41 @@
     .item-urine { border-left-color: var(--urine); }
     .item-stool { border-left-color: var(--stool); }
     
+    .item-other { border-left-color: var(--drink-other); }
+
+    .grid-3 { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .grid-3 .stat-value { font-size: 1.05rem; }
+
+    /* Saisie des boissons par contenants */
+    .drink-cats { display: flex; gap: 4px; background: #f1f5f9; padding: 4px; border-radius: 12px; margin-bottom: 12px; }
+    .drink-cat { flex: 1; padding: 9px 4px; border: none; border-radius: 9px; background: transparent; font-weight: 600; font-size: 0.82rem; color: #64748b; cursor: pointer; font-family: inherit; }
+    .drink-cat.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08); color: var(--cat-color); }
+    .drink-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; }
+    .drink-tile { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 10px 4px 8px; min-height: 104px; border: 1px solid var(--tile-border); border-radius: 12px; background: var(--tile-bg); color: var(--cat-color); cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent; }
+    .drink-tile svg { width: 34px; height: 40px; }
+    .drink-tile-name { font-size: 0.74rem; font-weight: 600; color: #334155; text-align: center; line-height: 1.15; }
+    .drink-tile-ml { font-size: 0.82rem; font-weight: 700; }
+    .drink-tile-badge { position: absolute; top: 5px; right: 6px; background: var(--cat-color); color: white; border-radius: 10px; font-size: 0.65rem; padding: 1px 6px; font-weight: 700; }
+    .drink-tile.custom { border-style: dashed; background: white; }
+    .drink-tile.flash { animation: drink-flash 0.35s ease-out; }
+    @keyframes drink-flash { 0% { transform: scale(1); } 35% { transform: scale(0.9); } 100% { transform: scale(1); } }
+    .drink-custom { margin-top: 10px; padding: 10px; border-radius: 12px; background: #f8fafc; border: 1px dashed #cbd5e1; }
+    .drink-custom .action-row input { flex: 2; margin-top: 0; }
+    .drink-today-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 700; margin: 14px 0 6px; }
+    .drink-today-list { display: flex; flex-direction: column; gap: 6px; }
+    .drink-today-item { display: flex; align-items: center; gap: 8px; padding: 7px 6px 7px 10px; border-radius: 10px; background: #f8fafc; border-left: 4px solid #cbd5e1; font-size: 0.85rem; }
+    .drink-today-item .d-time { color: #94a3b8; font-size: 0.75rem; min-width: 38px; }
+    .drink-today-item .d-label { flex: 1; }
+    .drink-today-item .d-vol { font-weight: 700; white-space: nowrap; }
+    .drink-del { border: none; background: transparent; color: #94a3b8; font-size: 1rem; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
+    .drink-del:hover { background: #fee2e2; color: #b91c1c; }
+    .drink-more { width: 100%; margin-top: 6px; padding: 7px; border: none; border-radius: 8px; background: #f1f5f9; color: #64748b; font-weight: 600; font-size: 0.8rem; cursor: pointer; font-family: inherit; }
+    .drink-empty { text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 8px; }
+
+    .toast { position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 150%); opacity: 0; background: #1e293b; color: white; padding: 10px 12px 10px 16px; border-radius: 12px; display: flex; gap: 12px; align-items: center; font-size: 0.88rem; transition: transform 0.25s, opacity 0.25s; z-index: 50; max-width: calc(100% - 32px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); pointer-events: none; }
+    .toast.show { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+    .toast button { background: transparent; border: none; color: #93c5fd; font-weight: 700; cursor: pointer; font-size: 0.88rem; padding: 4px 6px; font-family: inherit; }
+
     .item-weight-am { border-left-color: var(--weight-am); }
     .item-weight-pm { border-left-color: var(--weight-pm); }
 
@@ -153,39 +189,43 @@
     <div class="card">
       <div class="card-title" style="text-align: center;">Total Liquides Bu</div>
       <div class="total-banner" id="total-fluid">0 ml</div>
-      <div class="grid-stats">
+      <div class="grid-stats grid-3">
         <div class="stat-box">
           <div class="stat-value" style="color: var(--water-plain)" id="stat-plain">0 ml</div>
-          <div class="stat-label">Eau Claire</div>
+          <div class="stat-label">💧 Eau claire</div>
         </div>
         <div class="stat-box">
           <div class="stat-value" style="color: var(--water-sro)" id="stat-sro">0 ml</div>
-          <div class="stat-label">Eau SRO</div>
+          <div class="stat-label">🧪 SRO</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" style="color: var(--drink-other)" id="stat-other">0 ml</div>
+          <div class="stat-label">☕ Autres</div>
         </div>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="drink-card">
       <div class="card-title">1. Saisie Boissons</div>
-      <div class="action-label" style="color: var(--water-plain);">💧 Eau Claire</div>
-      <div class="action-row">
-        <button class="btn-add btn-plain" onclick="addLog('eau_claire', 200, 'Verre +200 ml')">+ 200 ml</button>
-        <button class="btn-sub" onclick="addLog('eau_claire', -200, 'Retrait -200 ml')">- 200 ml</button>
+      <div class="drink-cats" role="tablist" aria-label="Catégorie de boisson">
+        <button class="drink-cat" data-cat="eau_claire" onclick="setDrinkCategory('eau_claire')">💧 Eau claire</button>
+        <button class="drink-cat" data-cat="eau_sro" onclick="setDrinkCategory('eau_sro')">🧪 SRO</button>
+        <button class="drink-cat" data-cat="autre_boisson" onclick="setDrinkCategory('autre_boisson')">☕ Autres</button>
       </div>
-      <div class="action-row">
-        <button class="btn-add btn-plain" onclick="addLog('eau_claire', 500, 'Gourde +500 ml')">+ 500 ml</button>
-        <button class="btn-sub" onclick="addLog('eau_claire', -500, 'Retrait -500 ml')">- 500 ml</button>
+      <div id="drink-grid" class="drink-grid"></div>
+
+      <div id="drink-custom" class="drink-custom" style="display: none;">
+        <div class="action-label" id="drink-custom-title">Autre quantité</div>
+        <input type="text" id="drink-custom-name" class="date-picker-input" maxlength="40" placeholder="Boisson (ex : bière, smoothie…)" style="margin-bottom: 8px;">
+        <div class="action-row">
+          <input type="text" id="drink-custom-ml" class="date-picker-input" inputmode="numeric" autocomplete="off" placeholder="Quantité en ml">
+          <button class="btn-add" style="background: var(--cat-color); color: white;" onclick="addCustomDrink()">Ajouter</button>
+        </div>
+        <div id="drink-custom-msg" class="weight-feedback"></div>
       </div>
 
-      <div class="action-label" style="color: var(--water-sro); margin-top: 10px;">🧪 Eau Solutionnée / SRO</div>
-      <div class="action-row">
-        <button class="btn-add btn-sro" onclick="addLog('eau_sro', 200, 'Verre +200 ml')">+ 200 ml</button>
-        <button class="btn-sub" onclick="addLog('eau_sro', -200, 'Retrait -200 ml')">- 200 ml</button>
-      </div>
-      <div class="action-row">
-        <button class="btn-add btn-sro" onclick="addLog('eau_sro', 1500, 'Bouteille +1.5 L')">+ 1.5 Litre</button>
-        <button class="btn-sub" onclick="addLog('eau_sro', -1500, 'Retrait -1.5 L')">- 1.5 Litre</button>
-      </div>
+      <div class="drink-today-title">Boissons du jour</div>
+      <div id="drink-today-list" class="drink-today-list"></div>
     </div>
 
     <div class="card">
@@ -330,6 +370,12 @@
 
   </div>
 
+  <!-- Message temporaire avec « Annuler » -->
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <span id="toast-text"></span>
+    <button id="toast-undo" type="button">Annuler</button>
+  </div>
+
   <script>
     // ================== SERVICE WORKER ==================
     if ('serviceWorker' in navigator) {
@@ -349,6 +395,71 @@
     const LS_SYNC = 'hydra_sync';        // réglages de synchro de CET appareil
     const COUNT_TYPES = ['urine', 'urine_sub', 'urine_summary', 'selle', 'selle_sub', 'selle_summary'];
     const AUTO_SYNC_INTERVAL_MS = 60000;
+    const FLUID_TYPES = ['eau_claire', 'eau_sro', 'autre_boisson'];
+
+    // ================== CONTENANTS ==================
+    // Pour changer un volume ou ajouter un contenant, il suffit de modifier cette liste.
+    // shape : dessin du contenant (verre, petitVerre, grandVerre, mug, tasse, canette, bouteille, gourde, bol)
+    const DRINK_CATEGORIES = {
+      eau_claire: {
+        icon: '💧', name: 'Eau claire', color: '#0284c7', bg: '#e0f2fe', border: '#bae6fd',
+        items: [
+          { name: 'Petit verre', ml: 150, shape: 'petitVerre' },
+          { name: 'Verre', ml: 200, shape: 'verre' },
+          { name: 'Grand verre', ml: 300, shape: 'grandVerre' },
+          { name: 'Gourde', ml: 500, shape: 'gourde' },
+          { name: 'Bouteille', ml: 1000, shape: 'bouteille' }
+        ]
+      },
+      eau_sro: {
+        icon: '🧪', name: 'SRO', color: '#0d9488', bg: '#ccfbf1', border: '#99f6e4',
+        items: [
+          { name: 'Verre', ml: 200, shape: 'verre' },
+          { name: 'Grand verre', ml: 300, shape: 'grandVerre' },
+          { name: 'Gourde', ml: 500, shape: 'gourde' },
+          { name: 'Bouteille', ml: 1000, shape: 'bouteille' },
+          { name: 'Bouteille', ml: 1500, shape: 'bouteille' }
+        ]
+      },
+      autre_boisson: {
+        icon: '☕', name: 'Autres', color: '#db2777', bg: '#fce7f3', border: '#fbcfe8',
+        items: [
+          { name: 'Café', ml: 120, shape: 'tasse' },
+          { name: 'Thé / tisane', ml: 250, shape: 'mug' },
+          { name: 'Lait', ml: 250, shape: 'verre' },
+          { name: 'Jus de fruits', ml: 200, shape: 'petitVerre' },
+          { name: 'Soda canette', ml: 330, shape: 'canette' },
+          { name: 'Soda 50 cl', ml: 500, shape: 'bouteille' },
+          { name: 'Soupe / bouillon', ml: 250, shape: 'bol' }
+        ]
+      }
+    };
+
+    const SVG_LIQUID = 'fill="currentColor" fill-opacity="0.3" stroke="none"';
+    const GLASS_SVG = {
+      verre: `<path ${SVG_LIQUID} d="M9.8 18 L30.2 18 L28.5 43 L11.5 43 Z"/><path d="M9 8 L31 8 L28.5 43 L11.5 43 Z"/>`,
+      petitVerre: `<path ${SVG_LIQUID} d="M10.6 27 L29.4 27 L28 43 L12 43 Z"/><path d="M10 20 L30 20 L28 43 L12 43 Z"/>`,
+      grandVerre: `<path ${SVG_LIQUID} d="M12.3 12 L27.7 12 L26.5 44 L13.5 44 Z"/><path d="M12 3 L28 3 L26.5 44 L13.5 44 Z"/>`,
+      mug: `<path ${SVG_LIQUID} d="M9 19 h20 v19 a4 4 0 0 1 -4 4 h-12 a4 4 0 0 1 -4 -4 z"/><path d="M8 12 h22 v26 a5 5 0 0 1 -5 5 h-12 a5 5 0 0 1 -5 -5 z"/><path d="M30 17 h3 a5 5 0 0 1 5 5 v4 a5 5 0 0 1 -5 5 h-3"/>`,
+      tasse: `<path ${SVG_LIQUID} d="M10 26 h18 v8 a5 5 0 0 1 -5 5 h-8 a5 5 0 0 1 -5 -5 z"/><path d="M9 22 h20 v12 a6 6 0 0 1 -6 6 h-8 a6 6 0 0 1 -6 -6 z"/><path d="M29 25 h2 a4 4 0 0 1 0 8 h-2"/><path d="M5 44 h28"/><path stroke-width="1.5" d="M16 9 q-3 4 0 8 M22 9 q-3 4 0 8"/>`,
+      canette: `<rect ${SVG_LIQUID} x="12" y="8" width="16" height="35" rx="2"/><rect x="11" y="7" width="18" height="37" rx="3"/><path d="M11 13 h18 M11 38 h18"/>`,
+      bouteille: `<path ${SVG_LIQUID} d="M12 22 h16 v19 a2 2 0 0 1 -2 2 h-12 a2 2 0 0 1 -2 -2 z"/><path d="M17 3 h6 v7 c0 3 6 5 6 11 v20 a3 3 0 0 1 -3 3 h-12 a3 3 0 0 1 -3 -3 v-20 c0 -6 6 -8 6 -11 z"/>`,
+      gourde: `<path ${SVG_LIQUID} d="M11 24 h18 v13 a6 6 0 0 1 -6 6 h-6 a6 6 0 0 1 -6 -6 z"/><rect x="10" y="12" width="20" height="33" rx="7"/><rect x="15" y="4" width="10" height="8" rx="2"/>`,
+      bol: `<path ${SVG_LIQUID} d="M7 26 h26 a13 11 0 0 1 -26 0 z"/><path d="M5 23 h30 a15 14 0 0 1 -30 0 z"/><path stroke-width="1.5" d="M15 10 q-3 4 0 8 M21 10 q-3 4 0 8 M27 10 q-3 4 0 8"/>`,
+      plus: `<circle cx="20" cy="24" r="15" stroke-dasharray="4 3"/><path d="M20 17 v14 M13 24 h14"/>`
+    };
+
+    function glassSvg(shape) {
+      return `<svg viewBox="0 0 40 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${GLASS_SVG[shape] || GLASS_SVG.verre}</svg>`;
+    }
+
+    function fmtMl(ml) {
+      return ml >= 1000 ? String(ml / 1000).replace('.', ',') + ' L' : ml + ' ml';
+    }
+
+    function drinkLabel(name, ml) {
+      return `${name} · ${fmtMl(ml)}`;
+    }
 
     function lsGet(key, fallback) {
       try {
@@ -394,6 +505,11 @@
     let draftUrine = 0;
     let draftStool = 0;
 
+    let drinkCategory = 'eau_claire';
+    try { drinkCategory = localStorage.getItem('hydra_drink_cat') || 'eau_claire'; } catch (e) {}
+    if (!DRINK_CATEGORIES[drinkCategory]) drinkCategory = 'eau_claire';
+    let drinkListExpanded = false;
+
     function refreshView() {
       logs = records.filter(r => !r.deleted).sort((a, b) => Number(b.id) - Number(a.id));
     }
@@ -437,6 +553,7 @@
 
     function renderAll() {
       renderToday();
+      renderDrinkPanel();
       renderHistory();
       renderChart();
       renderWeightToday();
@@ -544,7 +661,7 @@
     // ================== BOISSONS ==================
     function addLog(type, volume, label) {
       const now = new Date();
-      upsertLocal({
+      const entry = {
         id: newId(),
         type: type,
         volume: volume,
@@ -552,8 +669,184 @@
         isoDate: getLocalIsoDate(now),
         dateStr: now.toLocaleDateString('fr-FR'),
         timeStr: nowTimeStr()
-      });
+      };
+      upsertLocal(entry);
       commitChanges();
+      return entry;
+    }
+
+    function setDrinkCategory(cat) {
+      if (!DRINK_CATEGORIES[cat]) return;
+      drinkCategory = cat;
+      try { localStorage.setItem('hydra_drink_cat', cat); } catch (e) {}
+      document.getElementById('drink-custom').style.display = 'none';
+      renderDrinkPanel();
+    }
+
+    function renderDrinkPanel() {
+      const cat = DRINK_CATEGORIES[drinkCategory];
+      const card = document.getElementById('drink-card');
+      card.style.setProperty('--cat-color', cat.color);
+      card.style.setProperty('--tile-bg', cat.bg);
+      card.style.setProperty('--tile-border', cat.border);
+      document.querySelectorAll('.drink-cat').forEach(b => b.classList.toggle('active', b.dataset.cat === drinkCategory));
+
+      // Nombre de fois où chaque contenant a été pris aujourd'hui
+      const today = getLocalIsoDate();
+      const counts = {};
+      logs.forEach(l => {
+        if (l.isoDate === today && l.type === drinkCategory) counts[l.label] = (counts[l.label] || 0) + 1;
+      });
+
+      const grid = document.getElementById('drink-grid');
+      grid.innerHTML = '';
+      cat.items.forEach(item => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'drink-tile';
+        btn.innerHTML = glassSvg(item.shape) + '<span class="drink-tile-name"></span><span class="drink-tile-ml"></span>';
+        btn.querySelector('.drink-tile-name').textContent = item.name;
+        btn.querySelector('.drink-tile-ml').textContent = fmtMl(item.ml);
+        btn.setAttribute('aria-label', `Ajouter ${item.name} ${fmtMl(item.ml)}`);
+        const n = counts[drinkLabel(item.name, item.ml)];
+        if (n) {
+          const badge = document.createElement('span');
+          badge.className = 'drink-tile-badge';
+          badge.textContent = '×' + n;
+          btn.appendChild(badge);
+        }
+        btn.onclick = () => {
+          addDrink(drinkCategory, item.name, item.ml);
+          const tile = grid.children[cat.items.indexOf(item)];
+          if (tile) { tile.classList.remove('flash'); void tile.offsetWidth; tile.classList.add('flash'); }
+        };
+        grid.appendChild(btn);
+      });
+
+      const custom = document.createElement('button');
+      custom.type = 'button';
+      custom.className = 'drink-tile custom';
+      custom.innerHTML = glassSvg('plus') + '<span class="drink-tile-name">Autre quantité</span><span class="drink-tile-ml">… ml</span>';
+      custom.onclick = toggleCustomDrink;
+      grid.appendChild(custom);
+
+      document.getElementById('drink-custom-name').style.display = drinkCategory === 'autre_boisson' ? 'block' : 'none';
+      document.getElementById('drink-custom-title').textContent = `Autre quantité · ${cat.icon} ${cat.name}`;
+      renderDrinkToday();
+    }
+
+    function toggleCustomDrink() {
+      const box = document.getElementById('drink-custom');
+      const open = box.style.display !== 'block';
+      box.style.display = open ? 'block' : 'none';
+      document.getElementById('drink-custom-msg').textContent = '';
+      if (open) document.getElementById(drinkCategory === 'autre_boisson' ? 'drink-custom-name' : 'drink-custom-ml').focus();
+    }
+
+    function addDrink(type, name, ml) {
+      const entry = addLog(type, ml, drinkLabel(name, ml));
+      if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
+      showToast(`${DRINK_CATEGORIES[type].icon} +${fmtMl(ml)} · ${name}`, () => {
+        deleteWhere(r => String(r.id) === String(entry.id));
+        commitChanges();
+        showToast('Saisie annulée');
+      });
+    }
+
+    function addCustomDrink() {
+      const msg = document.getElementById('drink-custom-msg');
+      const mlInput = document.getElementById('drink-custom-ml');
+      const nameInput = document.getElementById('drink-custom-name');
+      const ml = parseInt(mlInput.value.replace(/\s/g, ''), 10);
+      if (isNaN(ml) || ml < 10 || ml > 3000) {
+        msg.className = 'weight-feedback err';
+        msg.textContent = 'Indique une quantité entre 10 et 3000 ml.';
+        return;
+      }
+      const name = drinkCategory === 'autre_boisson'
+        ? (nameInput.value.trim().slice(0, 40) || 'Autre boisson')
+        : 'Quantité libre';
+      mlInput.value = '';
+      nameInput.value = '';
+      document.getElementById('drink-custom').style.display = 'none';
+      addDrink(drinkCategory, name, ml);
+    }
+
+    function renderDrinkToday() {
+      const today = getLocalIsoDate();
+      const items = logs.filter(l => l.isoDate === today && FLUID_TYPES.includes(l.type));
+      const list = document.getElementById('drink-today-list');
+      list.innerHTML = '';
+      if (!items.length) {
+        list.innerHTML = '<div class="drink-empty">Aucune boisson saisie aujourd\'hui.</div>';
+        return;
+      }
+      const shown = drinkListExpanded ? items : items.slice(0, 5);
+      shown.forEach(it => {
+        const cat = DRINK_CATEGORIES[it.type];
+        const vol = Number(it.volume) || 0;
+        const row = document.createElement('div');
+        row.className = 'drink-today-item';
+        row.style.borderLeftColor = cat.color;
+        row.innerHTML = '<span class="d-time"></span><span class="d-label"></span><span class="d-vol"></span>';
+        row.querySelector('.d-time').textContent = it.timeStr || '';
+        row.querySelector('.d-label').textContent = `${cat.icon} ${it.label || cat.name}`;
+        const volEl = row.querySelector('.d-vol');
+        volEl.textContent = `${vol > 0 ? '+' : ''}${vol} ml`;
+        volEl.style.color = cat.color;
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'drink-del';
+        del.textContent = '✕';
+        del.title = 'Supprimer cette saisie';
+        del.setAttribute('aria-label', `Supprimer ${it.label || ''}`);
+        del.onclick = () => removeDrinkEntry(it.id);
+        row.appendChild(del);
+        list.appendChild(row);
+      });
+      if (items.length > 5) {
+        const more = document.createElement('button');
+        more.type = 'button';
+        more.className = 'drink-more';
+        more.textContent = drinkListExpanded ? 'Réduire' : `Voir les ${items.length} boissons`;
+        more.onclick = () => { drinkListExpanded = !drinkListExpanded; renderDrinkToday(); };
+        list.appendChild(more);
+      }
+    }
+
+    function removeDrinkEntry(id) {
+      let removed = null;
+      deleteWhere(r => {
+        if (String(r.id) === String(id)) { removed = r; return true; }
+        return false;
+      });
+      if (!removed) return;
+      commitChanges();
+      showToast(`Supprimé : ${removed.label || ''}`, () => {
+        const r = records.find(x => String(x.id) === String(id));
+        if (r && r.deleted) {
+          const copy = Object.assign({}, r);
+          delete copy.deleted;
+          upsertLocal(copy);
+          commitChanges();
+        }
+      });
+    }
+
+    // ----- Message temporaire avec « Annuler » -----
+    let toastTimer = null;
+    function hideToast() {
+      document.getElementById('toast').classList.remove('show');
+    }
+    function showToast(text, undoFn) {
+      const toast = document.getElementById('toast');
+      const undo = document.getElementById('toast-undo');
+      document.getElementById('toast-text').textContent = text;
+      undo.style.display = undoFn ? '' : 'none';
+      undo.onclick = () => { hideToast(); if (undoFn) undoFn(); };
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(hideToast, undoFn ? 5000 : 2500);
     }
 
     // ================== NAVIGATION ==================
@@ -605,22 +898,25 @@
     // ================== AFFICHAGE : AUJOURD'HUI ==================
     function renderToday() {
       const todayIso = getLocalIsoDate();
-      let totalPlain = 0, totalSro = 0;
+      let totalPlain = 0, totalSro = 0, totalOther = 0;
 
       logs.forEach(item => {
         if (item.isoDate === todayIso) {
           if (item.type === 'eau_claire') totalPlain += Number(item.volume) || 0;
           if (item.type === 'eau_sro') totalSro += Number(item.volume) || 0;
+          if (item.type === 'autre_boisson') totalOther += Number(item.volume) || 0;
         }
       });
 
       totalPlain = Math.max(0, totalPlain);
       totalSro = Math.max(0, totalSro);
+      totalOther = Math.max(0, totalOther);
       const counts = getDayCounts(todayIso);
-      const totalFluid = totalPlain + totalSro;
+      const totalFluid = totalPlain + totalSro + totalOther;
 
       document.getElementById('stat-plain').innerText = totalPlain + ' ml';
       document.getElementById('stat-sro').innerText = totalSro + ' ml';
+      document.getElementById('stat-other').innerText = totalOther + ' ml';
       document.getElementById('total-fluid').innerText = totalFluid + ' ml';
       updateDraftDisplay();
 
@@ -647,7 +943,7 @@
       const historyContainer = document.getElementById('history-container');
       historyContainer.innerHTML = '';
 
-      let totalPlain = 0, totalSro = 0, countLogs = 0;
+      let totalPlain = 0, totalSro = 0, totalOther = 0, countLogs = 0;
       const weightDay = getWeightsByDate()[selectedDate] || {};
       document.getElementById('hist-weight-am').innerText = fmtKg(weightDay.matin);
       document.getElementById('hist-weight-pm').innerText = fmtKg(weightDay.soir);
@@ -660,10 +956,12 @@
           countLogs++;
           if (item.type === 'eau_claire') totalPlain += Number(item.volume) || 0;
           if (item.type === 'eau_sro') totalSro += Number(item.volume) || 0;
+          if (item.type === 'autre_boisson') totalOther += Number(item.volume) || 0;
 
           let cssClass = '', badge = '';
           if (item.type === 'eau_claire') { cssClass = 'item-plain'; badge = '💧 Eau Claire'; }
           else if (item.type === 'eau_sro') { cssClass = 'item-sro'; badge = '🧪 Eau SRO'; }
+          else if (item.type === 'autre_boisson') { cssClass = 'item-other'; badge = '☕ Autre boisson'; }
           else if (item.type === 'urine' || item.type === 'urine_sub' || item.type === 'urine_summary') { cssClass = 'item-urine'; badge = '🟡 Urine'; }
           else if (item.type === 'selle' || item.type === 'selle_sub' || item.type === 'selle_summary') { cssClass = 'item-stool'; badge = '🟣 Selle'; }
           else if (item.type === 'poids_matin') { cssClass = 'item-weight-am'; badge = '🌅 Poids matin'; }
@@ -693,9 +991,10 @@
 
       totalPlain = Math.max(0, totalPlain);
       totalSro = Math.max(0, totalSro);
+      totalOther = Math.max(0, totalOther);
       const counts = getDayCounts(selectedDate);
 
-      const totalFluid = totalPlain + totalSro;
+      const totalFluid = totalPlain + totalSro + totalOther;
       const totalLoss = 600 + (counts.urine * 250) + (counts.selle * 200);
       const diff = totalFluid - totalLoss;
 
@@ -717,7 +1016,7 @@
       logs.forEach(item => {
         if (!item.isoDate) return;
         if (!(item.isoDate in buMap)) buMap[item.isoDate] = 0;
-        if (item.type === 'eau_claire' || item.type === 'eau_sro') {
+        if (FLUID_TYPES.includes(item.type)) {
           buMap[item.isoDate] += Number(item.volume) || 0;
         }
       });
@@ -1250,10 +1549,15 @@
       if (document.visibilityState === 'visible') syncNow(true);
     }, AUTO_SYNC_INTERVAL_MS);
 
+    document.getElementById('drink-custom-ml').addEventListener('keydown', e => {
+      if (e.key === 'Enter') addCustomDrink();
+    });
+
     // ================== DÉMARRAGE ==================
     readSetupLink();
     initDraftsForToday();
     renderToday();
+    renderDrinkPanel();
     renderWeightToday();
     updateSyncStatusIdle();
     syncNow(true);
