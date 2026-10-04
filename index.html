@@ -22,6 +22,8 @@
       --water-sro: #0d9488;
       --urine: #ca8a04;
       --stool: #9333ea;
+      --weight-am: #ea580c;
+      --weight-pm: #4f46e5;
       --bg: #f8fafc;
       --card-bg: #ffffff;
     }
@@ -69,26 +71,76 @@
     .item-urine { border-left-color: var(--urine); }
     .item-stool { border-left-color: var(--stool); }
     
+    .item-weight-am { border-left-color: var(--weight-am); }
+    .item-weight-pm { border-left-color: var(--weight-pm); }
+
+    .btn-weight-am { background: #ffedd5; color: var(--weight-am); }
+    .btn-weight-pm { background: #e0e7ff; color: var(--weight-pm); }
+
+    .weight-input { font-size: 1.2rem; text-align: center; font-weight: 600; }
+    .weight-info { font-size: 0.8rem; color: #64748b; text-align: center; margin-bottom: 8px; line-height: 1.5; }
+    .weight-alert { color: #b91c1c; font-weight: 700; }
+    .weight-feedback { font-size: 0.8rem; text-align: center; margin-top: 6px; min-height: 1em; }
+    .weight-feedback.ok { color: #166534; }
+    .weight-feedback.err { color: #b91c1c; }
+
+    .period-selector { display: flex; gap: 6px; margin-bottom: 10px; }
+    .period-btn { flex: 1; padding: 8px 4px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f1f5f9; color: #64748b; font-weight: 600; font-size: 0.8rem; cursor: pointer; }
+    .period-btn.active { background: var(--weight-am); border-color: var(--weight-am); color: white; }
+    .weight-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: center; margin-top: 10px; }
+    .weight-stats .stat-value { font-size: 1.05rem; }
+    .chart-empty { text-align: center; color: #94a3b8; padding: 20px 10px; font-size: 0.85rem; }
+
     .item-time { color: #94a3b8; font-size: 0.75rem; }
+
+    .sync-card { padding: 12px; background: #eff6ff; border: 1px solid #bfdbfe; }
+    .sync-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .sync-gear { border: none; background: transparent; font-size: 1.15rem; cursor: pointer; padding: 2px 6px; border-radius: 8px; }
+    .sync-gear:hover { background: #dbeafe; }
+    .sync-btn { width: 100%; padding: 10px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: 600; font-size: 0.9rem; cursor: pointer; }
+    .sync-btn:disabled { opacity: 0.6; cursor: default; }
+    .sync-status { font-size: 0.75rem; color: #64748b; text-align: center; margin-top: 6px; }
+    .sync-status.ok { color: #166534; }
+    .sync-status.warn { color: #a16207; }
+    .sync-status.err { color: #b91c1c; font-weight: 600; }
+    .sync-settings { margin-top: 10px; padding-top: 10px; border-top: 1px solid #bfdbfe; }
+    .sync-check { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #64748b; margin-top: 6px; }
+    .sync-note { font-size: 0.72rem; color: #64748b; margin-top: 8px; line-height: 1.45; }
     .item-title { font-weight: 600; }
   </style>
 </head>
 <body>
 
-  <!-- Bloc de synchronisation avec 2 boutons distincts -->
-  <div class="card" style="padding: 12px; background: #eff6ff; border: 1px solid #bfdbfe; margin-bottom: 15px;">
-    <div class="card-title" style="text-align: center; margin-bottom: 8px;">Synchronisation Cloud</div>
-    <div style="display: flex; gap: 8px;">
-      <button id="send-btn" onclick="sendData()" style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: 600; cursor: pointer; font-size: 0.85rem;">
-        📤 Envoyer
-      </button>
-      <button id="receive-btn" onclick="receiveData()" style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: #0d9488; color: white; font-weight: 600; cursor: pointer; font-size: 0.85rem;">
-        📥 Recevoir
-      </button>
+  <!-- Synchronisation sécurisée entre appareils -->
+  <div class="card sync-card">
+    <div class="sync-header">
+      <div class="card-title" style="margin-bottom: 0;">☁️ Synchronisation</div>
+      <button class="sync-gear" onclick="toggleSyncSettings()" title="Réglages de synchronisation" aria-label="Réglages de synchronisation">⚙️</button>
     </div>
-    <div id="sync-status" style="font-size: 0.75rem; color: #64748b; text-align: center; margin-top: 6px;">Statut : Prêt</div>
-  </div>
+    <button id="sync-btn" class="sync-btn" onclick="syncNow(false)">🔄 Synchroniser maintenant</button>
+    <div id="sync-status" class="sync-status">Statut : Prêt</div>
 
+    <div id="sync-settings" class="sync-settings" style="display: none;">
+      <div class="action-label">🔑 Code secret</div>
+      <input type="password" id="sync-token" class="date-picker-input" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX">
+      <label class="sync-check"><input type="checkbox" onchange="toggleTokenVisibility(this.checked)"> Afficher le code</label>
+
+      <div class="action-label" style="margin-top: 10px;">Adresse du script Google</div>
+      <input type="url" id="sync-url" class="date-picker-input" autocomplete="off" spellcheck="false">
+
+      <div class="action-row" style="margin-top: 10px;">
+        <button class="btn-add" style="background: var(--primary); color: white;" onclick="saveSyncSettings()">💾 Enregistrer</button>
+        <button class="btn-sub" onclick="forgetSyncToken()">Oublier</button>
+      </div>
+      <button class="btn-sub" style="width: 100%;" onclick="copySetupLink()">🔗 Copier un lien pour configurer un autre appareil</button>
+      <div id="sync-settings-msg" class="weight-feedback"></div>
+      <div class="sync-note">
+        Le code reste uniquement sur cet appareil. Sans lui, personne ne peut lire ni modifier tes données,
+        même avec l'adresse du script. La synchro se fait automatiquement à l'ouverture, après chaque saisie,
+        toutes les minutes et au retour sur l'appli ; hors ligne, les saisies attendent et partent dès que le réseau revient.
+      </div>
+    </div>
+  </div>
   <!-- Navigation -->
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('today')">Aujourd'hui</button>
@@ -172,6 +224,31 @@
       <div id="balance-status" class="status-badge status-ok">Calcul...</div>
     </div>
 
+    <div class="card">
+      <div class="card-title">4. Poids (kg)</div>
+      <div class="grid-stats" style="margin-bottom: 10px;">
+        <div class="stat-box">
+          <div class="stat-value" style="color: var(--weight-am)" id="stat-weight-am">--</div>
+          <div class="stat-label">🌅 Matin</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" style="color: var(--weight-pm)" id="stat-weight-pm">--</div>
+          <div class="stat-label">🌙 Soir</div>
+        </div>
+      </div>
+      <div id="weight-diff-info" class="weight-info"></div>
+
+      <div class="action-label">Date de la pesée</div>
+      <input type="date" id="weight-date" class="date-picker-input" onchange="renderWeightToday()">
+      <div class="action-label" style="margin-top: 10px;">Poids</div>
+      <input type="text" id="weight-input" class="date-picker-input weight-input" inputmode="decimal" autocomplete="off" placeholder="Ex : 72,4">
+      <div class="action-row" style="margin-top: 10px;">
+        <button class="btn-add btn-weight-am" onclick="saveWeight('matin')">🌅 Valider Matin</button>
+        <button class="btn-add btn-weight-pm" onclick="saveWeight('soir')">🌙 Valider Soir</button>
+      </div>
+      <div id="weight-feedback" class="weight-feedback"></div>
+    </div>
+
   </div>
 
   <!-- ONGLET 2 : HISTORIQUE ET COURBE -->
@@ -195,11 +272,54 @@
         </div>
       </div>
       <div id="hist-balance-status" class="status-badge status-ok">--</div>
+      <div class="grid-stats" style="margin-top: 8px;">
+        <div class="stat-box">
+          <div class="stat-value" style="color: var(--weight-am)" id="hist-weight-am">--</div>
+          <div class="stat-label">🌅 Poids matin</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" style="color: var(--weight-pm)" id="hist-weight-pm">--</div>
+          <div class="stat-label">🌙 Poids soir</div>
+        </div>
+      </div>
     </div>
 
     <div class="card">
       <div class="card-title">Journal de la journée</div>
       <div id="history-container" class="history-list"></div>
+    </div>
+
+    <!-- COURBE DE POIDS -->
+    <div class="card">
+      <div class="card-title">⚖️ Courbe de poids</div>
+      <div class="period-selector">
+        <button class="period-btn" data-period="7" onclick="setWeightPeriod(7)">7 j</button>
+        <button class="period-btn active" data-period="30" onclick="setWeightPeriod(30)">30 j</button>
+        <button class="period-btn" data-period="90" onclick="setWeightPeriod(90)">90 j</button>
+        <button class="period-btn" data-period="all" onclick="setWeightPeriod('all')">Tout</button>
+      </div>
+      <div id="weight-chart-empty" class="chart-empty" style="display: none;">Aucune pesée sur cette période.</div>
+      <div style="position: relative; height: 240px;" id="weight-chart-wrap">
+        <canvas id="weightChart"></canvas>
+      </div>
+      <div class="weight-stats">
+        <div class="stat-box">
+          <div class="stat-value" id="wstat-last">--</div>
+          <div class="stat-label" id="wstat-last-label">Dernière pesée</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="wstat-var">--</div>
+          <div class="stat-label">Variation (matins)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="wstat-min">--</div>
+          <div class="stat-label">Minimum</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="wstat-max">--</div>
+          <div class="stat-label">Maximum</div>
+        </div>
+      </div>
     </div>
 
     <!-- COURBE HYDRIQUE -->
@@ -211,7 +331,7 @@
   </div>
 
   <script>
-    // Enregistrement automatique du Service Worker
+    // ================== SERVICE WORKER ==================
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./ws.js')
@@ -220,94 +340,112 @@
       });
     }
 
-    // URL Google Sheets intégrée en dur
-    const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzl_Fq5YbC2vGCPkt-Ep5PNO-TnxAdtgVZcd6JlIeonorWzIXE9DoJYzgyCdGAWr0hL9A/exec";
+    // ================== STOCKAGE LOCAL ==================
+    // Adresse du script Google (modifiable dans ⚙️). Elle ne donne accès à rien sans le code secret.
+    const DEFAULT_SYNC_URL = "https://script.google.com/macros/s/AKfycbzl_Fq5YbC2vGCPkt-Ep5PNO-TnxAdtgVZcd6JlIeonorWzIXE9DoJYzgyCdGAWr0hL9A/exec";
+    const SYNC_URL_PREFIX = 'https://script.google.com/';
+    const LS_RECORDS = 'hydra_logs';     // toutes les saisies (y compris supprimées, pour la synchro)
+    const LS_PENDING = 'hydra_pending';  // ids modifiés localement, pas encore confirmés par le serveur
+    const LS_SYNC = 'hydra_sync';        // réglages de synchro de CET appareil
+    const COUNT_TYPES = ['urine', 'urine_sub', 'urine_summary', 'selle', 'selle_sub', 'selle_summary'];
+    const AUTO_SYNC_INTERVAL_MS = 60000;
 
-    let logs = JSON.parse(localStorage.getItem('hydra_logs')) || [];
+    function lsGet(key, fallback) {
+      try {
+        const v = localStorage.getItem(key);
+        return v ? JSON.parse(v) : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    function lsSet(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch (e) {
+        console.warn('Stockage local impossible :', e);
+      }
+    }
+
+    let syncConf = Object.assign({ url: DEFAULT_SYNC_URL, token: '', lastSrv: 0, lastOk: 0, migrated: false }, lsGet(LS_SYNC, {}));
+    let records = lsGet(LS_RECORDS, []);
+    if (!Array.isArray(records)) records = [];
+    let pending = new Set((lsGet(LS_PENDING, []) || []).map(String));
+
+    // Migration depuis l'ancienne version : horodatage des saisies, et tout envoyer à la 1re synchro
+    records.forEach(r => { if (!r.updatedAt) r.updatedAt = Number(r.id) || Date.now(); });
+    if (!syncConf.migrated) {
+      records.forEach(r => pending.add(String(r.id)));
+      syncConf.migrated = true;
+      lsSet(LS_SYNC, syncConf);
+      lsSet(LS_PENDING, [...pending]);
+      lsSet(LS_RECORDS, records);
+    }
+
+    let logs = [];   // saisies visibles (non supprimées), de la plus récente à la plus ancienne
     let chartInstance = null;
+    let weightChartInstance = null;
+    let weightPeriod = 30;
+
+    // Seuil d'alerte : baisse du poids du matin par rapport à la veille (en kg)
+    const WEIGHT_ALERT_KG = 1;
+    const WEIGHT_TYPES = { matin: 'poids_matin', soir: 'poids_soir' };
 
     let draftUrine = 0;
     let draftStool = 0;
-// FONCTION 1 : RECEVOIR LES DONNÉES DU CLOUD
-    async function receiveData() {
-      const btn = document.getElementById('receive-btn');
-      const statusEl = document.getElementById('sync-status');
-      
-      btn.textContent = '📥 Réception...';
-      btn.disabled = true;
-      statusEl.textContent = 'Récupération depuis le cloud...';
 
-      if (!WEBHOOK_URL) {
-        statusEl.textContent = 'Erreur : URL Webhook manquante';
-        btn.textContent = '📥 Recevoir';
-        btn.disabled = false;
-        return;
-      }
-
-      try {
-        const response = await fetch(WEBHOOK_URL + '?action=get');
-        const cloudLogs = await response.json();
-        
-        if (Array.isArray(cloudLogs) && cloudLogs.length > 0) {
-          const logMap = new Map();
-          logs.forEach(item => logMap.set(item.id, item));
-          cloudLogs.forEach(item => logMap.set(item.id, item));
-          
-          logs = Array.from(logMap.values()).sort((a, b) => b.id - a.id);
-          localStorage.setItem('hydra_logs', JSON.stringify(logs));
-          
-          initDraftsForToday();
-          renderToday();
-          renderHistory();
-          renderChart();
-        }
-
-        const nowStr = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-        statusEl.textContent = `Données reçues avec succès à ${nowStr}`;
-      } catch (err) {
-        console.error("Erreur réception cloud :", err);
-        statusEl.textContent = 'Erreur réseau lors de la réception';
-      }
-
-      btn.textContent = '📥 Recevoir';
-      btn.disabled = false;
+    function refreshView() {
+      logs = records.filter(r => !r.deleted).sort((a, b) => Number(b.id) - Number(a.id));
     }
 
-    // FONCTION 2 : ENVOYER LES DONNÉES VERS LE CLOUD
-    async function sendData() {
-      const btn = document.getElementById('send-btn');
-      const statusEl = document.getElementById('sync-status');
-      
-      btn.textContent = '📤 Envoi...';
-      btn.disabled = true;
-      statusEl.textContent = 'Envoi des données locales...';
-
-      if (!WEBHOOK_URL) {
-        statusEl.textContent = 'Erreur : URL Webhook manquante';
-        btn.textContent = '📤 Envoyer';
-        btn.disabled = false;
-        return;
-      }
-
-      try {
-        for (let entry of logs) {
-          await fetch(`${WEBHOOK_URL}?action=save&data=${encodeURIComponent(JSON.stringify(entry))}`);
-        }
-
-        const nowStr = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-        statusEl.textContent = `Données envoyées avec succès à ${nowStr}`;
-      } catch (err) {
-        console.error("Erreur envoi cloud :", err);
-        statusEl.textContent = 'Erreur lors de l\'envoi';
-      }
-
-      btn.textContent = '📤 Envoyer';
-      btn.disabled = false;
+    function persist() {
+      lsSet(LS_RECORDS, records);
+      lsSet(LS_PENDING, [...pending]);
     }
-   
-    // Lancement automatique discret de la réception au démarrage
-    receiveData();
 
+    // Identifiant unique, chronologique, sans collision entre appareils
+    function newId() {
+      return Date.now() * 1000 + Math.floor(Math.random() * 1000);
+    }
+
+    function upsertLocal(entry) {
+      entry.updatedAt = Date.now();
+      const i = records.findIndex(r => String(r.id) === String(entry.id));
+      if (i >= 0) records[i] = entry; else records.push(entry);
+      pending.add(String(entry.id));
+    }
+
+    // Suppression « propre » : l'entrée est marquée supprimée pour que tous les appareils l'apprennent
+    function deleteWhere(predicate) {
+      const now = Date.now();
+      records.forEach(r => {
+        if (!r.deleted && predicate(r)) {
+          r.deleted = true;
+          r.updatedAt = now;
+          pending.add(String(r.id));
+        }
+      });
+    }
+
+    function commitChanges() {
+      refreshView();
+      persist();
+      renderAll();
+      updateSyncStatusIdle();
+      scheduleSync();
+    }
+
+    function renderAll() {
+      renderToday();
+      renderHistory();
+      renderChart();
+      renderWeightToday();
+      renderWeightChart();
+    }
+
+    refreshView();
+
+    // ================== OUTILS DATES ==================
     function getLocalIsoDate(date = new Date()) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -315,24 +453,41 @@
       return `${year}-${month}-${day}`;
     }
 
+    function shiftIsoDate(iso, days) {
+      const [y, m, d] = iso.split('-').map(Number);
+      return getLocalIsoDate(new Date(y, m - 1, d + days));
+    }
+
+    function nowTimeStr() {
+      return new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    }
+
     const todayIso = getLocalIsoDate();
     document.getElementById('history-date-picker').value = todayIso;
+    document.getElementById('weight-date').value = todayIso;
+    document.getElementById('weight-date').max = todayIso;
 
-    function initDraftsForToday() {
-      const todayIso = getLocalIsoDate();
+    // ================== URINES / SELLES ==================
+    // Compte du jour : on parcourt du plus ancien au plus récent pour que le dernier résumé validé l'emporte
+    function getDayCounts(iso) {
       let u = 0, s = 0;
-      logs.forEach(item => {
-        if (item.isoDate === todayIso) {
+      logs.filter(item => item.isoDate === iso)
+        .sort((a, b) => Number(a.id) - Number(b.id))
+        .forEach(item => {
           if (item.type === 'urine') u += 1;
           if (item.type === 'urine_sub') u -= 1;
-          if (item.type === 'urine_summary') u = item.count;
+          if (item.type === 'urine_summary') u = Number(item.count) || 0;
           if (item.type === 'selle') s += 1;
           if (item.type === 'selle_sub') s -= 1;
-          if (item.type === 'selle_summary') s = item.count;
-        }
-      });
-      draftUrine = Math.max(0, u);
-      draftStool = Math.max(0, s);
+          if (item.type === 'selle_summary') s = Number(item.count) || 0;
+        });
+      return { urine: Math.max(0, u), selle: Math.max(0, s) };
+    }
+
+    function initDraftsForToday() {
+      const c = getDayCounts(getLocalIsoDate());
+      draftUrine = c.urine;
+      draftStool = c.selle;
       updateDraftDisplay();
     }
 
@@ -352,14 +507,14 @@
 
     function applyPertes() {
       const todayIso = getLocalIsoDate();
-      logs = logs.filter(item => !(item.isoDate === todayIso && (item.type === 'urine' || item.type === 'urine_sub' || item.type === 'urine_summary' || item.type === 'selle' || item.type === 'selle_sub' || item.type === 'selle_summary')));
+      deleteWhere(item => item.isoDate === todayIso && COUNT_TYPES.includes(item.type));
 
       const now = new Date();
-      const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      const timeStr = nowTimeStr();
 
       if (draftUrine > 0) {
-        const entryUrine = {
-          id: Date.now(),
+        upsertLocal({
+          id: newId(),
           type: 'urine_summary',
           volume: 0,
           label: `${draftUrine} Urine(s) validée(s)`,
@@ -367,14 +522,12 @@
           dateStr: now.toLocaleDateString('fr-FR'),
           timeStr: timeStr,
           count: draftUrine
-        };
-        logs.unshift(entryUrine);
-        sendToGoogleSheets(entryUrine);
+        });
       }
 
       if (draftStool > 0) {
-        const entryStool = {
-          id: Date.now() + 1,
+        upsertLocal({
+          id: newId(),
           type: 'selle_summary',
           volume: 0,
           label: `${draftStool} Selle(s) validée(s)`,
@@ -382,55 +535,33 @@
           dateStr: now.toLocaleDateString('fr-FR'),
           timeStr: timeStr,
           count: draftStool
-        };
-        logs.unshift(entryStool);
-        sendToGoogleSheets(entryStool);
+        });
       }
 
-      saveAndRender();
+      commitChanges();
     }
 
-    function saveAndRender() {
-      localStorage.setItem('hydra_logs', JSON.stringify(logs));
-      renderToday();
-      renderHistory();
-      renderChart();
-    }
-
-    function sendToGoogleSheets(entry) {
-      if (!WEBHOOK_URL) return;
-
-      fetch(WEBHOOK_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(entry)
-      }).catch(err => console.log("Erreur envoi Google Sheets:", err));
-    }
-
+    // ================== BOISSONS ==================
     function addLog(type, volume, label) {
       const now = new Date();
-      const isoDate = getLocalIsoDate(now);
-      const entry = {
-        id: Date.now(),
+      upsertLocal({
+        id: newId(),
         type: type,
         volume: volume,
         label: label,
-        isoDate: isoDate,
+        isoDate: getLocalIsoDate(now),
         dateStr: now.toLocaleDateString('fr-FR'),
-        timeStr: now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-      };
-      
-      logs.unshift(entry);
-      saveAndRender();
-      sendToGoogleSheets(entry);
+        timeStr: nowTimeStr()
+      });
+      commitChanges();
     }
 
+    // ================== NAVIGATION ==================
     function switchTab(tabName) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-      
-      if(tabName === 'today') {
+
+      if (tabName === 'today') {
         document.querySelectorAll('.tab-btn')[0].classList.add('active');
         document.getElementById('tab-today').classList.add('active');
         initDraftsForToday();
@@ -439,6 +570,7 @@
         document.getElementById('tab-history').classList.add('active');
         renderHistory();
         renderChart();
+        renderWeightChart();
       }
     }
 
@@ -456,6 +588,9 @@
     }, false);
 
     function handleSwipe() {
+      // Pas de changement d'onglet quand on balaie dans un champ ou sur une courbe
+      const tag = (document.activeElement && document.activeElement.tagName) || '';
+      if (tag === 'INPUT') return;
       const threshold = 50;
       const isTodayActive = document.getElementById('tab-today').classList.contains('active');
 
@@ -467,38 +602,30 @@
       }
     }
 
+    // ================== AFFICHAGE : AUJOURD'HUI ==================
     function renderToday() {
       const todayIso = getLocalIsoDate();
-      let totalPlain = 0, totalSro = 0, countUrine = 0, countStool = 0;
+      let totalPlain = 0, totalSro = 0;
 
       logs.forEach(item => {
         if (item.isoDate === todayIso) {
-          if (item.type === 'eau_claire') totalPlain += item.volume;
-          if (item.type === 'eau_sro') totalSro += item.volume;
-          if (item.type === 'urine') countUrine += 1;
-          if (item.type === 'urine_sub') countUrine -= 1;
-          if (item.type === 'urine_summary') countUrine = item.count;
-          if (item.type === 'selle') countStool += 1;
-          if (item.type === 'selle_sub') countStool -= 1;
-          if (item.type === 'selle_summary') countStool = item.count;
+          if (item.type === 'eau_claire') totalPlain += Number(item.volume) || 0;
+          if (item.type === 'eau_sro') totalSro += Number(item.volume) || 0;
         }
       });
 
       totalPlain = Math.max(0, totalPlain);
       totalSro = Math.max(0, totalSro);
-      countUrine = Math.max(0, countUrine);
-      countStool = Math.max(0, countStool);
-
+      const counts = getDayCounts(todayIso);
       const totalFluid = totalPlain + totalSro;
 
       document.getElementById('stat-plain').innerText = totalPlain + ' ml';
       document.getElementById('stat-sro').innerText = totalSro + ' ml';
       document.getElementById('total-fluid').innerText = totalFluid + ' ml';
-      document.getElementById('stat-urine').innerText = countUrine;
-      document.getElementById('stat-stool').innerText = countStool;
+      updateDraftDisplay();
 
       const baseLoss = 600;
-      const totalLoss = baseLoss + (countUrine * 250) + (countStool * 200);
+      const totalLoss = baseLoss + (counts.urine * 250) + (counts.selle * 200);
       const diff = totalFluid - totalLoss;
 
       document.getElementById('balance-in').innerText = totalFluid + ' ml';
@@ -514,35 +641,48 @@
       }
     }
 
+    // ================== AFFICHAGE : HISTORIQUE ==================
     function renderHistory() {
       const selectedDate = document.getElementById('history-date-picker').value;
       const historyContainer = document.getElementById('history-container');
       historyContainer.innerHTML = '';
 
-      let totalPlain = 0, totalSro = 0, countUrine = 0, countStool = 0, countLogs = 0;
+      let totalPlain = 0, totalSro = 0, countLogs = 0;
+      const weightDay = getWeightsByDate()[selectedDate] || {};
+      document.getElementById('hist-weight-am').innerText = fmtKg(weightDay.matin);
+      document.getElementById('hist-weight-pm').innerText = fmtKg(weightDay.soir);
 
       logs.forEach(item => {
         if (item.isoDate === selectedDate) {
+          // Pesée remplacée par une plus récente : on ne l'affiche pas
+          if (item.type === 'poids_matin' && Number(item.id) !== weightDay.matinId) return;
+          if (item.type === 'poids_soir' && Number(item.id) !== weightDay.soirId) return;
           countLogs++;
-          if (item.type === 'eau_claire') totalPlain += item.volume;
-          if (item.type === 'eau_sro') totalSro += item.volume;
-          if (item.type === 'urine') countUrine += 1;
-          if (item.type === 'urine_sub') countUrine -= 1;
-          if (item.type === 'urine_summary') countUrine = item.count;
-          if (item.type === 'selle') countStool += 1;
-          if (item.type === 'selle_sub') countStool -= 1;
-          if (item.type === 'selle_summary') countStool = item.count;
+          if (item.type === 'eau_claire') totalPlain += Number(item.volume) || 0;
+          if (item.type === 'eau_sro') totalSro += Number(item.volume) || 0;
 
           let cssClass = '', badge = '';
           if (item.type === 'eau_claire') { cssClass = 'item-plain'; badge = '💧 Eau Claire'; }
           else if (item.type === 'eau_sro') { cssClass = 'item-sro'; badge = '🧪 Eau SRO'; }
           else if (item.type === 'urine' || item.type === 'urine_sub' || item.type === 'urine_summary') { cssClass = 'item-urine'; badge = '🟡 Urine'; }
           else if (item.type === 'selle' || item.type === 'selle_sub' || item.type === 'selle_summary') { cssClass = 'item-stool'; badge = '🟣 Selle'; }
+          else if (item.type === 'poids_matin') { cssClass = 'item-weight-am'; badge = '🌅 Poids matin'; }
+          else if (item.type === 'poids_soir') { cssClass = 'item-weight-pm'; badge = '🌙 Poids soir'; }
 
-          const volDisplay = (item.volume !== undefined && item.volume !== null && item.volume !== 0) ? ` (${item.volume > 0 ? '+' : ''}${item.volume} ml)` : '';
+          const vol = Number(item.volume) || 0;
+          const volDisplay = vol !== 0 ? ` (${vol > 0 ? '+' : ''}${vol} ml)` : '';
           const div = document.createElement('div');
           div.className = `history-item ${cssClass}`;
-          div.innerHTML = `<div><div class="item-title">${badge}${volDisplay}</div><div class="item-time">${item.label} à ${item.timeStr}</div></div>`;
+          const inner = document.createElement('div');
+          const title = document.createElement('div');
+          title.className = 'item-title';
+          title.textContent = badge + volDisplay;
+          const time = document.createElement('div');
+          time.className = 'item-time';
+          time.textContent = `${item.label || ''} à ${item.timeStr || ''}`;
+          inner.appendChild(title);
+          inner.appendChild(time);
+          div.appendChild(inner);
           historyContainer.appendChild(div);
         }
       });
@@ -553,11 +693,10 @@
 
       totalPlain = Math.max(0, totalPlain);
       totalSro = Math.max(0, totalSro);
-      countUrine = Math.max(0, countUrine);
-      countStool = Math.max(0, countStool);
+      const counts = getDayCounts(selectedDate);
 
       const totalFluid = totalPlain + totalSro;
-      const totalLoss = 600 + (countUrine * 250) + (countStool * 200);
+      const totalLoss = 600 + (counts.urine * 250) + (counts.selle * 200);
       const diff = totalFluid - totalLoss;
 
       document.getElementById('hist-stat-bu').innerText = totalFluid + ' ml';
@@ -574,30 +713,21 @@
     }
 
     function renderChart() {
-      const dailyMap = {};
-      
+      const buMap = {};
       logs.forEach(item => {
-        if (!dailyMap[item.isoDate]) {
-          dailyMap[item.isoDate] = { bu: 0, urine: 0, selle: 0 };
-        }
+        if (!item.isoDate) return;
+        if (!(item.isoDate in buMap)) buMap[item.isoDate] = 0;
         if (item.type === 'eau_claire' || item.type === 'eau_sro') {
-          dailyMap[item.isoDate].bu += item.volume;
+          buMap[item.isoDate] += Number(item.volume) || 0;
         }
-        if (item.type === 'urine') dailyMap[item.isoDate].urine += 1;
-        if (item.type === 'urine_sub') dailyMap[item.isoDate].urine -= 1;
-        if (item.type === 'urine_summary') dailyMap[item.isoDate].urine = item.count;
-        if (item.type === 'selle') dailyMap[item.isoDate].selle += 1;
-        if (item.type === 'selle_sub') dailyMap[item.isoDate].selle -= 1;
-        if (item.type === 'selle_summary') dailyMap[item.isoDate].selle = item.count;
       });
 
-      const dates = Object.keys(dailyMap).sort().slice(-7);
+      const dates = Object.keys(buMap).sort().slice(-7);
       const labels = dates.map(d => d.split('-').slice(1).reverse().join('/'));
-      const buData = dates.map(d => Math.max(0, dailyMap[d].bu));
+      const buData = dates.map(d => Math.max(0, buMap[d]));
       const lossesData = dates.map(d => {
-        const u = Math.max(0, dailyMap[d].urine);
-        const s = Math.max(0, dailyMap[d].selle);
-        return 600 + (u * 250) + (s * 200);
+        const c = getDayCounts(d);
+        return 600 + (c.urine * 250) + (c.selle * 200);
       });
 
       const ctx = document.getElementById('hydraChart').getContext('2d');
@@ -620,8 +750,513 @@
       });
     }
 
+    // ================== POIDS ==================
+
+    // Lit la valeur de poids d'une entrée (champ weight, sinon count, sinon libellé)
+    function getWeightValue(item) {
+      for (const c of [item.weight, item.count]) {
+        const n = parseFloat(String(c).replace(',', '.'));
+        if (!isNaN(n) && n > 0) return n;
+      }
+      const m = String(item.label || '').match(/(\d+(?:[.,]\d+)?)\s*kg/i);
+      return m ? parseFloat(m[1].replace(',', '.')) : null;
+    }
+
+    // Regroupe les pesées par date. Si plusieurs pesées existent pour un même créneau,
+    // seule la plus récente (id le plus grand) est retenue.
+    function getWeightsByDate() {
+      const map = {};
+      logs.forEach(item => {
+        const slot = item.type === 'poids_matin' ? 'matin' : (item.type === 'poids_soir' ? 'soir' : null);
+        if (!slot || !item.isoDate) return;
+        const w = getWeightValue(item);
+        if (w === null) return;
+        if (!map[item.isoDate]) map[item.isoDate] = { matin: null, soir: null, matinId: -1, soirId: -1, matinTime: '', soirTime: '' };
+        const day = map[item.isoDate];
+        const id = Number(item.id) || 0;
+        if (id > day[slot + 'Id']) {
+          day[slot] = w;
+          day[slot + 'Id'] = id;
+          day[slot + 'Time'] = item.timeStr || '';
+        }
+      });
+      return map;
+    }
+
+    function fmtKg(w) {
+      return (w === null || w === undefined) ? '--' : w.toFixed(1).replace('.', ',') + ' kg';
+    }
+
+    function fmtDelta(d) {
+      const r = Math.round(d * 10) / 10;
+      const sign = r > 0 ? '+' : (r < 0 ? '−' : '±');
+      return sign + Math.abs(r).toFixed(1).replace('.', ',') + ' kg';
+    }
+
+    function saveWeight(slot) {
+      const input = document.getElementById('weight-input');
+      const fb = document.getElementById('weight-feedback');
+      const value = parseFloat(input.value.trim().replace(',', '.'));
+
+      if (isNaN(value) || value < 20 || value > 300) {
+        fb.className = 'weight-feedback err';
+        fb.textContent = 'Saisissez un poids valide (ex : 72,4).';
+        return;
+      }
+
+      const isoDate = document.getElementById('weight-date').value || getLocalIsoDate();
+      if (isoDate > getLocalIsoDate()) {
+        fb.className = 'weight-feedback err';
+        fb.textContent = 'La date ne peut pas être dans le futur.';
+        return;
+      }
+
+      const w = Math.round(value * 10) / 10;
+      const type = WEIGHT_TYPES[slot];
+      const previous = (getWeightsByDate()[isoDate] || {})[slot];
+
+      // Une seule pesée par créneau et par jour : l'ancienne est supprimée (sur tous les appareils)
+      deleteWhere(item => item.isoDate === isoDate && item.type === type);
+
+      const [y, m, d] = isoDate.split('-');
+      upsertLocal({
+        id: newId(),
+        type: type,
+        volume: 0,
+        weight: w,
+        count: w,
+        label: `Poids ${slot} : ${w.toFixed(1)} kg`,
+        isoDate: isoDate,
+        dateStr: `${d}/${m}/${y}`,
+        timeStr: nowTimeStr()
+      });
+
+      input.value = '';
+      fb.className = 'weight-feedback ok';
+      fb.textContent = (previous != null)
+        ? `Poids du ${slot} remplacé : ${fmtKg(previous)} → ${fmtKg(w)}`
+        : `Poids du ${slot} enregistré : ${fmtKg(w)}`;
+
+      commitChanges();
+    }
+
+    function renderWeightToday() {
+      const dateInput = document.getElementById('weight-date');
+      const iso = dateInput.value || getLocalIsoDate();
+      const map = getWeightsByDate();
+      const day = map[iso] || {};
+      const prev = map[shiftIsoDate(iso, -1)] || {};
+
+      document.getElementById('stat-weight-am').innerText = fmtKg(day.matin);
+      document.getElementById('stat-weight-pm').innerText = fmtKg(day.soir);
+
+      const lines = [];
+      if (day.matin != null && day.soir != null) {
+        lines.push(`Écart matin → soir : <strong>${fmtDelta(day.soir - day.matin)}</strong>`);
+      }
+      if (day.matin != null && prev.matin != null) {
+        const delta = day.matin - prev.matin;
+        const alert = delta <= -WEIGHT_ALERT_KG;
+        lines.push(`<span class="${alert ? 'weight-alert' : ''}">${alert ? '⚠️ ' : ''}Matin vs veille : <strong>${fmtDelta(delta)}</strong></span>`);
+      }
+      if (iso !== getLocalIsoDate()) {
+        const [y, m, d] = iso.split('-');
+        lines.unshift(`<em>Pesées du ${d}/${m}/${y}</em>`);
+      }
+      document.getElementById('weight-diff-info').innerHTML = lines.join('<br>');
+    }
+
+    function setWeightPeriod(p) {
+      weightPeriod = p;
+      document.querySelectorAll('.period-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.period === String(p));
+      });
+      renderWeightChart();
+    }
+
+    function renderWeightChart() {
+      const map = getWeightsByDate();
+      const allDates = Object.keys(map).sort();
+      const today = getLocalIsoDate();
+
+      let start;
+      if (weightPeriod === 'all') {
+        start = allDates.length ? allDates[0] : today;
+      } else {
+        start = shiftIsoDate(today, -(weightPeriod - 1));
+      }
+      const end = (allDates.length && allDates[allDates.length - 1] > today) ? allDates[allDates.length - 1] : today;
+
+      // Un point par jour (jours sans pesée = trou, pour garder une échelle de temps exacte)
+      const days = [];
+      for (let d = start; d <= end; d = shiftIsoDate(d, 1)) days.push(d);
+
+      const matinData = days.map(d => (map[d] && map[d].matin != null) ? map[d].matin : null);
+      const soirData = days.map(d => (map[d] && map[d].soir != null) ? map[d].soir : null);
+      const values = matinData.concat(soirData).filter(v => v !== null);
+
+      const emptyEl = document.getElementById('weight-chart-empty');
+      const wrapEl = document.getElementById('weight-chart-wrap');
+
+      const setStat = (id, txt, color) => {
+        const el = document.getElementById(id);
+        el.innerText = txt;
+        el.style.color = color || '';
+      };
+
+      if (values.length === 0) {
+        emptyEl.style.display = 'block';
+        wrapEl.style.display = 'none';
+        if (weightChartInstance) { weightChartInstance.destroy(); weightChartInstance = null; }
+        ['wstat-last', 'wstat-var', 'wstat-min', 'wstat-max'].forEach(id => setStat(id, '--'));
+        document.getElementById('wstat-last-label').innerText = 'Dernière pesée';
+        return;
+      }
+      emptyEl.style.display = 'none';
+      wrapEl.style.display = 'block';
+
+      // Dernière pesée de la période (le soir est postérieur au matin)
+      let lastTxt = '--', lastLabel = 'Dernière pesée';
+      for (let i = days.length - 1; i >= 0; i--) {
+        const dm = map[days[i]];
+        if (!dm) continue;
+        const slot = dm.soir != null ? 'soir' : (dm.matin != null ? 'matin' : null);
+        if (slot) {
+          const [, m, d] = days[i].split('-');
+          lastTxt = fmtKg(dm[slot]);
+          lastLabel = `Dernière (${d}/${m} ${slot})`;
+          break;
+        }
+      }
+      setStat('wstat-last', lastTxt);
+      document.getElementById('wstat-last-label').innerText = lastLabel;
+
+      const matins = matinData.filter(v => v !== null);
+      if (matins.length >= 2) {
+        const delta = matins[matins.length - 1] - matins[0];
+        setStat('wstat-var', fmtDelta(delta), delta < 0 ? '#b91c1c' : (delta > 0 ? '#166534' : ''));
+      } else {
+        setStat('wstat-var', '--');
+      }
+      setStat('wstat-min', fmtKg(Math.min(...values)));
+      setStat('wstat-max', fmtKg(Math.max(...values)));
+
+      const labels = days.map(d => d.split('-').slice(1).reverse().join('/'));
+      const minV = Math.min(...values), maxV = Math.max(...values);
+      const pad = Math.max(0.5, (maxV - minV) * 0.15);
+      const pointRadius = days.length > 60 ? 2 : 3;
+
+      const ctx = document.getElementById('weightChart').getContext('2d');
+      if (weightChartInstance) weightChartInstance.destroy();
+
+      weightChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Matin', data: matinData, borderColor: '#ea580c', backgroundColor: '#ea580c', tension: 0.25, spanGaps: true, pointRadius: pointRadius, pointHoverRadius: 6 },
+            { label: 'Soir', data: soirData, borderColor: '#4f46e5', backgroundColor: '#4f46e5', tension: 0.25, spanGaps: true, pointRadius: pointRadius, pointHoverRadius: 6 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { position: 'bottom' },
+            tooltip: {
+              callbacks: {
+                label: (c) => c.parsed.y == null ? null : `${c.dataset.label} : ${fmtKg(c.parsed.y)}`
+              }
+            }
+          },
+          scales: {
+            x: { ticks: { autoSkip: true, maxTicksLimit: 8, maxRotation: 0 } },
+            y: {
+              suggestedMin: Math.floor((minV - pad) * 2) / 2,
+              suggestedMax: Math.ceil((maxV + pad) * 2) / 2,
+              ticks: { callback: (v) => String(Math.round(v * 10) / 10).replace('.', ',') + ' kg' }
+            }
+          }
+        }
+      });
+    }
+
+    // ================== SYNCHRONISATION SÉCURISÉE ==================
+    let syncing = false;
+    let syncAgain = false;
+    let syncTimer = null;
+
+    function saveSyncConf() {
+      lsSet(LS_SYNC, syncConf);
+    }
+
+    function isValidSyncUrl(url) {
+      return typeof url === 'string' && url.startsWith(SYNC_URL_PREFIX) && url.endsWith('/exec');
+    }
+
+    function setSyncStatus(text, kind) {
+      const el = document.getElementById('sync-status');
+      el.textContent = text;
+      el.className = 'sync-status' + (kind ? ' ' + kind : '');
+    }
+
+    function formatLastSync() {
+      if (!syncConf.lastOk) return '';
+      const d = new Date(syncConf.lastOk);
+      const sameDay = getLocalIsoDate(d) === getLocalIsoDate();
+      const t = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      return sameDay ? `à ${t}` : `le ${d.toLocaleDateString('fr-FR')} à ${t}`;
+    }
+
+    // Statut affiché quand aucune synchro n'est en cours
+    function updateSyncStatusIdle() {
+      if (syncing) return;
+      if (!syncConf.token) {
+        setSyncStatus('🔒 Synchro désactivée : configure ton code secret (⚙️)', 'warn');
+        return;
+      }
+      const waiting = pending.size ? ` · ${pending.size} saisie(s) en attente` : '';
+      if (!navigator.onLine) {
+        setSyncStatus(`📴 Hors ligne${waiting}`, 'warn');
+      } else if (syncConf.lastOk) {
+        setSyncStatus(`✅ Synchronisé ${formatLastSync()}${waiting}`, pending.size ? 'warn' : 'ok');
+      } else {
+        setSyncStatus(`Pas encore synchronisé${waiting}`, 'warn');
+      }
+    }
+
+    function scheduleSync(delay = 1500) {
+      if (!syncConf.token) return;
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(() => syncNow(true), delay);
+    }
+
+    async function syncNow(silent = false) {
+      if (!syncConf.token) {
+        updateSyncStatusIdle();
+        if (!silent) openSyncSettings();
+        return;
+      }
+      if (!navigator.onLine) {
+        updateSyncStatusIdle();
+        return;
+      }
+      if (syncing) {
+        syncAgain = true;
+        return;
+      }
+
+      syncing = true;
+      const btn = document.getElementById('sync-btn');
+      btn.disabled = true;
+      btn.textContent = '🔄 Synchronisation…';
+      setSyncStatus('Synchronisation en cours…');
+
+      // On envoie les saisies modifiées ; on note leur version pour savoir lesquelles sont confirmées
+      const sent = records.filter(r => pending.has(String(r.id))).map(r => Object.assign({}, r));
+      const sentVersion = new Map(sent.map(r => [String(r.id), r.updatedAt]));
+
+      try {
+        const response = await fetch(syncConf.url, {
+          method: 'POST',
+          cache: 'no-store',
+          redirect: 'follow',
+          body: JSON.stringify({ action: 'sync', token: syncConf.token, since: syncConf.lastSrv || 0, records: sent })
+        });
+
+        let data;
+        try {
+          data = await response.json();
+        } catch (e) {
+          throw new Error('format');
+        }
+        if (!data || typeof data.ok !== 'boolean') throw new Error('format');
+        if (!data.ok) throw new Error(data.error || 'server');
+
+        // Les saisies envoyées sont confirmées (sauf si elles ont été re-modifiées pendant l'envoi)
+        const byId = new Map(records.map((r, i) => [String(r.id), i]));
+        sentVersion.forEach((version, id) => {
+          const i = byId.get(id);
+          if (i === undefined || records[i].updatedAt === version) pending.delete(id);
+        });
+
+        // Fusion des données reçues : pour chaque saisie, la version la plus récente l'emporte
+        const today = getLocalIsoDate();
+        let changed = 0, touchedTodayCounts = false;
+        (Array.isArray(data.records) ? data.records : []).forEach(remote => {
+          if (!remote || remote.id === undefined) return;
+          const id = String(remote.id);
+          const i = byId.get(id);
+          const remoteVersion = Number(remote.updatedAt) || 0;
+          if (i === undefined) {
+            records.push(remote);
+            byId.set(id, records.length - 1);
+          } else if (remoteVersion > (Number(records[i].updatedAt) || 0)) {
+            records[i] = remote;
+            pending.delete(id);
+          } else {
+            return;
+          }
+          changed++;
+          if (remote.isoDate === today && COUNT_TYPES.includes(remote.type)) touchedTodayCounts = true;
+        });
+
+        syncConf.lastSrv = Number(data.serverTime) || syncConf.lastSrv;
+        syncConf.lastOk = Date.now();
+        saveSyncConf();
+        refreshView();
+        persist();
+
+        if (changed) {
+          if (touchedTodayCounts) initDraftsForToday();
+          renderAll();
+        }
+        syncing = false;
+        updateSyncStatusIdle();
+      } catch (err) {
+        syncing = false;
+        const messages = {
+          unauthorized: '❌ Code secret refusé : vérifie-le dans ⚙️',
+          locked: '⛔ Trop de codes faux : synchro bloquée 15 min',
+          not_configured: '⚠️ Code secret pas encore créé dans le script Google',
+          format: '⚠️ Le script Google ne répond pas comme prévu (pas encore mis à jour ?)'
+        };
+        const waiting = pending.size ? ` · ${pending.size} en attente` : '';
+        setSyncStatus((messages[err.message] || '⚠️ Échec de la synchro, nouvel essai plus tard') + waiting, 'err');
+        if (err.message === 'unauthorized' && !silent) openSyncSettings();
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔄 Synchroniser maintenant';
+        if (syncAgain) {
+          syncAgain = false;
+          scheduleSync(300);
+        }
+      }
+    }
+
+    // ----- Réglages de synchro (propres à chaque appareil) -----
+    function openSyncSettings() {
+      document.getElementById('sync-settings').style.display = 'block';
+      document.getElementById('sync-token').value = syncConf.token || '';
+      document.getElementById('sync-url').value = syncConf.url || DEFAULT_SYNC_URL;
+      document.getElementById('sync-settings-msg').textContent = '';
+    }
+
+    function toggleSyncSettings() {
+      const el = document.getElementById('sync-settings');
+      if (el.style.display === 'block') el.style.display = 'none';
+      else openSyncSettings();
+    }
+
+    function toggleTokenVisibility(show) {
+      document.getElementById('sync-token').type = show ? 'text' : 'password';
+    }
+
+    function applySyncSettings(token, url) {
+      const urlChanged = url !== syncConf.url;
+      syncConf.token = token;
+      syncConf.url = url;
+      if (urlChanged) {
+        // Nouveau serveur : tout renvoyer et tout récupérer
+        syncConf.lastSrv = 0;
+        records.forEach(r => pending.add(String(r.id)));
+        persist();
+      }
+      saveSyncConf();
+    }
+
+    function saveSyncSettings() {
+      const msg = document.getElementById('sync-settings-msg');
+      const token = document.getElementById('sync-token').value.trim();
+      const url = document.getElementById('sync-url').value.trim() || DEFAULT_SYNC_URL;
+
+      if (token.replace(/[^A-Za-z0-9]/g, '').length < 12) {
+        msg.className = 'weight-feedback err';
+        msg.textContent = 'Code secret trop court.';
+        return;
+      }
+      if (!isValidSyncUrl(url)) {
+        msg.className = 'weight-feedback err';
+        msg.textContent = 'L\'adresse doit commencer par https://script.google.com/ et finir par /exec.';
+        return;
+      }
+
+      applySyncSettings(token, url);
+      msg.className = 'weight-feedback ok';
+      msg.textContent = 'Enregistré sur cet appareil.';
+      document.getElementById('sync-settings').style.display = 'none';
+      syncNow(false);
+    }
+
+    function forgetSyncToken() {
+      if (!confirm('Retirer le code secret de cet appareil ? Les données restent sur l\'appareil, mais la synchro s\'arrête.')) return;
+      syncConf.token = '';
+      saveSyncConf();
+      document.getElementById('sync-token').value = '';
+      updateSyncStatusIdle();
+    }
+
+    // Lien qui configure un autre appareil d'un seul clic (le code est dans la partie # : jamais envoyé au serveur web)
+    async function copySetupLink() {
+      const msg = document.getElementById('sync-settings-msg');
+      const token = document.getElementById('sync-token').value.trim() || syncConf.token;
+      if (!token) {
+        msg.className = 'weight-feedback err';
+        msg.textContent = 'Enregistre d\'abord ton code secret.';
+        return;
+      }
+      let link = `${location.origin}${location.pathname}#sync=${encodeURIComponent(token)}`;
+      if (syncConf.url !== DEFAULT_SYNC_URL) link += `&url=${encodeURIComponent(syncConf.url)}`;
+      try {
+        await navigator.clipboard.writeText(link);
+        msg.className = 'weight-feedback ok';
+        msg.textContent = 'Lien copié. Ouvre-le sur ton autre appareil, puis supprime-le du message.';
+      } catch (e) {
+        msg.className = 'weight-feedback';
+        msg.textContent = link;
+      }
+    }
+
+    // Lecture d'un lien de configuration (#sync=CODE)
+    function readSetupLink() {
+      const hash = location.hash.replace(/^#/, '');
+      if (!hash) return false;
+      const params = new URLSearchParams(hash);
+      const token = (params.get('sync') || '').trim();
+      if (!token) return false;
+      const url = params.get('url') || syncConf.url || DEFAULT_SYNC_URL;
+      // On retire le code de la barre d'adresse et de l'historique
+      history.replaceState(null, '', location.pathname + location.search);
+      if (!isValidSyncUrl(url)) {
+        alert('Lien de configuration refusé : adresse de serveur invalide.');
+        return false;
+      }
+      applySyncSettings(token, url);
+      return true;
+    }
+
+    // ----- Déclencheurs automatiques -----
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        scheduleSync(300);              // retour sur l'appli : on récupère les nouveautés
+      } else if (pending.size) {
+        syncNow(true);                  // l'appli passe en arrière-plan : on envoie ce qui reste
+      }
+    });
+    window.addEventListener('online', () => { updateSyncStatusIdle(); scheduleSync(300); });
+    window.addEventListener('offline', updateSyncStatusIdle);
+    setInterval(() => {
+      if (document.visibilityState === 'visible') syncNow(true);
+    }, AUTO_SYNC_INTERVAL_MS);
+
+    // ================== DÉMARRAGE ==================
+    readSetupLink();
     initDraftsForToday();
     renderToday();
+    renderWeightToday();
+    updateSyncStatusIdle();
+    syncNow(true);
   </script>
 </body>
 </html>
