@@ -214,7 +214,7 @@
         <input type="password" id="gate-code-input" class="date-picker-input" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX">
         <button class="sync-btn" type="button" style="margin-top: 8px;" onclick="loginWithCode()">Déverrouiller</button>
       </div>
-      <div class="gate-foot">🔒 Tes données ne sont accessibles qu'avec ton compte.</div>
+      <div class="gate-foot">🔒 Tes données ne sont accessibles qu'avec ton compte.<br>Version 2026-10-04 · v7</div>
     </div>
   </div>
 
@@ -488,10 +488,25 @@
 
   <script>
     // ================== SERVICE WORKER ==================
+    const APP_VERSION = '2026-10-04 · v7';
     if ('serviceWorker' in navigator) {
+      // Quand une nouvelle version de l'appli est installée, on recharge une fois pour l'afficher
+      const hadController = !!navigator.serviceWorker.controller;
+      let swRefreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!hadController || swRefreshing) return;
+        swRefreshing = true;
+        location.reload();
+      });
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./ws.js')
-          .then((reg) => console.log('Service Worker enregistré, scope :', reg.scope))
+          .then((reg) => {
+            console.log('Service Worker enregistré, scope :', reg.scope);
+            // Vérifie s'il existe une nouvelle version à chaque retour sur l'appli
+            document.addEventListener('visibilitychange', () => {
+              if (document.visibilityState === 'visible') reg.update().catch(() => {});
+            });
+          })
           .catch((err) => console.log('Échec Service Worker :', err));
       });
     }
@@ -2317,7 +2332,7 @@
         const exp = document.createElement('div');
         exp.style.color = '#64748b';
         exp.style.fontSize = '0.78rem';
-        exp.textContent = `Session valable jusqu'au ${until} sur cet appareil.`;
+        exp.textContent = `Session valable jusqu'au ${until} sur cet appareil · Version ${APP_VERSION}`;
         account.appendChild(who);
         account.appendChild(exp);
       }

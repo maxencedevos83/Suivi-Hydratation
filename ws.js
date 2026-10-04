@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hydra-pwa-v6';
+const CACHE_NAME = 'hydra-pwa-v7';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -69,6 +69,25 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
+  // Pages de l'appli : RÉSEAU D'ABORD, pour afficher tout de suite la dernière version publiée.
+  // La copie en cache ne sert que hors ligne.
+  const url = new URL(e.request.url);
+  const isAppPage = e.request.mode === 'navigate' || url.pathname.endsWith('.html') ||
+                    url.pathname.endsWith('/') || url.pathname.endsWith('manifest.json');
+  if (isAppPage) {
+    e.respondWith(
+      fetch(e.request, { cache: 'no-store' }).then((networkResponse) => {
+        if (networkResponse.ok) {
+          const copy = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy));
+        }
+        return networkResponse;
+      }).catch(() => caches.match(e.request).then((r) => r || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // Autres fichiers (graphiques, images) : cache d'abord, mise à jour en arrière-plan
   e.respondWith(
     caches.match(e.request).then((cachedResponse) => {
       const fetchPromise = fetch(e.request).then((networkResponse) => {
