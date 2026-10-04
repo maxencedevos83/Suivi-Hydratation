@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hydra-pwa-v5';
+const CACHE_NAME = 'hydra-pwa-v6';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -64,7 +64,8 @@ self.addEventListener('fetch', (e) => {
   // Synchro : jamais de cache pour les échanges avec Google ni pour les requêtes autres que GET
   if (e.request.method !== 'GET' ||
       e.request.url.includes('script.google.com') ||
-      e.request.url.includes('script.googleusercontent.com')) {
+      e.request.url.includes('script.googleusercontent.com') ||
+      e.request.url.includes('accounts.google.com')) {
     return;
   }
 

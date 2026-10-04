@@ -143,9 +143,77 @@
     .sync-check { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #64748b; margin-top: 6px; }
     .sync-note { font-size: 0.72rem; color: #64748b; margin-top: 8px; line-height: 1.45; }
     .item-title { font-weight: 600; }
+
+    /* Portail de connexion */
+    .gate { display: none; position: fixed; inset: 0; z-index: 100; background: linear-gradient(160deg, #eff6ff, #f8fafc 60%); align-items: center; justify-content: center; padding: 16px; overflow-y: auto; }
+    body.locked .gate { display: flex; }
+    body.locked > *:not(.gate) { display: none !important; }
+    .gate-box { width: 100%; max-width: 360px; background: white; border-radius: 20px; padding: 28px 22px; text-align: center; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); }
+    .gate-logo { width: 72px; height: 72px; border-radius: 18px; }
+    .gate h1 { font-size: 1.25rem; margin: 12px 0 4px; }
+    .gate-sub { color: #64748b; font-size: 0.88rem; margin: 0 0 18px; line-height: 1.4; }
+    #gate-google { display: flex; justify-content: center; min-height: 44px; }
+    .gate-msg { font-size: 0.82rem; margin-top: 12px; min-height: 1.2em; color: #64748b; line-height: 1.4; }
+    .gate-msg.err { color: #b91c1c; font-weight: 600; }
+    .gate-link { margin-top: 14px; background: none; border: none; color: #64748b; text-decoration: underline; font-size: 0.8rem; cursor: pointer; font-family: inherit; }
+    .gate-code { margin-top: 10px; text-align: left; }
+    .gate-foot { font-size: 0.72rem; color: #94a3b8; margin-top: 18px; }
+    .sync-account { font-size: 0.85rem; color: #334155; margin-bottom: 8px; line-height: 1.5; }
+
+    /* Pertes */
+    .chip-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip { padding: 7px 12px; border-radius: 20px; border: 1px solid #cbd5e1; background: white; color: #64748b; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .chip.active { background: var(--cat-color, #4f46e5); border-color: var(--cat-color, #4f46e5); color: white; }
+    .loss-cons { margin-bottom: 8px; }
+
+    /* Compléments */
+    .med-banner { display: none; margin-bottom: 12px; padding: 12px 14px; border-radius: 14px; background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; font-weight: 700; font-size: 0.9rem; cursor: pointer; line-height: 1.4; }
+    .med-banner.show { display: block; }
+    .med-moment { border: 1px solid #e2e8f0; border-radius: 14px; padding: 10px; margin-bottom: 10px; }
+    .med-moment-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: 700; font-size: 0.9rem; }
+    .med-chip { font-size: 0.72rem; padding: 3px 9px; border-radius: 20px; font-weight: 700; background: #f1f5f9; color: #64748b; white-space: nowrap; }
+    .med-chip.done { background: #dcfce7; color: #166534; }
+    .med-chip.late { background: #fee2e2; color: #991b1b; }
+    .med-chip.upcoming { background: #e0f2fe; color: #075985; }
+    .med-row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; margin-bottom: 6px; border: 1px solid #e2e8f0; border-radius: 10px; background: white; cursor: pointer; font-family: inherit; text-align: left; font-size: 0.88rem; color: #1e293b; }
+    .med-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: white; flex-shrink: 0; }
+    .med-row.taken { background: #f0fdf4; border-color: #bbf7d0; }
+    .med-row.taken .med-check { background: #16a34a; border-color: #16a34a; }
+    .med-name { flex: 1; font-weight: 600; }
+    .med-dose { display: block; font-weight: 400; font-size: 0.75rem; color: #64748b; }
+    .med-time { font-size: 0.75rem; color: #16a34a; font-weight: 600; text-align: right; }
+    .med-time.late { color: #b45309; }
+    .med-all { width: 100%; padding: 10px; border: none; border-radius: 10px; background: #16a34a; color: white; font-weight: 700; cursor: pointer; font-family: inherit; font-size: 0.88rem; }
+    .med-empty { text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 8px 4px 12px; line-height: 1.4; }
+    .med-editor { margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; }
+    .med-times { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .med-times label { font-size: 0.75rem; color: #64748b; font-weight: 600; }
+    .med-times input { width: 100%; padding: 8px 4px; border-radius: 8px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 0.85rem; box-sizing: border-box; margin-top: 3px; }
+    .med-edit-item { border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; margin-bottom: 8px; background: #f8fafc; }
+    .med-edit-item input { margin-top: 0; margin-bottom: 6px; background: white; }
+    .med-edit-foot { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+    .med-del { border: none; background: transparent; color: #b91c1c; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; padding: 6px; }
+    #med-card .chip.active { background: #4f46e5; border-color: #4f46e5; }
   </style>
 </head>
-<body>
+<body class="locked">
+
+  <!-- Portail de connexion -->
+  <div id="gate" class="gate">
+    <div class="gate-box">
+      <img src="./logo-512x512.png" class="gate-logo" alt="">
+      <h1>Suivi Hydrique Pro</h1>
+      <p class="gate-sub">Accès réservé.<br>Connecte-toi avec ton compte Google pour ouvrir l'appli.</p>
+      <div id="gate-google"></div>
+      <div id="gate-msg" class="gate-msg"></div>
+      <button class="gate-link" type="button" onclick="showGateCode()">Utiliser le code secret à la place</button>
+      <div id="gate-code" class="gate-code" style="display: none;">
+        <input type="password" id="gate-code-input" class="date-picker-input" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX">
+        <button class="sync-btn" type="button" style="margin-top: 8px;" onclick="loginWithCode()">Déverrouiller</button>
+      </div>
+      <div class="gate-foot">🔒 Tes données ne sont accessibles qu'avec ton compte.</div>
+    </div>
+  </div>
 
   <!-- Synchronisation sécurisée entre appareils -->
   <div class="card sync-card">
@@ -157,26 +225,20 @@
     <div id="sync-status" class="sync-status">Statut : Prêt</div>
 
     <div id="sync-settings" class="sync-settings" style="display: none;">
-      <div class="action-label">🔑 Code secret</div>
-      <input type="password" id="sync-token" class="date-picker-input" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX">
-      <label class="sync-check"><input type="checkbox" onchange="toggleTokenVisibility(this.checked)"> Afficher le code</label>
+      <div id="sync-account" class="sync-account"></div>
+      <button class="btn-sub" style="width: 100%; margin-bottom: 10px;" onclick="logout()">🚪 Se déconnecter de cet appareil</button>
 
-      <div class="action-label" style="margin-top: 10px;">Adresse du script Google</div>
+      <div class="action-label">Adresse du script Google</div>
       <input type="url" id="sync-url" class="date-picker-input" autocomplete="off" spellcheck="false">
-
-      <div class="action-row" style="margin-top: 10px;">
-        <button class="btn-add" style="background: var(--primary); color: white;" onclick="saveSyncSettings()">💾 Enregistrer</button>
-        <button class="btn-sub" onclick="forgetSyncToken()">Oublier</button>
-      </div>
-      <button class="btn-sub" style="width: 100%;" onclick="copySetupLink()">🔗 Copier un lien pour configurer un autre appareil</button>
+      <button class="btn-add" style="width: 100%; margin-top: 8px; background: var(--primary); color: white;" onclick="saveSyncSettings()">💾 Enregistrer l'adresse</button>
       <div id="sync-settings-msg" class="weight-feedback"></div>
       <div class="sync-note">
-        Le code reste uniquement sur cet appareil. Sans lui, personne ne peut lire ni modifier tes données,
-        même avec l'adresse du script. La synchro se fait automatiquement à l'ouverture, après chaque saisie,
-        toutes les minutes et au retour sur l'appli ; hors ligne, les saisies attendent et partent dès que le réseau revient.
+        La synchro se fait automatiquement à l'ouverture, après chaque saisie, toutes les minutes et au retour sur l'appli ;
+        hors ligne, les saisies attendent et partent dès que le réseau revient.
       </div>
     </div>
   </div>
+
   <!-- Navigation -->
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('today')">Aujourd'hui</button>
@@ -185,7 +247,8 @@
 
   <!-- ONGLET 1 : AUJOURD'HUI -->
   <div id="tab-today" class="tab-content active">
-    
+    <div id="med-banner" class="med-banner" role="alert" onclick="document.getElementById('med-card').scrollIntoView({ behavior: 'smooth' })"></div>
+
     <div class="card">
       <div class="card-title" style="text-align: center;">Total Liquides Bu</div>
       <div class="total-banner" id="total-fluid">0 ml</div>
@@ -228,32 +291,42 @@
       <div id="drink-today-list" class="drink-today-list"></div>
     </div>
 
-    <div class="card">
+    <div class="card" id="loss-card">
       <div class="card-title">2. Pertes & Transit</div>
       <div class="grid-stats" style="margin-bottom: 10px;">
         <div class="stat-box">
           <div class="stat-value" style="color: var(--urine)" id="stat-urine">0</div>
-          <div class="stat-label">Urines</div>
+          <div class="stat-label">🟡 Urines · <span id="stat-urine-ml">0 ml</span></div>
         </div>
         <div class="stat-box">
           <div class="stat-value" style="color: var(--stool)" id="stat-stool">0</div>
-          <div class="stat-label">Selles</div>
+          <div class="stat-label">🟣 Selles · <span id="stat-stool-ml">0 ml</span></div>
         </div>
       </div>
 
-      <div class="action-label" style="color: var(--urine);">🟡 Urines</div>
-      <div class="action-row">
-        <button class="btn-sub" onclick="adjustDraft('urine', -1)">- 1 Urine</button>
-        <button class="btn-add btn-urine" onclick="adjustDraft('urine', 1)">+ 1 Urine</button>
+      <div class="drink-cats" role="tablist" aria-label="Type de perte">
+        <button class="drink-cat" data-cat="urine" onclick="setLossCategory('urine')">🟡 Urines</button>
+        <button class="drink-cat" data-cat="selle" onclick="setLossCategory('selle')">🟣 Selles</button>
+      </div>
+      <div id="stool-cons" class="loss-cons" style="display: none;">
+        <div class="action-label">Consistance</div>
+        <div class="chip-row" id="stool-cons-chips"></div>
+        <div class="action-label" style="margin-top: 10px;">Quantité</div>
+      </div>
+      <div id="loss-grid" class="drink-grid"></div>
+
+      <div id="loss-custom" class="drink-custom" style="display: none;">
+        <div class="action-label">Urine mesurée</div>
+        <div class="action-row">
+          <input type="text" id="loss-custom-ml" class="date-picker-input" inputmode="numeric" autocomplete="off" placeholder="Quantité en ml">
+          <button class="btn-add" style="background: var(--cat-color); color: white;" onclick="addMeasuredUrine()">Ajouter</button>
+        </div>
+        <div id="loss-custom-msg" class="weight-feedback"></div>
       </div>
 
-      <div class="action-label" style="color: var(--stool); margin-top: 6px;">🟣 Selles</div>
-      <div class="action-row">
-        <button class="btn-sub" onclick="adjustDraft('selle', -1)">- 1 Selle</button>
-        <button class="btn-add btn-stool" onclick="adjustDraft('selle', 1)">+ 1 Selle</button>
-      </div>
-
-      <button class="btn-add" style="width: 100%; margin-top: 12px; background: var(--primary); color: white;" onclick="applyPertes()">💾 Appliquer / Valider</button>
+      <div class="drink-today-title">Pertes du jour</div>
+      <div id="loss-today-list" class="drink-today-list"></div>
+      <div class="sync-note">Volumes estimés, à ajuster avec ton médecin si besoin. Les pertes invisibles (respiration, peau) sont comptées à part : 600 ml par jour.</div>
     </div>
 
     <div class="card">
@@ -289,6 +362,39 @@
       <div id="weight-feedback" class="weight-feedback"></div>
     </div>
 
+    <div class="card" id="med-card">
+      <div class="card-title">5. Compléments</div>
+      <div id="med-moments"></div>
+      <button class="drink-more" id="med-editor-btn" onclick="toggleMedEditor()">⚙️ Gérer mes compléments</button>
+
+      <div id="med-editor" class="med-editor" style="display: none;">
+        <div class="action-label">Heures de prise</div>
+        <div class="med-times" id="med-times"></div>
+
+        <div class="action-label" style="margin-top: 12px;">Mes compléments</div>
+        <div id="med-edit-list"></div>
+
+        <div class="med-edit-item" style="background: white; border-style: dashed;">
+          <input type="text" id="med-new-name" class="date-picker-input" maxlength="60" placeholder="Nom (ex : Magnésium)">
+          <input type="text" id="med-new-dose" class="date-picker-input" maxlength="60" placeholder="Dose (ex : 1 gélule)">
+          <div class="med-edit-foot">
+            <div class="chip-row" id="med-new-moments"></div>
+            <button class="chip" style="color: #4f46e5; border-color: #4f46e5;" type="button" onclick="addMedToDraft()">+ Ajouter</button>
+          </div>
+        </div>
+
+        <div class="action-row" style="margin-top: 6px;">
+          <button class="btn-add" style="background: #4f46e5; color: white;" onclick="saveMedEditor()">💾 Enregistrer</button>
+          <button class="btn-sub" onclick="toggleMedEditor(false)">Annuler</button>
+        </div>
+        <div id="med-editor-msg" class="weight-feedback"></div>
+        <div class="sync-note">
+          Rappels par e-mail : le script Google t'écrit à l'heure prévue, puis 30 et 90 minutes après,
+          tant que la prise n'est pas cochée ici.
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ONGLET 2 : HISTORIQUE ET COURBE -->
@@ -312,6 +418,7 @@
         </div>
       </div>
       <div id="hist-balance-status" class="status-badge status-ok">--</div>
+      <div id="hist-extra" class="weight-info" style="margin: 8px 0 0;"></div>
       <div class="grid-stats" style="margin-top: 8px;">
         <div class="stat-box">
           <div class="stat-value" style="color: var(--weight-am)" id="hist-weight-am">--</div>
@@ -502,11 +609,14 @@
     const WEIGHT_ALERT_KG = 1;
     const WEIGHT_TYPES = { matin: 'poids_matin', soir: 'poids_soir' };
 
-    let draftUrine = 0;
-    let draftStool = 0;
+    function prefGet(key, fallback) {
+      try { return localStorage.getItem(key) || fallback; } catch (e) { return fallback; }
+    }
+    function prefSet(key, value) {
+      try { localStorage.setItem(key, value); } catch (e) {}
+    }
 
-    let drinkCategory = 'eau_claire';
-    try { drinkCategory = localStorage.getItem('hydra_drink_cat') || 'eau_claire'; } catch (e) {}
+    let drinkCategory = prefGet('hydra_drink_cat', 'eau_claire');
     if (!DRINK_CATEGORIES[drinkCategory]) drinkCategory = 'eau_claire';
     let drinkListExpanded = false;
 
@@ -554,6 +664,8 @@
     function renderAll() {
       renderToday();
       renderDrinkPanel();
+      renderLossPanel();
+      renderMeds();
       renderHistory();
       renderChart();
       renderWeightToday();
@@ -584,8 +696,60 @@
     document.getElementById('weight-date').value = todayIso;
     document.getElementById('weight-date').max = todayIso;
 
-    // ================== URINES / SELLES ==================
-    // Compte du jour : on parcourt du plus ancien au plus récent pour que le dernier résumé validé l'emporte
+    // ================== PERTES : URINES / SELLES ==================
+    // Volumes estimés (ml) : à ajuster ici, avec l'avis du médecin si besoin.
+    const LOSS_CONFIG = {
+      urine: {
+        type: 'perte_urine', icon: '🟡', name: 'Urines', color: '#ca8a04', bg: '#fef9c3', border: '#fde68a',
+        sizes: [
+          { key: 'petite', name: 'Petite', ml: 150, scale: 0.62 },
+          { key: 'moyenne', name: 'Moyenne', ml: 300, scale: 0.82 },
+          { key: 'grande', name: 'Grande', ml: 500, scale: 1 }
+        ]
+      },
+      selle: {
+        type: 'perte_selle', icon: '🟣', name: 'Selles', color: '#9333ea', bg: '#f3e8ff', border: '#e9d5ff',
+        consistencies: [
+          { key: 'moulee', name: 'Moulée' },
+          { key: 'molle', name: 'Molle' },
+          { key: 'liquide', name: 'Liquide' }
+        ],
+        sizes: [
+          { key: 'petite', name: 'Petite', scale: 0.62 },
+          { key: 'moyenne', name: 'Moyenne', scale: 0.82 },
+          { key: 'abondante', name: 'Abondante', scale: 1 }
+        ],
+        ml: {
+          moulee: { petite: 50, moyenne: 100, abondante: 200 },
+          molle: { petite: 100, moyenne: 200, abondante: 300 },
+          liquide: { petite: 150, moyenne: 300, abondante: 500 }
+        }
+      }
+    };
+    const LOSS_TYPES = ['perte_urine', 'perte_selle'];
+    const BASE_LOSS_ML = 600;       // pertes invisibles (respiration, peau) estimées par jour
+    const LEGACY_URINE_ML = 250;    // anciennes saisies « + 1 urine »
+    const LEGACY_STOOL_ML = 200;    // anciennes saisies « + 1 selle »
+
+    const LOSS_SVG = {
+      goutte: `<path fill="currentColor" fill-opacity="0.3" d="M20 7 C20 7 9 21 9 29 a11 11 0 0 0 22 0 C31 21 20 7 20 7 Z"/>`,
+      moulee: `<path fill="currentColor" fill-opacity="0.3" d="M8 34 h24 a5 5 0 0 0 0 -10 h-2 a5 5 0 0 0 -5 -6 h-10 a5 5 0 0 0 0 10 h-7 a3 3 0 0 0 0 6 z"/>`,
+      molle: `<path fill="currentColor" fill-opacity="0.3" d="M7 35 c0 -6 5 -8 8 -8 c1 -6 8 -8 11 -3 c5 0 8 4 7 8 c0 3 -2 5 -6 5 h-15 c-3 0 -5 -1 -5 -2 z"/>`,
+      liquide: `<path fill="currentColor" fill-opacity="0.3" d="M5 35 c0 -4 7 -6 15 -6 s15 2 15 6 s-7 6 -15 6 s-15 -2 -15 -6 z"/><path fill="currentColor" fill-opacity="0.3" d="M14 17 c0 0 -4 5 -4 7 a4 4 0 0 0 8 0 c0 -2 -4 -7 -4 -7 z M27 13 c0 0 -3 4 -3 6 a3 3 0 0 0 6 0 c0 -2 -3 -6 -3 -6 z"/>`
+    };
+
+    function lossSvg(shape, scale) {
+      return `<svg viewBox="0 0 40 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true">` +
+        `<g transform="translate(20 30) scale(${scale}) translate(-20 -30)">${LOSS_SVG[shape] || LOSS_SVG.goutte}</g></svg>`;
+    }
+
+    let lossCategory = prefGet('hydra_loss_cat', 'urine');
+    if (!LOSS_CONFIG[lossCategory]) lossCategory = 'urine';
+    let stoolConsistency = prefGet('hydra_stool_cons', 'molle');
+    if (!LOSS_CONFIG.selle.ml[stoolConsistency]) stoolConsistency = 'molle';
+    let lossListExpanded = false;
+
+    // Anciennes saisies (avant les volumes) : compteurs du jour
     function getDayCounts(iso) {
       let u = 0, s = 0;
       logs.filter(item => item.isoDate === iso)
@@ -601,62 +765,567 @@
       return { urine: Math.max(0, u), selle: Math.max(0, s) };
     }
 
-    function initDraftsForToday() {
-      const c = getDayCounts(getLocalIsoDate());
-      draftUrine = c.urine;
-      draftStool = c.selle;
-      updateDraftDisplay();
+    // Pertes du jour : nombre et volume des urines et selles, + pertes invisibles
+    function getDayLosses(iso) {
+      const legacy = getDayCounts(iso);
+      const r = {
+        urineCount: legacy.urine, urineMl: legacy.urine * LEGACY_URINE_ML,
+        stoolCount: legacy.selle, stoolMl: legacy.selle * LEGACY_STOOL_ML
+      };
+      logs.forEach(l => {
+        if (l.isoDate !== iso) return;
+        const vol = Math.max(0, Number(l.volume) || 0);
+        if (l.type === 'perte_urine') { r.urineCount++; r.urineMl += vol; }
+        if (l.type === 'perte_selle') { r.stoolCount++; r.stoolMl += vol; }
+      });
+      r.total = BASE_LOSS_ML + r.urineMl + r.stoolMl;
+      return r;
     }
 
-    function updateDraftDisplay() {
-      document.getElementById('stat-urine').innerText = draftUrine;
-      document.getElementById('stat-stool').innerText = draftStool;
+    function setLossCategory(cat) {
+      if (!LOSS_CONFIG[cat]) return;
+      lossCategory = cat;
+      prefSet('hydra_loss_cat', cat);
+      document.getElementById('loss-custom').style.display = 'none';
+      renderLossPanel();
     }
 
-    function adjustDraft(type, delta) {
-      if (type === 'urine') {
-        draftUrine = Math.max(0, draftUrine + delta);
-      } else if (type === 'selle') {
-        draftStool = Math.max(0, draftStool + delta);
+    function setStoolConsistency(key) {
+      stoolConsistency = key;
+      prefSet('hydra_stool_cons', key);
+      renderLossPanel();
+    }
+
+    function renderLossPanel() {
+      const cfg = LOSS_CONFIG[lossCategory];
+      const card = document.getElementById('loss-card');
+      card.style.setProperty('--cat-color', cfg.color);
+      card.style.setProperty('--tile-bg', cfg.bg);
+      card.style.setProperty('--tile-border', cfg.border);
+      document.querySelectorAll('#loss-card .drink-cat').forEach(b => b.classList.toggle('active', b.dataset.cat === lossCategory));
+
+      const today = getLocalIsoDate();
+      const counts = {};
+      logs.forEach(l => {
+        if (l.isoDate === today && l.type === cfg.type) counts[l.label] = (counts[l.label] || 0) + 1;
+      });
+
+      // Consistance (selles uniquement)
+      const consBox = document.getElementById('stool-cons');
+      consBox.style.display = lossCategory === 'selle' ? 'block' : 'none';
+      if (lossCategory === 'selle') {
+        const chips = document.getElementById('stool-cons-chips');
+        chips.innerHTML = '';
+        cfg.consistencies.forEach(c => {
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'chip' + (c.key === stoolConsistency ? ' active' : '');
+          chip.textContent = c.name;
+          chip.onclick = () => setStoolConsistency(c.key);
+          chips.appendChild(chip);
+        });
       }
-      updateDraftDisplay();
+
+      const grid = document.getElementById('loss-grid');
+      grid.innerHTML = '';
+      cfg.sizes.forEach(size => {
+        let ml, name, detail, shape;
+        if (lossCategory === 'urine') {
+          ml = size.ml;
+          name = `Urine ${size.name.toLowerCase()}`;
+          detail = size.key;
+          shape = 'goutte';
+        } else {
+          const cons = cfg.consistencies.find(c => c.key === stoolConsistency);
+          ml = cfg.ml[stoolConsistency][size.key];
+          name = `Selle ${cons.name.toLowerCase()} ${size.name.toLowerCase()}`;
+          detail = `${stoolConsistency}|${size.key}`;
+          shape = stoolConsistency;
+        }
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'drink-tile';
+        btn.innerHTML = lossSvg(shape, size.scale) + '<span class="drink-tile-name"></span><span class="drink-tile-ml"></span>';
+        btn.querySelector('.drink-tile-name').textContent = size.name;
+        btn.querySelector('.drink-tile-ml').textContent = `≈ ${ml} ml`;
+        btn.setAttribute('aria-label', `Ajouter ${name}, environ ${ml} ml`);
+        const n = counts[`${name} · ${ml} ml`];
+        if (n) {
+          const badge = document.createElement('span');
+          badge.className = 'drink-tile-badge';
+          badge.textContent = '×' + n;
+          btn.appendChild(badge);
+        }
+        btn.onclick = () => {
+          addLoss(lossCategory, name, ml, detail);
+          btn.classList.remove('flash'); void btn.offsetWidth; btn.classList.add('flash');
+        };
+        grid.appendChild(btn);
+      });
+
+      if (lossCategory === 'urine') {
+        const custom = document.createElement('button');
+        custom.type = 'button';
+        custom.className = 'drink-tile custom';
+        custom.innerHTML = glassSvg('plus') + '<span class="drink-tile-name">Mesurée</span><span class="drink-tile-ml">… ml</span>';
+        custom.onclick = () => {
+          const box = document.getElementById('loss-custom');
+          const open = box.style.display !== 'block';
+          box.style.display = open ? 'block' : 'none';
+          document.getElementById('loss-custom-msg').textContent = '';
+          if (open) document.getElementById('loss-custom-ml').focus();
+        };
+        grid.appendChild(custom);
+      }
+      renderLossToday();
     }
 
-    function applyPertes() {
-      const todayIso = getLocalIsoDate();
-      deleteWhere(item => item.isoDate === todayIso && COUNT_TYPES.includes(item.type));
-
+    function addLoss(cat, name, ml, detail) {
+      const cfg = LOSS_CONFIG[cat];
       const now = new Date();
-      const timeStr = nowTimeStr();
+      const entry = {
+        id: newId(),
+        type: cfg.type,
+        volume: ml,
+        label: `${name} · ${ml} ml`,
+        detail: detail,
+        isoDate: getLocalIsoDate(now),
+        dateStr: now.toLocaleDateString('fr-FR'),
+        timeStr: nowTimeStr()
+      };
+      upsertLocal(entry);
+      commitChanges();
+      if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
+      showToast(`${cfg.icon} ${name} (≈ ${ml} ml)`, () => {
+        deleteWhere(r => String(r.id) === String(entry.id));
+        commitChanges();
+        showToast('Saisie annulée');
+      });
+    }
 
-      if (draftUrine > 0) {
-        upsertLocal({
-          id: newId(),
-          type: 'urine_summary',
-          volume: 0,
-          label: `${draftUrine} Urine(s) validée(s)`,
-          isoDate: todayIso,
-          dateStr: now.toLocaleDateString('fr-FR'),
-          timeStr: timeStr,
-          count: draftUrine
-        });
+    function addMeasuredUrine() {
+      const msg = document.getElementById('loss-custom-msg');
+      const input = document.getElementById('loss-custom-ml');
+      const ml = parseInt(input.value.replace(/\s/g, ''), 10);
+      if (isNaN(ml) || ml < 10 || ml > 2000) {
+        msg.className = 'weight-feedback err';
+        msg.textContent = 'Indique une quantité entre 10 et 2000 ml.';
+        return;
       }
+      input.value = '';
+      document.getElementById('loss-custom').style.display = 'none';
+      addLoss('urine', 'Urine mesurée', ml, 'mesuree');
+    }
 
-      if (draftStool > 0) {
-        upsertLocal({
-          id: newId(),
-          type: 'selle_summary',
-          volume: 0,
-          label: `${draftStool} Selle(s) validée(s)`,
-          isoDate: todayIso,
-          dateStr: now.toLocaleDateString('fr-FR'),
-          timeStr: timeStr,
-          count: draftStool
-        });
+    function renderLossToday() {
+      const today = getLocalIsoDate();
+      const items = logs.filter(l => l.isoDate === today && (LOSS_TYPES.includes(l.type) || COUNT_TYPES.includes(l.type)));
+      const list = document.getElementById('loss-today-list');
+      list.innerHTML = '';
+      if (!items.length) {
+        list.innerHTML = '<div class="drink-empty">Aucune perte saisie aujourd\'hui.</div>';
+        return;
       }
+      const shown = lossListExpanded ? items : items.slice(0, 5);
+      shown.forEach(it => {
+        const isUrine = it.type === 'perte_urine' || it.type.startsWith('urine');
+        const cfg = LOSS_CONFIG[isUrine ? 'urine' : 'selle'];
+        const vol = LOSS_TYPES.includes(it.type) ? `${Number(it.volume) || 0} ml` : '';
+        const row = document.createElement('div');
+        row.className = 'drink-today-item';
+        row.style.borderLeftColor = cfg.color;
+        row.innerHTML = '<span class="d-time"></span><span class="d-label"></span><span class="d-vol"></span>';
+        row.querySelector('.d-time').textContent = it.timeStr || '';
+        row.querySelector('.d-label').textContent = `${cfg.icon} ${String(it.label || cfg.name).replace(/ · \d+ ml$/, '')}`;
+        const volEl = row.querySelector('.d-vol');
+        volEl.textContent = vol;
+        volEl.style.color = cfg.color;
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'drink-del';
+        del.textContent = '✕';
+        del.title = 'Supprimer cette saisie';
+        del.setAttribute('aria-label', `Supprimer ${it.label || ''}`);
+        del.onclick = () => removeDrinkEntry(it.id);
+        row.appendChild(del);
+        list.appendChild(row);
+      });
+      if (items.length > 5) {
+        const more = document.createElement('button');
+        more.type = 'button';
+        more.className = 'drink-more';
+        more.textContent = lossListExpanded ? 'Réduire' : `Voir les ${items.length} saisies`;
+        more.onclick = () => { lossListExpanded = !lossListExpanded; renderLossToday(); };
+        list.appendChild(more);
+      }
+    }
 
+    // ================== COMPLÉMENTS ==================
+    const MED_PLAN_ID = 1;   // le plan est une seule saisie synchronisée, toujours avec cet id
+    const MOMENTS = [
+      { key: 'matin', name: 'Matin', icon: '🌅', defaultTime: '08:00' },
+      { key: 'midi', name: 'Midi', icon: '☀️', defaultTime: '12:30' },
+      { key: 'soir', name: 'Soir', icon: '🌙', defaultTime: '20:00' }
+    ];
+    const MED_LATE_MIN = 60;  // au-delà de ce délai après l'heure prévue, la prise est notée « en retard »
+    let medDraft = null;      // copie du plan pendant la modification
+    let medNewMoments = ['matin'];
+
+    function hhmmToMin(s) {
+      const m = /^(\d{1,2}):(\d{2})/.exec(String(s || ''));
+      return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+    }
+
+    function fmtDuration(min) {
+      if (min < 60) return `${min} min`;
+      const h = Math.floor(min / 60), m = min % 60;
+      return m ? `${h} h ${String(m).padStart(2, '0')}` : `${h} h`;
+    }
+
+    function getMedPlan() {
+      const rec = records.find(r => Number(r.id) === MED_PLAN_ID && r.type === 'med_plan' && !r.deleted);
+      let plan = null;
+      if (rec && rec.plan) { try { plan = JSON.parse(rec.plan); } catch (e) {} }
+      plan = plan || {};
+      const times = {};
+      MOMENTS.forEach(m => { times[m.key] = (plan.times && plan.times[m.key]) || m.defaultTime; });
+      plan.times = times;
+      plan.meds = Array.isArray(plan.meds) ? plan.meds.filter(m => m && m.id && m.name) : [];
+      return plan;
+    }
+
+    function saveMedPlan(plan) {
+      const now = new Date();
+      upsertLocal({
+        id: MED_PLAN_ID,
+        type: 'med_plan',
+        volume: 0,
+        label: `Plan de compléments (${plan.meds.length})`,
+        plan: JSON.stringify({ times: plan.times, meds: plan.meds }),
+        isoDate: getLocalIsoDate(now),
+        dateStr: now.toLocaleDateString('fr-FR'),
+        timeStr: nowTimeStr()
+      });
       commitChanges();
     }
+
+    // Prises cochées pour une date : clé « idComplément|moment » → saisie
+    function getMedIntakes(iso) {
+      const map = {};
+      logs.forEach(l => {
+        if (l.type === 'med_prise' && l.isoDate === iso && l.detail) {
+          if (!map[l.detail] || Number(l.id) < Number(map[l.detail].id)) map[l.detail] = l;
+        }
+      });
+      return map;
+    }
+
+    function getMomentStatus(plan, iso, moment) {
+      const meds = plan.meds.filter(m => (m.moments || []).includes(moment.key));
+      const intakes = getMedIntakes(iso);
+      const taken = meds.filter(m => intakes[`${m.id}|${moment.key}`]);
+      const dueMin = hhmmToMin(plan.times[moment.key]);
+      const today = getLocalIsoDate();
+      const now = new Date();
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+      let state = 'upcoming', lateBy = 0;
+      if (!meds.length) state = 'none';
+      else if (taken.length === meds.length) state = 'done';
+      else if (iso < today) state = 'missed';
+      else if (iso === today && dueMin !== null && nowMin >= dueMin) { state = 'late'; lateBy = nowMin - dueMin; }
+      return { meds, intakes, taken, dueMin, state, lateBy };
+    }
+
+    function getMedAdherence(iso) {
+      const plan = getMedPlan();
+      let due = 0, done = 0;
+      MOMENTS.forEach(moment => {
+        const st = getMomentStatus(plan, iso, moment);
+        due += st.meds.length;
+        done += st.taken.length;
+      });
+      return { due, done };
+    }
+
+    function renderMeds() {
+      const plan = getMedPlan();
+      const today = getLocalIsoDate();
+      const box = document.getElementById('med-moments');
+      box.innerHTML = '';
+      const banner = [];
+
+      if (!plan.meds.length) {
+        box.innerHTML = '<div class="med-empty">Aucun complément enregistré.<br>Ajoute ton plan avec « ⚙️ Gérer mes compléments ».</div>';
+      }
+
+      MOMENTS.forEach(moment => {
+        const st = getMomentStatus(plan, today, moment);
+        if (st.state === 'none') return;
+
+        const block = document.createElement('div');
+        block.className = 'med-moment';
+        const head = document.createElement('div');
+        head.className = 'med-moment-head';
+        const title = document.createElement('span');
+        title.textContent = `${moment.icon} ${moment.name} · ${plan.times[moment.key]}`;
+        const chip = document.createElement('span');
+        chip.className = 'med-chip';
+        if (st.state === 'done') {
+          chip.classList.add('done');
+          chip.textContent = '✅ Tout pris';
+        } else if (st.state === 'late') {
+          chip.classList.add('late');
+          chip.textContent = `⚠️ En retard de ${fmtDuration(st.lateBy)}`;
+          banner.push(`${moment.name.toLowerCase()} (en retard de ${fmtDuration(st.lateBy)})`);
+        } else {
+          chip.classList.add('upcoming');
+          chip.textContent = `⏰ À ${plan.times[moment.key]}`;
+        }
+        head.appendChild(title);
+        head.appendChild(chip);
+        block.appendChild(head);
+
+        st.meds.forEach(med => {
+          const intake = st.intakes[`${med.id}|${moment.key}`];
+          const row = document.createElement('button');
+          row.type = 'button';
+          row.className = 'med-row' + (intake ? ' taken' : '');
+          row.innerHTML = '<span class="med-check"></span><span class="med-name"><span class="n"></span><span class="med-dose"></span></span><span class="med-time"></span>';
+          row.querySelector('.med-check').textContent = intake ? '✓' : '';
+          row.querySelector('.n').textContent = med.name;
+          row.querySelector('.med-dose').textContent = med.dose || '';
+          if (intake) {
+            const t = row.querySelector('.med-time');
+            const takenMin = hhmmToMin(intake.timeStr);
+            const late = st.dueMin !== null && takenMin !== null && takenMin - st.dueMin > MED_LATE_MIN;
+            t.textContent = late ? `${intake.timeStr}\nen retard` : intake.timeStr;
+            t.style.whiteSpace = 'pre-line';
+            if (late) t.classList.add('late');
+          }
+          row.setAttribute('aria-pressed', intake ? 'true' : 'false');
+          row.onclick = () => intake ? uncheckIntake(intake) : checkIntakes([med], moment);
+          block.appendChild(row);
+        });
+
+        const missing = st.meds.filter(m => !st.intakes[`${m.id}|${moment.key}`]);
+        if (missing.length > 1) {
+          const all = document.createElement('button');
+          all.type = 'button';
+          all.className = 'med-all';
+          all.textContent = `✅ Tout pris (${missing.length})`;
+          all.onclick = () => checkIntakes(missing, moment);
+          block.appendChild(all);
+        }
+        box.appendChild(block);
+      });
+
+      const bannerEl = document.getElementById('med-banner');
+      if (banner.length) {
+        bannerEl.textContent = `💊 Compléments à prendre : ${banner.join(', ')}. Touchez pour cocher.`;
+        bannerEl.classList.add('show');
+      } else {
+        bannerEl.classList.remove('show');
+      }
+    }
+
+    function checkIntakes(meds, moment) {
+      const now = new Date();
+      const ids = [];
+      meds.forEach(med => {
+        const entry = {
+          id: newId(),
+          type: 'med_prise',
+          volume: 0,
+          label: `${med.name}${med.dose ? ' (' + med.dose + ')' : ''} — ${moment.name.toLowerCase()}`,
+          detail: `${med.id}|${moment.key}`,
+          isoDate: getLocalIsoDate(now),
+          dateStr: now.toLocaleDateString('fr-FR'),
+          timeStr: nowTimeStr()
+        };
+        ids.push(String(entry.id));
+        upsertLocal(entry);
+      });
+      commitChanges();
+      if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
+      const text = meds.length === 1 ? `💊 ${meds[0].name} coché` : `💊 ${meds.length} compléments ${moment.name.toLowerCase()} cochés`;
+      showToast(text, () => {
+        deleteWhere(r => ids.includes(String(r.id)));
+        commitChanges();
+        showToast('Prise décochée');
+      });
+    }
+
+    function uncheckIntake(intake) {
+      // Décoche toutes les saisies de ce complément pour ce moment (cas de doublons entre appareils)
+      const removed = [];
+      deleteWhere(r => {
+        const match = r.type === 'med_prise' && r.isoDate === intake.isoDate && r.detail === intake.detail;
+        if (match) removed.push(String(r.id));
+        return match;
+      });
+      commitChanges();
+      showToast('Prise décochée', () => {
+        removed.forEach(id => {
+          const r = records.find(x => String(x.id) === id);
+          if (r && r.deleted) {
+            const copy = Object.assign({}, r);
+            delete copy.deleted;
+            upsertLocal(copy);
+          }
+        });
+        commitChanges();
+      });
+    }
+
+    // ----- Gestion du plan -----
+    function toggleMedEditor(force) {
+      const editor = document.getElementById('med-editor');
+      const open = force !== undefined ? force : editor.style.display !== 'block';
+      editor.style.display = open ? 'block' : 'none';
+      document.getElementById('med-editor-btn').style.display = open ? 'none' : 'block';
+      document.getElementById('med-editor-msg').textContent = '';
+      if (open) {
+        medDraft = JSON.parse(JSON.stringify(getMedPlan()));
+        medNewMoments = ['matin'];
+        renderMedEditor();
+      }
+    }
+
+    function momentChips(container, selected, onToggle) {
+      container.innerHTML = '';
+      MOMENTS.forEach(m => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'chip' + (selected.includes(m.key) ? ' active' : '');
+        chip.textContent = `${m.icon} ${m.name}`;
+        chip.onclick = () => onToggle(m.key);
+        container.appendChild(chip);
+      });
+    }
+
+    function toggleInList(list, key) {
+      const i = list.indexOf(key);
+      if (i >= 0) list.splice(i, 1); else list.push(key);
+    }
+
+    function renderMedEditor() {
+      const times = document.getElementById('med-times');
+      times.innerHTML = '';
+      MOMENTS.forEach(m => {
+        const label = document.createElement('label');
+        label.textContent = `${m.icon} ${m.name}`;
+        const input = document.createElement('input');
+        input.type = 'time';
+        input.value = medDraft.times[m.key];
+        input.oninput = () => { medDraft.times[m.key] = input.value; };
+        label.appendChild(input);
+        times.appendChild(label);
+      });
+
+      const list = document.getElementById('med-edit-list');
+      list.innerHTML = '';
+      if (!medDraft.meds.length) {
+        list.innerHTML = '<div class="med-empty" style="padding: 4px 0 10px;">Aucun complément pour l\'instant.</div>';
+      }
+      medDraft.meds.forEach((med, idx) => {
+        const item = document.createElement('div');
+        item.className = 'med-edit-item';
+        const name = document.createElement('input');
+        name.className = 'date-picker-input';
+        name.maxLength = 60;
+        name.value = med.name;
+        name.placeholder = 'Nom';
+        name.oninput = () => { med.name = name.value; };
+        const dose = document.createElement('input');
+        dose.className = 'date-picker-input';
+        dose.maxLength = 60;
+        dose.value = med.dose || '';
+        dose.placeholder = 'Dose';
+        dose.oninput = () => { med.dose = dose.value; };
+        const foot = document.createElement('div');
+        foot.className = 'med-edit-foot';
+        const chips = document.createElement('div');
+        chips.className = 'chip-row';
+        med.moments = med.moments || [];
+        momentChips(chips, med.moments, key => { toggleInList(med.moments, key); renderMedEditor(); });
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'med-del';
+        del.textContent = '🗑 Retirer';
+        del.onclick = () => { medDraft.meds.splice(idx, 1); renderMedEditor(); };
+        foot.appendChild(chips);
+        foot.appendChild(del);
+        item.appendChild(name);
+        item.appendChild(dose);
+        item.appendChild(foot);
+        list.appendChild(item);
+      });
+
+      momentChips(document.getElementById('med-new-moments'), medNewMoments, key => {
+        toggleInList(medNewMoments, key);
+        renderMedEditor();
+      });
+    }
+
+    function addMedToDraft() {
+      const msg = document.getElementById('med-editor-msg');
+      const nameEl = document.getElementById('med-new-name');
+      const doseEl = document.getElementById('med-new-dose');
+      const name = nameEl.value.trim();
+      if (!name) {
+        msg.className = 'weight-feedback err';
+        msg.textContent = 'Indique le nom du complément.';
+        return;
+      }
+      if (!medNewMoments.length) {
+        msg.className = 'weight-feedback err';
+        msg.textContent = 'Choisis au moins un moment de prise.';
+        return;
+      }
+      medDraft.meds.push({
+        id: 'm' + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36),
+        name: name.slice(0, 60),
+        dose: doseEl.value.trim().slice(0, 60),
+        moments: medNewMoments.slice()
+      });
+      nameEl.value = '';
+      doseEl.value = '';
+      msg.textContent = '';
+      renderMedEditor();
+    }
+
+    function saveMedEditor() {
+      const msg = document.getElementById('med-editor-msg');
+      // Un complément tapé mais pas encore ajouté : on l'ajoute
+      if (document.getElementById('med-new-name').value.trim()) addMedToDraft();
+      for (const m of MOMENTS) {
+        if (hhmmToMin(medDraft.times[m.key]) === null) {
+          msg.className = 'weight-feedback err';
+          msg.textContent = `Heure invalide pour « ${m.name} ».`;
+          return;
+        }
+      }
+      for (const med of medDraft.meds) {
+        med.name = String(med.name || '').trim();
+        if (!med.name) {
+          msg.className = 'weight-feedback err';
+          msg.textContent = 'Un complément n\'a pas de nom.';
+          return;
+        }
+        if (!med.moments || !med.moments.length) {
+          msg.className = 'weight-feedback err';
+          msg.textContent = `Choisis au moins un moment pour « ${med.name} ».`;
+          return;
+        }
+      }
+      saveMedPlan(medDraft);
+      toggleMedEditor(false);
+      showToast('💊 Plan de compléments enregistré');
+    }
+
+    setInterval(() => {
+      if (!document.body.classList.contains('locked')) renderMeds();
+    }, 60000);
 
     // ================== BOISSONS ==================
     function addLog(type, volume, label) {
@@ -678,7 +1347,7 @@
     function setDrinkCategory(cat) {
       if (!DRINK_CATEGORIES[cat]) return;
       drinkCategory = cat;
-      try { localStorage.setItem('hydra_drink_cat', cat); } catch (e) {}
+      prefSet('hydra_drink_cat', cat);
       document.getElementById('drink-custom').style.display = 'none';
       renderDrinkPanel();
     }
@@ -689,7 +1358,7 @@
       card.style.setProperty('--cat-color', cat.color);
       card.style.setProperty('--tile-bg', cat.bg);
       card.style.setProperty('--tile-border', cat.border);
-      document.querySelectorAll('.drink-cat').forEach(b => b.classList.toggle('active', b.dataset.cat === drinkCategory));
+      document.querySelectorAll('#drink-card .drink-cat').forEach(b => b.classList.toggle('active', b.dataset.cat === drinkCategory));
 
       // Nombre de fois où chaque contenant a été pris aujourd'hui
       const today = getLocalIsoDate();
@@ -857,7 +1526,8 @@
       if (tabName === 'today') {
         document.querySelectorAll('.tab-btn')[0].classList.add('active');
         document.getElementById('tab-today').classList.add('active');
-        initDraftsForToday();
+        renderToday();
+        renderMeds();
       } else {
         document.querySelectorAll('.tab-btn')[1].classList.add('active');
         document.getElementById('tab-history').classList.add('active');
@@ -911,17 +1581,19 @@
       totalPlain = Math.max(0, totalPlain);
       totalSro = Math.max(0, totalSro);
       totalOther = Math.max(0, totalOther);
-      const counts = getDayCounts(todayIso);
+      const losses = getDayLosses(todayIso);
       const totalFluid = totalPlain + totalSro + totalOther;
 
       document.getElementById('stat-plain').innerText = totalPlain + ' ml';
       document.getElementById('stat-sro').innerText = totalSro + ' ml';
       document.getElementById('stat-other').innerText = totalOther + ' ml';
       document.getElementById('total-fluid').innerText = totalFluid + ' ml';
-      updateDraftDisplay();
+      document.getElementById('stat-urine').innerText = losses.urineCount;
+      document.getElementById('stat-urine-ml').innerText = losses.urineMl + ' ml';
+      document.getElementById('stat-stool').innerText = losses.stoolCount;
+      document.getElementById('stat-stool-ml').innerText = losses.stoolMl + ' ml';
 
-      const baseLoss = 600;
-      const totalLoss = baseLoss + (counts.urine * 250) + (counts.selle * 200);
+      const totalLoss = losses.total;
       const diff = totalFluid - totalLoss;
 
       document.getElementById('balance-in').innerText = totalFluid + ' ml';
@@ -950,6 +1622,7 @@
 
       logs.forEach(item => {
         if (item.isoDate === selectedDate) {
+          if (item.type === 'med_plan') return;
           // Pesée remplacée par une plus récente : on ne l'affiche pas
           if (item.type === 'poids_matin' && Number(item.id) !== weightDay.matinId) return;
           if (item.type === 'poids_soir' && Number(item.id) !== weightDay.soirId) return;
@@ -966,9 +1639,12 @@
           else if (item.type === 'selle' || item.type === 'selle_sub' || item.type === 'selle_summary') { cssClass = 'item-stool'; badge = '🟣 Selle'; }
           else if (item.type === 'poids_matin') { cssClass = 'item-weight-am'; badge = '🌅 Poids matin'; }
           else if (item.type === 'poids_soir') { cssClass = 'item-weight-pm'; badge = '🌙 Poids soir'; }
+          else if (item.type === 'perte_urine') { cssClass = 'item-urine'; badge = '🟡 Urine'; }
+          else if (item.type === 'perte_selle') { cssClass = 'item-stool'; badge = '🟣 Selle'; }
+          else if (item.type === 'med_prise') { cssClass = 'item-weight-pm'; badge = '💊 Complément'; }
 
           const vol = Number(item.volume) || 0;
-          const volDisplay = vol !== 0 ? ` (${vol > 0 ? '+' : ''}${vol} ml)` : '';
+          const volDisplay = (vol !== 0 && FLUID_TYPES.includes(item.type)) ? ` (${vol > 0 ? '+' : ''}${vol} ml)` : '';
           const div = document.createElement('div');
           div.className = `history-item ${cssClass}`;
           const inner = document.createElement('div');
@@ -992,10 +1668,18 @@
       totalPlain = Math.max(0, totalPlain);
       totalSro = Math.max(0, totalSro);
       totalOther = Math.max(0, totalOther);
-      const counts = getDayCounts(selectedDate);
+      const losses = getDayLosses(selectedDate);
 
       const totalFluid = totalPlain + totalSro + totalOther;
-      const totalLoss = 600 + (counts.urine * 250) + (counts.selle * 200);
+      const totalLoss = losses.total;
+
+      const adherence = getMedAdherence(selectedDate);
+      const extra = [
+        `🟡 ${losses.urineCount} urine(s) · ${losses.urineMl} ml`,
+        `🟣 ${losses.stoolCount} selle(s) · ${losses.stoolMl} ml`
+      ];
+      if (adherence.due) extra.push(`💊 ${adherence.done}/${adherence.due} prise(s)`);
+      document.getElementById('hist-extra').textContent = extra.join('  ·  ');
       const diff = totalFluid - totalLoss;
 
       document.getElementById('hist-stat-bu').innerText = totalFluid + ' ml';
@@ -1025,8 +1709,7 @@
       const labels = dates.map(d => d.split('-').slice(1).reverse().join('/'));
       const buData = dates.map(d => Math.max(0, buMap[d]));
       const lossesData = dates.map(d => {
-        const c = getDayCounts(d);
-        return 600 + (c.urine * 250) + (c.selle * 200);
+        return getDayLosses(d).total;
       });
 
       const ctx = document.getElementById('hydraChart').getContext('2d');
@@ -1281,10 +1964,15 @@
       });
     }
 
-    // ================== SYNCHRONISATION SÉCURISÉE ==================
+    // ================== CONNEXION & SYNCHRONISATION SÉCURISÉE ==================
+    // Identifiant de connexion Google (il n'est pas secret) : le même que GOOGLE_CLIENT_ID dans le script Google.
+    const GOOGLE_CLIENT_ID = '473355473317-ag0su1sgdfj8jpn0d7j54914co1m1h8q.apps.googleusercontent.com';
+
     let syncing = false;
     let syncAgain = false;
     let syncTimer = null;
+    let gisInitialized = false;
+    let gisLoading = false;
 
     function saveSyncConf() {
       lsSet(LS_SYNC, syncConf);
@@ -1294,6 +1982,177 @@
       return typeof url === 'string' && url.startsWith(SYNC_URL_PREFIX) && url.endsWith('/exec');
     }
 
+    function hasSession() {
+      const s = syncConf.session;
+      return !!(s && s.token && Number(s.exp) > Date.now());
+    }
+
+    async function apiCall(payload) {
+      const response = await fetch(syncConf.url, {
+        method: 'POST',
+        cache: 'no-store',
+        redirect: 'follow',
+        body: JSON.stringify(payload)
+      });
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        throw new Error('format');
+      }
+      if (!data || typeof data.ok !== 'boolean') throw new Error('format');
+      return data;
+    }
+
+    // ----- Portail de connexion -----
+    function setGateMsg(text, kind) {
+      const el = document.getElementById('gate-msg');
+      el.textContent = text || '';
+      el.className = 'gate-msg' + (kind ? ' ' + kind : '');
+    }
+
+    function showGateCode() {
+      document.getElementById('gate-code').style.display = 'block';
+      document.getElementById('gate-code-input').focus();
+    }
+
+    function lockApp(message) {
+      document.body.classList.add('locked');
+      setGateMsg(message || '', message ? 'err' : '');
+      initGoogleButton();
+    }
+
+    function unlockApp() {
+      document.body.classList.remove('locked');
+      renderAll();
+      updateSyncStatusIdle();
+      syncNow(true);
+    }
+
+    function loadGis() {
+      if (gisLoading) return;
+      gisLoading = true;
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.onload = initGoogleButton;
+      script.onerror = () => {
+        gisLoading = false;
+        setGateMsg('Impossible de charger la connexion Google. Vérifie ta connexion Internet.', 'err');
+      };
+      document.head.appendChild(script);
+    }
+
+    function initGoogleButton() {
+      const box = document.getElementById('gate-google');
+      if (!GOOGLE_CLIENT_ID) {
+        box.innerHTML = '';
+        setGateMsg('La connexion Google n\'est pas encore configurée : utilise le code secret.');
+        showGateCode();
+        return;
+      }
+      if (!(window.google && google.accounts && google.accounts.id)) {
+        loadGis();
+        return;
+      }
+      if (!gisInitialized) {
+        google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: onGoogleCredential,
+          auto_select: true,
+          cancel_on_tap_outside: false,
+          use_fedcm_for_prompt: true
+        });
+        gisInitialized = true;
+      }
+      box.innerHTML = '';
+      google.accounts.id.renderButton(box, { theme: 'filled_blue', size: 'large', shape: 'pill', text: 'signin_with', locale: 'fr', width: 260 });
+      google.accounts.id.prompt();
+    }
+
+    function loginErrorMessage(err) {
+      const code = err && err.message;
+      if (code === 'forbidden_email') return `Le compte ${err.email || ''} n'est pas autorisé à ouvrir cette appli.`;
+      const messages = {
+        bad_token: 'Connexion Google refusée. Réessaie.',
+        unauthorized: 'Code secret refusé.',
+        locked: 'Trop de tentatives : accès bloqué 15 minutes.',
+        google_not_configured: 'Le script Google n\'a pas encore l\'identifiant de connexion (GOOGLE_CLIENT_ID).',
+        format: 'Le script Google ne répond pas comme prévu (pas encore mis à jour ?).'
+      };
+      return messages[code] || (navigator.onLine ? 'Erreur de connexion au serveur. Réessaie.' : 'Pas de connexion Internet.');
+    }
+
+    async function onGoogleCredential(resp) {
+      if (!resp || !resp.credential) return;
+      setGateMsg('Vérification de ton compte…');
+      try {
+        const data = await apiCall({ action: 'login_google', idToken: resp.credential });
+        if (!data.ok) {
+          const err = new Error(data.error || 'server');
+          err.email = data.email;
+          throw err;
+        }
+        startSession(data);
+      } catch (err) {
+        setGateMsg(loginErrorMessage(err), 'err');
+      }
+    }
+
+    async function loginWithCode() {
+      const input = document.getElementById('gate-code-input');
+      const code = input.value.trim();
+      if (!code) return;
+      setGateMsg('Vérification du code…');
+      try {
+        const data = await apiCall({ action: 'login_code', token: code });
+        if (!data.ok) throw new Error(data.error || 'server');
+        input.value = '';
+        startSession(data);
+      } catch (err) {
+        setGateMsg(loginErrorMessage(err), 'err');
+      }
+    }
+
+    function startSession(data) {
+      syncConf.session = { token: data.session, email: data.email, exp: Number(data.expires) };
+      saveSyncConf();
+      setGateMsg('');
+      unlockApp();
+    }
+
+    function endSession(message) {
+      syncConf.session = null;
+      saveSyncConf();
+      if (window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
+      document.getElementById('sync-settings').style.display = 'none';
+      lockApp(message);
+    }
+
+    async function logout() {
+      if (!confirm('Se déconnecter de cet appareil ?')) return;
+      if (pending.size && navigator.onLine) await syncNow(true);
+      let wipe = false;
+      if (pending.size) {
+        alert(`${pending.size} saisie(s) ne sont pas encore synchronisées : elles restent sur cet appareil et partiront à la prochaine connexion.`);
+      } else {
+        wipe = confirm('Effacer aussi les données gardées sur cet appareil ?\n\nConseillé sur un appareil partagé. Elles restent en sécurité dans ton Google Sheet et reviendront à la prochaine connexion.');
+      }
+      const token = syncConf.session && syncConf.session.token;
+      if (token) apiCall({ action: 'logout', session: token }).catch(() => {});
+      if (wipe) {
+        records = [];
+        pending = new Set();
+        syncConf.lastSrv = 0;
+        syncConf.lastOk = 0;
+        refreshView();
+        persist();
+        renderAll();
+      }
+      endSession('Tu es déconnecté.');
+    }
+
+    // ----- Statut de synchro -----
     function setSyncStatus(text, kind) {
       const el = document.getElementById('sync-status');
       el.textContent = text;
@@ -1308,11 +2167,10 @@
       return sameDay ? `à ${t}` : `le ${d.toLocaleDateString('fr-FR')} à ${t}`;
     }
 
-    // Statut affiché quand aucune synchro n'est en cours
     function updateSyncStatusIdle() {
       if (syncing) return;
-      if (!syncConf.token) {
-        setSyncStatus('🔒 Synchro désactivée : configure ton code secret (⚙️)', 'warn');
+      if (!hasSession()) {
+        setSyncStatus('🔒 Non connecté', 'warn');
         return;
       }
       const waiting = pending.size ? ` · ${pending.size} saisie(s) en attente` : '';
@@ -1326,15 +2184,15 @@
     }
 
     function scheduleSync(delay = 1500) {
-      if (!syncConf.token) return;
+      if (!hasSession()) return;
       clearTimeout(syncTimer);
       syncTimer = setTimeout(() => syncNow(true), delay);
     }
 
     async function syncNow(silent = false) {
-      if (!syncConf.token) {
-        updateSyncStatusIdle();
-        if (!silent) openSyncSettings();
+      if (!hasSession()) {
+        if (syncConf.session) endSession('Ta session a expiré : reconnecte-toi.');
+        else updateSyncStatusIdle();
         return;
       }
       if (!navigator.onLine) {
@@ -1352,25 +2210,11 @@
       btn.textContent = '🔄 Synchronisation…';
       setSyncStatus('Synchronisation en cours…');
 
-      // On envoie les saisies modifiées ; on note leur version pour savoir lesquelles sont confirmées
       const sent = records.filter(r => pending.has(String(r.id))).map(r => Object.assign({}, r));
       const sentVersion = new Map(sent.map(r => [String(r.id), r.updatedAt]));
 
       try {
-        const response = await fetch(syncConf.url, {
-          method: 'POST',
-          cache: 'no-store',
-          redirect: 'follow',
-          body: JSON.stringify({ action: 'sync', token: syncConf.token, since: syncConf.lastSrv || 0, records: sent })
-        });
-
-        let data;
-        try {
-          data = await response.json();
-        } catch (e) {
-          throw new Error('format');
-        }
-        if (!data || typeof data.ok !== 'boolean') throw new Error('format');
+        const data = await apiCall({ action: 'sync', session: syncConf.session.token, since: syncConf.lastSrv || 0, records: sent });
         if (!data.ok) throw new Error(data.error || 'server');
 
         // Les saisies envoyées sont confirmées (sauf si elles ont été re-modifiées pendant l'envoi)
@@ -1380,9 +2224,8 @@
           if (i === undefined || records[i].updatedAt === version) pending.delete(id);
         });
 
-        // Fusion des données reçues : pour chaque saisie, la version la plus récente l'emporte
-        const today = getLocalIsoDate();
-        let changed = 0, touchedTodayCounts = false;
+        // Fusion : pour chaque saisie, la version la plus récente l'emporte
+        let changed = 0;
         (Array.isArray(data.records) ? data.records : []).forEach(remote => {
           if (!remote || remote.id === undefined) return;
           const id = String(remote.id);
@@ -1398,7 +2241,6 @@
             return;
           }
           changed++;
-          if (remote.isoDate === today && COUNT_TYPES.includes(remote.type)) touchedTodayCounts = true;
         });
 
         syncConf.lastSrv = Number(data.serverTime) || syncConf.lastSrv;
@@ -1407,23 +2249,21 @@
         refreshView();
         persist();
 
-        if (changed) {
-          if (touchedTodayCounts) initDraftsForToday();
-          renderAll();
-        }
+        if (changed) renderAll();
         syncing = false;
         updateSyncStatusIdle();
       } catch (err) {
         syncing = false;
-        const messages = {
-          unauthorized: '❌ Code secret refusé : vérifie-le dans ⚙️',
-          locked: '⛔ Trop de codes faux : synchro bloquée 15 min',
-          not_configured: '⚠️ Code secret pas encore créé dans le script Google',
-          format: '⚠️ Le script Google ne répond pas comme prévu (pas encore mis à jour ?)'
-        };
-        const waiting = pending.size ? ` · ${pending.size} en attente` : '';
-        setSyncStatus((messages[err.message] || '⚠️ Échec de la synchro, nouvel essai plus tard') + waiting, 'err');
-        if (err.message === 'unauthorized' && !silent) openSyncSettings();
+        if (err.message === 'unauthorized') {
+          endSession('Ta session a expiré ou a été fermée : reconnecte-toi.');
+        } else {
+          const messages = {
+            locked: '⛔ Trop de tentatives refusées : synchro bloquée 15 min',
+            format: '⚠️ Le script Google ne répond pas comme prévu (pas encore mis à jour ?)'
+          };
+          const waiting = pending.size ? ` · ${pending.size} en attente` : '';
+          setSyncStatus((messages[err.message] || '⚠️ Échec de la synchro, nouvel essai plus tard') + waiting, 'err');
+        }
       } finally {
         btn.disabled = false;
         btn.textContent = '🔄 Synchroniser maintenant';
@@ -1434,10 +2274,23 @@
       }
     }
 
-    // ----- Réglages de synchro (propres à chaque appareil) -----
+    // ----- Réglages (propres à chaque appareil) -----
     function openSyncSettings() {
       document.getElementById('sync-settings').style.display = 'block';
-      document.getElementById('sync-token').value = syncConf.token || '';
+      const s = syncConf.session;
+      const account = document.getElementById('sync-account');
+      if (s) {
+        const until = new Date(Number(s.exp)).toLocaleDateString('fr-FR');
+        account.innerHTML = '';
+        const who = document.createElement('div');
+        who.textContent = `👤 Connecté : ${s.email || 'compte autorisé'}`;
+        const exp = document.createElement('div');
+        exp.style.color = '#64748b';
+        exp.style.fontSize = '0.78rem';
+        exp.textContent = `Session valable jusqu'au ${until} sur cet appareil.`;
+        account.appendChild(who);
+        account.appendChild(exp);
+      }
       document.getElementById('sync-url').value = syncConf.url || DEFAULT_SYNC_URL;
       document.getElementById('sync-settings-msg').textContent = '';
     }
@@ -1448,91 +2301,26 @@
       else openSyncSettings();
     }
 
-    function toggleTokenVisibility(show) {
-      document.getElementById('sync-token').type = show ? 'text' : 'password';
-    }
-
-    function applySyncSettings(token, url) {
-      const urlChanged = url !== syncConf.url;
-      syncConf.token = token;
-      syncConf.url = url;
-      if (urlChanged) {
-        // Nouveau serveur : tout renvoyer et tout récupérer
-        syncConf.lastSrv = 0;
-        records.forEach(r => pending.add(String(r.id)));
-        persist();
-      }
-      saveSyncConf();
-    }
-
     function saveSyncSettings() {
       const msg = document.getElementById('sync-settings-msg');
-      const token = document.getElementById('sync-token').value.trim();
       const url = document.getElementById('sync-url').value.trim() || DEFAULT_SYNC_URL;
-
-      if (token.replace(/[^A-Za-z0-9]/g, '').length < 12) {
-        msg.className = 'weight-feedback err';
-        msg.textContent = 'Code secret trop court.';
-        return;
-      }
       if (!isValidSyncUrl(url)) {
         msg.className = 'weight-feedback err';
         msg.textContent = 'L\'adresse doit commencer par https://script.google.com/ et finir par /exec.';
         return;
       }
-
-      applySyncSettings(token, url);
-      msg.className = 'weight-feedback ok';
-      msg.textContent = 'Enregistré sur cet appareil.';
-      document.getElementById('sync-settings').style.display = 'none';
-      syncNow(false);
-    }
-
-    function forgetSyncToken() {
-      if (!confirm('Retirer le code secret de cet appareil ? Les données restent sur l\'appareil, mais la synchro s\'arrête.')) return;
-      syncConf.token = '';
-      saveSyncConf();
-      document.getElementById('sync-token').value = '';
-      updateSyncStatusIdle();
-    }
-
-    // Lien qui configure un autre appareil d'un seul clic (le code est dans la partie # : jamais envoyé au serveur web)
-    async function copySetupLink() {
-      const msg = document.getElementById('sync-settings-msg');
-      const token = document.getElementById('sync-token').value.trim() || syncConf.token;
-      if (!token) {
-        msg.className = 'weight-feedback err';
-        msg.textContent = 'Enregistre d\'abord ton code secret.';
+      if (url !== syncConf.url) {
+        // Nouveau serveur : il faut s'y reconnecter, puis tout renvoyer et tout récupérer
+        syncConf.url = url;
+        syncConf.lastSrv = 0;
+        records.forEach(r => pending.add(String(r.id)));
+        persist();
+        saveSyncConf();
+        endSession('Nouvelle adresse enregistrée : connecte-toi.');
         return;
       }
-      let link = `${location.origin}${location.pathname}#sync=${encodeURIComponent(token)}`;
-      if (syncConf.url !== DEFAULT_SYNC_URL) link += `&url=${encodeURIComponent(syncConf.url)}`;
-      try {
-        await navigator.clipboard.writeText(link);
-        msg.className = 'weight-feedback ok';
-        msg.textContent = 'Lien copié. Ouvre-le sur ton autre appareil, puis supprime-le du message.';
-      } catch (e) {
-        msg.className = 'weight-feedback';
-        msg.textContent = link;
-      }
-    }
-
-    // Lecture d'un lien de configuration (#sync=CODE)
-    function readSetupLink() {
-      const hash = location.hash.replace(/^#/, '');
-      if (!hash) return false;
-      const params = new URLSearchParams(hash);
-      const token = (params.get('sync') || '').trim();
-      if (!token) return false;
-      const url = params.get('url') || syncConf.url || DEFAULT_SYNC_URL;
-      // On retire le code de la barre d'adresse et de l'historique
-      history.replaceState(null, '', location.pathname + location.search);
-      if (!isValidSyncUrl(url)) {
-        alert('Lien de configuration refusé : adresse de serveur invalide.');
-        return false;
-      }
-      applySyncSettings(token, url);
-      return true;
+      msg.className = 'weight-feedback ok';
+      msg.textContent = 'Adresse inchangée.';
     }
 
     // ----- Déclencheurs automatiques -----
@@ -1553,14 +2341,25 @@
       if (e.key === 'Enter') addCustomDrink();
     });
 
+    document.getElementById('loss-custom-ml').addEventListener('keydown', e => {
+      if (e.key === 'Enter') addMeasuredUrine();
+    });
+    document.getElementById('gate-code-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') loginWithCode();
+    });
+
     // ================== DÉMARRAGE ==================
-    readSetupLink();
-    initDraftsForToday();
-    renderToday();
-    renderDrinkPanel();
+    // L'ancien code secret n'est plus gardé par l'appli : la connexion passe par le portail
+    if (syncConf.token) {
+      delete syncConf.token;
+      saveSyncConf();
+    }
+    // Le lien de configuration de l'ancienne version (#sync=…) n'est plus utilisé : on l'efface de l'adresse
+    if (location.hash.includes('sync=')) history.replaceState(null, '', location.pathname + location.search);
+
     renderWeightToday();
-    updateSyncStatusIdle();
-    syncNow(true);
+    if (hasSession()) unlockApp();
+    else lockApp(syncConf.session ? 'Ta session a expiré : reconnecte-toi.' : '');
   </script>
 </body>
 </html>
