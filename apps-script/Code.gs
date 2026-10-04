@@ -1,5 +1,5 @@
 /**
- * Suivi Hydrique Pro — serveur Google Apps Script (version 3)
+ * Suivi Hydrique Pro — serveur Google Apps Script (version 3.1 : repas et ingrédients)
  * =============================================================================
  *
  * MISE À JOUR DEPUIS LA VERSION PRÉCÉDENTE
@@ -341,6 +341,7 @@ function clean_(r) {
   if (r.count !== undefined && r.count !== null && r.count !== '' && isFinite(Number(r.count))) rec.count = Number(r.count);
   if (r.weight !== undefined && r.weight !== null && r.weight !== '' && isFinite(Number(r.weight))) rec.weight = Number(r.weight);
   if (r.detail !== undefined && r.detail !== null) rec.detail = String(r.detail).slice(0, 80);
+  if (r.data !== undefined && r.data !== null) rec.data = String(r.data).slice(0, 20000);   // repas, plats (ingrédients)
   if (type === 'med_plan' && r.plan !== undefined) rec.plan = String(r.plan).slice(0, 20000);
   if (r.deleted) rec.deleted = true;
   return rec;

@@ -197,6 +197,82 @@
     .med-edit-foot { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
     .med-del { border: none; background: transparent; color: #b91c1c; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; padding: 6px; }
     #med-card .chip.active { background: #4f46e5; border-color: #4f46e5; }
+
+    /* Nourriture */
+    #food-card .chip.active, #food-sheet .chip.active { background: #ea580c; border-color: #ea580c; }
+    .food-moments { margin: 10px 0; }
+    .food-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+    .food-action { padding: 10px 4px; border: 1px solid #fed7aa; border-radius: 12px; background: #fff7ed; color: #9a3412; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; line-height: 1.25; }
+    .food-action small { font-weight: 500; font-size: 0.7rem; color: #c2410c; }
+    .food-results { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    .food-results-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 700; margin-top: 4px; }
+    .food-row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 1px solid #e2e8f0; border-radius: 10px; background: white; cursor: pointer; font-family: inherit; text-align: left; font-size: 0.88rem; color: #1e293b; }
+    .food-row .fr-main { flex: 1; min-width: 0; }
+    .food-row .fr-name { font-weight: 600; display: block; }
+    .food-row .fr-sub { font-size: 0.74rem; color: #64748b; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .food-row .fr-badge { font-size: 0.7rem; padding: 2px 7px; border-radius: 10px; background: #f1f5f9; color: #64748b; white-space: nowrap; }
+    .food-moment-block { margin-bottom: 10px; }
+    .food-moment-title { font-weight: 700; font-size: 0.85rem; color: #334155; margin: 6px 0; }
+    .food-meal { border: 1px solid #e2e8f0; border-left: 4px solid #ea580c; border-radius: 10px; padding: 9px 10px; margin-bottom: 6px; background: white; cursor: pointer; }
+    .food-meal-top { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; }
+    .food-meal-top .fm-name { flex: 1; font-weight: 600; }
+    .food-meal-top .fm-time { font-size: 0.72rem; color: #94a3b8; }
+    .fm-portion { font-size: 0.7rem; padding: 2px 7px; border-radius: 10px; background: #ffedd5; color: #9a3412; font-weight: 700; }
+    .food-meal-details { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e2e8f0; font-size: 0.82rem; color: #475569; }
+    .food-meal.open .food-meal-details { display: block; }
+    .ing-chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 4px 0 6px; }
+    .ing-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 14px; background: #f1f5f9; color: #334155; font-size: 0.78rem; }
+    .ing-chip button { border: none; background: none; color: #94a3b8; cursor: pointer; font-size: 0.85rem; padding: 0 0 0 2px; }
+    .fm-actions { display: flex; justify-content: flex-end; margin-top: 6px; }
+    .fs-meta { font-size: 0.78rem; color: #64748b; margin: 4px 0 8px; line-height: 1.4; }
+
+    /* Fenêtres (fiche, scan) */
+    body.modal-open { overflow: hidden; }
+    .sheet { position: fixed; inset: 0; z-index: 60; background: rgba(15, 23, 42, 0.45); display: none; align-items: flex-end; justify-content: center; }
+    .sheet-box { width: 100%; max-width: 450px; max-height: 92vh; overflow-y: auto; background: white; border-radius: 20px 20px 0 0; padding: 16px; box-sizing: border-box; }
+    .sheet-head { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 1rem; margin-bottom: 10px; }
+    .sheet-head button { border: none; background: #f1f5f9; border-radius: 50%; width: 32px; height: 32px; font-size: 1rem; cursor: pointer; }
+    #scan-video { width: 100%; border-radius: 12px; background: #000; max-height: 50vh; object-fit: cover; }
+
+    /* Rapport médecin */
+    .report-view { position: fixed; inset: 0; z-index: 70; background: #f1f5f9; overflow-y: auto; display: none; }
+    .report-toolbar { position: sticky; top: 0; z-index: 2; background: white; padding: 12px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .report-toolbar-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .report-toolbar input { margin-top: 6px; }
+    #report-periods .chip.active { background: #0f766e; border-color: #0f766e; }
+    .report-content { background: white; max-width: 820px; margin: 12px auto; padding: 20px; box-sizing: border-box; color: #0f172a; font-size: 0.85rem; }
+    .rp-head h1 { font-size: 1.3rem; margin: 0 0 4px; }
+    .rp-head div { color: #475569; font-size: 0.85rem; }
+    .report-content h2 { font-size: 1.05rem; margin: 20px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #0f766e; color: #0f766e; }
+    .report-content h3 { font-size: 0.95rem; margin: 0 0 6px; }
+    .report-content h4 { font-size: 0.8rem; margin: 8px 0 3px; color: #475569; text-transform: uppercase; letter-spacing: 0.4px; }
+    .rp-kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+    .rp-kpi { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; }
+    .rp-kpi b { display: block; font-size: 1.05rem; }
+    .rp-kpi span { font-size: 0.72rem; color: #64748b; }
+    .rp-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    .rp-table th, .rp-table td { border: 1px solid #cbd5e1; padding: 4px 5px; text-align: center; }
+    .rp-table th { background: #f1f5f9; }
+    .rp-table td.neg { color: #b91c1c; font-weight: 700; }
+    .rp-table-wrap { overflow-x: auto; }
+    .rp-day { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
+    .rp-day ul { margin: 2px 0; padding-left: 18px; }
+    .rp-day li { margin: 1px 0; }
+    .rp-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .rp-muted { color: #64748b; }
+    .rp-foot { font-size: 0.72rem; color: #64748b; margin-top: 16px; line-height: 1.5; }
+    .rp-chart { width: 100%; max-width: 760px; margin: 6px 0 4px; }
+
+    @media print {
+      body { background: white !important; padding: 0 !important; max-width: none !important; margin: 0 !important; }
+      body > *:not(#report-view) { display: none !important; }
+      #report-view { position: static !important; display: block !important; overflow: visible !important; background: white !important; }
+      .no-print { display: none !important; }
+      .report-content { margin: 0; padding: 0; max-width: none; font-size: 9.5pt; }
+      .rp-day, .rp-kpis, .rp-chart { break-inside: avoid; }
+      .rp-table-wrap { overflow: visible; }
+      @page { margin: 12mm; }
+    }
   </style>
 </head>
 <body class="locked">
@@ -214,7 +290,7 @@
         <input type="password" id="gate-code-input" class="date-picker-input" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX">
         <button class="sync-btn" type="button" style="margin-top: 8px;" onclick="loginWithCode()">Déverrouiller</button>
       </div>
-      <div class="gate-foot">🔒 Tes données ne sont accessibles qu'avec ton compte.<br>Version 2026-10-04 · v7</div>
+      <div class="gate-foot">🔒 Tes données ne sont accessibles qu'avec ton compte.<br>Version 2026-10-04 · v8</div>
     </div>
   </div>
 
@@ -244,8 +320,9 @@
 
   <!-- Navigation -->
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('today')">Aujourd'hui</button>
-    <button class="tab-btn" onclick="switchTab('history')">Historique</button>
+    <button class="tab-btn active" data-tab="today" onclick="switchTab('today')">Aujourd'hui</button>
+    <button class="tab-btn" data-tab="food" onclick="switchTab('food')">🍽️ Nourriture</button>
+    <button class="tab-btn" data-tab="history" onclick="switchTab('history')">Historique</button>
   </div>
 
   <!-- ONGLET 1 : AUJOURD'HUI -->
@@ -400,8 +477,41 @@
 
   </div>
 
+  <!-- ONGLET NOURRITURE -->
+  <div id="tab-food" class="tab-content">
+    <div class="card" id="food-card">
+      <div class="card-title">🍽️ Ajouter ce que j'ai mangé</div>
+      <input type="date" id="food-date" class="date-picker-input" onchange="renderFood()">
+      <div class="chip-row food-moments" id="food-moments"></div>
+      <input type="search" id="food-search" class="date-picker-input" placeholder="🔎 Chercher dans mes plats…" autocomplete="off" oninput="renderFoodResults()">
+      <div id="food-results" class="food-results"></div>
+      <div class="food-actions">
+        <button class="food-action" type="button" onclick="startScan()">📷 Scanner<br><small>code-barres</small></button>
+        <button class="food-action" type="button" onclick="searchOFF()">🌍 Chercher<br><small>produit du commerce</small></button>
+        <button class="food-action" type="button" onclick="openMealSheet({ source: 'maison' })">➕ Nouveau<br><small>plat maison</small></button>
+      </div>
+      <div id="food-msg" class="weight-feedback"></div>
+      <div id="food-off-results" class="food-results"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" id="food-day-title">Repas du jour</div>
+      <div id="food-day-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📚 Mes plats</div>
+      <div id="food-library"></div>
+      <div class="sync-note">Touchez un plat pour modifier ses ingrédients. Les repas déjà saisis gardent les ingrédients du moment où ils ont été mangés.</div>
+    </div>
+    <datalist id="ingredient-suggestions"></datalist>
+  </div>
+
   <!-- ONGLET 2 : HISTORIQUE ET COURBE -->
   <div id="tab-history" class="tab-content">
+    <div class="card" style="padding: 12px;">
+      <button class="sync-btn" style="background: #0f766e;" onclick="openReport()">🩺 Rapport pour le médecin (imprimer / PDF)</button>
+    </div>
     
     <div class="card">
       <div class="card-title">📅 Choisir une date</div>
@@ -480,6 +590,49 @@
 
   </div>
 
+  <!-- Fiche : ajout d'un repas / modification d'un plat -->
+  <div id="food-sheet" class="sheet" onclick="if (event.target === this) closeFoodSheet()">
+    <div class="sheet-box">
+      <div class="sheet-head"><span id="food-sheet-title">Ajouter</span><button type="button" onclick="closeFoodSheet()" aria-label="Fermer">✕</button></div>
+      <div id="food-sheet-body"></div>
+    </div>
+  </div>
+
+  <!-- Scan de code-barres -->
+  <div id="scan-view" class="sheet">
+    <div class="sheet-box">
+      <div class="sheet-head"><span>📷 Scanner un code-barres</span><button type="button" onclick="stopScan()" aria-label="Fermer">✕</button></div>
+      <video id="scan-video" playsinline muted></video>
+      <div id="scan-msg" class="weight-info" style="margin-top: 8px;">Vise le code-barres du produit.</div>
+      <div class="action-row">
+        <input type="text" id="scan-manual" class="date-picker-input" inputmode="numeric" autocomplete="off" placeholder="ou tape les chiffres du code" style="margin-top: 0;">
+        <button class="btn-add" style="background: #ea580c; color: white;" onclick="lookupBarcode(document.getElementById('scan-manual').value)">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rapport médecin -->
+  <div id="report-view" class="report-view">
+    <div class="report-toolbar no-print">
+      <div class="report-toolbar-row">
+        <strong>🩺 Rapport médecin</strong>
+        <button class="btn-sub" style="flex: none; padding: 8px 12px;" onclick="closeReport()">✕ Fermer</button>
+      </div>
+      <div class="chip-row" id="report-periods"></div>
+      <div id="report-custom" class="action-row" style="display: none; margin-top: 6px;">
+        <input type="date" id="report-from" class="date-picker-input" style="margin-top: 0;">
+        <input type="date" id="report-to" class="date-picker-input" style="margin-top: 0;">
+      </div>
+      <input type="text" id="report-name" class="date-picker-input" maxlength="80" placeholder="Nom affiché sur le rapport (facultatif)">
+      <div class="action-row" style="margin-top: 8px;">
+        <button class="btn-sub" onclick="generateReport()">↻ Actualiser</button>
+        <button class="btn-add" style="background: #0f766e; color: white;" onclick="window.print()">🖨️ Imprimer / PDF</button>
+      </div>
+      <div class="sync-note" style="margin-top: 4px;">Sur Android : « Imprimer », puis choisir l'imprimante « Enregistrer au format PDF ».</div>
+    </div>
+    <div id="report-content" class="report-content"></div>
+  </div>
+
   <!-- Message temporaire avec « Annuler » -->
   <div id="toast" class="toast" role="status" aria-live="polite">
     <span id="toast-text"></span>
@@ -488,7 +641,7 @@
 
   <script>
     // ================== SERVICE WORKER ==================
-    const APP_VERSION = '2026-10-04 · v7';
+    const APP_VERSION = '2026-10-04 · v8';
     if ('serviceWorker' in navigator) {
       // Quand une nouvelle version de l'appli est installée, on recharge une fois pour l'afficher
       const hadController = !!navigator.serviceWorker.controller;
@@ -681,6 +834,8 @@
 
     function renderAll() {
       renderToday();
+      renderFood();
+      refreshIngredientSuggestions();
       renderDrinkPanel();
       renderLossPanel();
       renderMeds();
@@ -1563,19 +1718,926 @@
       toastTimer = setTimeout(hideToast, undoFn ? 5000 : 2500);
     }
 
-    // ================== NAVIGATION ==================
-    function switchTab(tabName) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    // ================== NOURRITURE ==================
+    const FOOD_MOMENTS = [
+      { key: 'petit_dej', name: 'Petit-déjeuner', icon: '🌅', to: 'au petit-déjeuner' },
+      { key: 'dejeuner', name: 'Déjeuner', icon: '☀️', to: 'au déjeuner' },
+      { key: 'collation', name: 'Collation', icon: '🍪', to: 'à la collation' },
+      { key: 'diner', name: 'Dîner', icon: '🌙', to: 'au dîner' }
+    ];
+    const PORTIONS = [
+      { key: 'petite', name: 'Petite' },
+      { key: 'normale', name: 'Normale' },
+      { key: 'grande', name: 'Grande' }
+    ];
+    const OFF_FIELDS = 'code,product_name,product_name_fr,generic_name_fr,brands,quantity,ingredients_text_fr,ingredients_text,ingredients,nutriscore_grade';
+    let foodMoment = null;        // moment choisi à la main (sinon : selon l'heure)
+    let foodSheet = null;         // fiche ouverte (ajout d'un repas ou modification d'un plat)
+    let foodLibraryExpanded = false;
+    const openMeals = new Set();
+    let scanStream = null;
+    let scanTimer = null;
 
+    function byId(id) { return document.getElementById(id); }
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function parseData(rec) {
+      try { return JSON.parse(rec.data || '{}') || {}; } catch (e) { return {}; }
+    }
+
+    function normalizeText(s) {
+      return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    }
+
+    function foodMomentByKey(k) { return FOOD_MOMENTS.find(m => m.key === k) || FOOD_MOMENTS[1]; }
+    function portionByKey(k) { return PORTIONS.find(p => p.key === k) || PORTIONS[1]; }
+
+    function defaultFoodMoment() {
+      const now = new Date();
+      const h = now.getHours() + now.getMinutes() / 60;
+      if (h < 10.5) return 'petit_dej';
+      if (h < 15) return 'dejeuner';
+      if (h < 18) return 'collation';
+      return 'diner';
+    }
+    function currentFoodMoment() { return foodMoment || defaultFoodMoment(); }
+    function foodDate() { return byId('food-date').value || getLocalIsoDate(); }
+
+    function setFoodMsg(text, kind) {
+      const el = byId('food-msg');
+      el.className = 'weight-feedback' + (kind ? ' ' + kind : '');
+      el.textContent = text || '';
+    }
+
+    function updateModalState() {
+      const open = ['food-sheet', 'scan-view'].some(id => byId(id).style.display === 'flex') || byId('report-view').style.display === 'block';
+      document.body.classList.toggle('modal-open', open);
+    }
+
+    // Plats enregistrés, les plus utilisés d'abord
+    function getDishes() {
+      const usage = {};
+      logs.forEach(l => {
+        if (l.type === 'repas') {
+          const d = parseData(l);
+          if (d.dishId) usage[d.dishId] = (usage[d.dishId] || 0) + 1;
+        }
+      });
+      return logs.filter(r => r.type === 'food_dish')
+        .map(r => Object.assign({}, parseData(r), { id: String(r.id), uses: usage[String(r.id)] || 0 }))
+        .filter(d => d.name)
+        .sort((a, b) => b.uses - a.uses || a.name.localeCompare(b.name, 'fr'));
+    }
+
+    function getMeals(iso) {
+      return logs.filter(l => l.type === 'repas' && l.isoDate === iso)
+        .map(l => Object.assign({ rec: l }, parseData(l)))
+        .sort((a, b) => Number(a.rec.id) - Number(b.rec.id));
+    }
+
+    function refreshIngredientSuggestions() {
+      const set = new Map();
+      const add = list => (list || []).forEach(i => { const k = normalizeText(i); if (k && !set.has(k)) set.set(k, i); });
+      getDishes().forEach(d => add(d.ingredients));
+      logs.forEach(l => { if (l.type === 'repas') add(parseData(l).ingredients); });
+      const dl = byId('ingredient-suggestions');
+      dl.innerHTML = '';
+      [...set.values()].sort((a, b) => a.localeCompare(b, 'fr')).slice(0, 400).forEach(v => {
+        const o = document.createElement('option');
+        o.value = v;
+        dl.appendChild(o);
+      });
+    }
+
+    function renderFood() {
+      const dateEl = byId('food-date');
+      if (!dateEl.value) dateEl.value = getLocalIsoDate();
+      dateEl.max = getLocalIsoDate();
+      const box = byId('food-moments');
+      box.innerHTML = '';
+      FOOD_MOMENTS.forEach(m => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'chip' + (m.key === currentFoodMoment() ? ' active' : '');
+        chip.textContent = `${m.icon} ${m.name}`;
+        chip.onclick = () => { foodMoment = m.key; renderFood(); };
+        box.appendChild(chip);
+      });
+      renderFoodResults();
+      renderFoodDay();
+      renderFoodLibrary();
+    }
+
+    function foodRow(name, sub, badge, onClick) {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'food-row';
+      row.innerHTML = '<span class="fr-main"><span class="fr-name"></span><span class="fr-sub"></span></span>' + (badge ? '<span class="fr-badge"></span>' : '');
+      row.querySelector('.fr-name').textContent = name;
+      row.querySelector('.fr-sub').textContent = sub || '';
+      if (badge) row.querySelector('.fr-badge').textContent = badge;
+      row.onclick = onClick;
+      return row;
+    }
+
+    function dishSub(d) {
+      const parts = [];
+      if (d.brand) parts.push(d.brand);
+      parts.push(d.ingredients && d.ingredients.length ? d.ingredients.join(', ') : 'aucun ingrédient noté');
+      return parts.join(' · ');
+    }
+
+    function renderFoodResults() {
+      const q = normalizeText(byId('food-search').value.trim());
+      const box = byId('food-results');
+      box.innerHTML = '';
+      const dishes = getDishes();
+      let list, title;
+      if (!q) {
+        if (!dishes.length) {
+          box.innerHTML = '<div class="drink-empty">Pas encore de plat enregistré : commence avec « ➕ Nouveau » ou « 📷 Scanner ».</div>';
+          return;
+        }
+        list = dishes.slice(0, 8);
+        title = dishes.some(d => d.uses) ? 'Plats fréquents' : 'Mes plats';
+      } else {
+        list = dishes.filter(d => normalizeText([d.name, d.brand, (d.ingredients || []).join(' ')].join(' ')).includes(q)).slice(0, 12);
+        title = 'Dans mes plats';
+        if (!list.length) {
+          box.innerHTML = '<div class="drink-empty">Rien dans « Mes plats ». Touchez « 🌍 Chercher » pour un produit du commerce, ou « ➕ Nouveau » pour un plat maison.</div>';
+          return;
+        }
+      }
+      const t = document.createElement('div');
+      t.className = 'food-results-title';
+      t.textContent = title;
+      box.appendChild(t);
+      list.forEach(d => box.appendChild(foodRow(d.name, dishSub(d), d.source === 'off' ? '🛒' : '🏠', () => openMealSheet(d))));
+    }
+
+    function renderFoodDay() {
+      const iso = foodDate();
+      const [y, m, d] = iso.split('-');
+      byId('food-day-title').textContent = iso === getLocalIsoDate() ? 'Repas du jour' : `Repas du ${d}/${m}/${y}`;
+      const box = byId('food-day-list');
+      box.innerHTML = '';
+      const meals = getMeals(iso);
+      if (!meals.length) {
+        box.innerHTML = '<div class="drink-empty">Rien de saisi pour ce jour.</div>';
+        return;
+      }
+      FOOD_MOMENTS.forEach(moment => {
+        const list = meals.filter(ml => (ml.moment || String(ml.rec.detail || '').split('|')[0]) === moment.key);
+        if (!list.length) return;
+        const block = document.createElement('div');
+        block.className = 'food-moment-block';
+        const title = document.createElement('div');
+        title.className = 'food-moment-title';
+        title.textContent = `${moment.icon} ${moment.name}`;
+        block.appendChild(title);
+        list.forEach(ml => block.appendChild(mealCard(ml)));
+        box.appendChild(block);
+      });
+    }
+
+    function mealCard(ml) {
+      const id = String(ml.rec.id);
+      const card = document.createElement('div');
+      card.className = 'food-meal' + (openMeals.has(id) ? ' open' : '');
+      const top = document.createElement('div');
+      top.className = 'food-meal-top';
+      top.innerHTML = '<span class="fm-name"></span><span class="fm-portion"></span><span class="fm-time"></span>';
+      top.querySelector('.fm-name').textContent = (ml.name || ml.rec.label || 'Repas') + (ml.brand ? ` (${ml.brand})` : '');
+      top.querySelector('.fm-portion').textContent = portionByKey(ml.portion).name;
+      top.querySelector('.fm-time').textContent = ml.rec.timeStr || '';
+      card.appendChild(top);
+
+      const det = document.createElement('div');
+      det.className = 'food-meal-details';
+      const ingTitle = document.createElement('div');
+      ingTitle.textContent = (ml.ingredients && ml.ingredients.length) ? 'Ingrédients :' : 'Aucun ingrédient noté.';
+      det.appendChild(ingTitle);
+      const chips = document.createElement('div');
+      chips.className = 'ing-chips';
+      (ml.ingredients || []).forEach(i => {
+        const c = document.createElement('span');
+        c.className = 'ing-chip';
+        c.textContent = i;
+        chips.appendChild(c);
+      });
+      det.appendChild(chips);
+      if (ml.note) {
+        const n = document.createElement('div');
+        n.textContent = `📝 ${ml.note}`;
+        det.appendChild(n);
+      }
+      if (ml.source === 'off') {
+        const s = document.createElement('div');
+        s.className = 'rp-muted';
+        s.textContent = `🛒 Produit du commerce${ml.barcode ? ' · code ' + ml.barcode : ''}`;
+        det.appendChild(s);
+      }
+      const actions = document.createElement('div');
+      actions.className = 'fm-actions';
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'drink-del';
+      del.textContent = '✕';
+      del.title = 'Supprimer ce repas';
+      del.onclick = (e) => { e.stopPropagation(); confirmTap(del, () => removeDrinkEntry(ml.rec.id)); };
+      actions.appendChild(del);
+      det.appendChild(actions);
+      card.appendChild(det);
+      card.onclick = () => {
+        if (openMeals.has(id)) openMeals.delete(id); else openMeals.add(id);
+        card.classList.toggle('open');
+      };
+      return card;
+    }
+
+    function renderFoodLibrary() {
+      const box = byId('food-library');
+      box.innerHTML = '';
+      const dishes = getDishes().slice().sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+      if (!dishes.length) {
+        box.innerHTML = '<div class="drink-empty">Aucun plat enregistré pour l\'instant.</div>';
+        return;
+      }
+      const shown = foodLibraryExpanded ? dishes : dishes.slice(0, 8);
+      const list = document.createElement('div');
+      list.className = 'food-results';
+      shown.forEach(d => list.appendChild(foodRow(d.name, dishSub(d), `${(d.ingredients || []).length} ingr.`, () => openDishSheet(d))));
+      box.appendChild(list);
+      if (dishes.length > 8) {
+        const more = document.createElement('button');
+        more.type = 'button';
+        more.className = 'drink-more';
+        more.textContent = foodLibraryExpanded ? 'Réduire' : `Voir les ${dishes.length} plats`;
+        more.onclick = () => { foodLibraryExpanded = !foodLibraryExpanded; renderFoodLibrary(); };
+        box.appendChild(more);
+      }
+    }
+
+    // ----- Fiche : ajout d'un repas / modification d'un plat -----
+    function newSheetState(mode, dish) {
+      dish = dish || {};
+      return {
+        mode: mode,
+        dishId: dish.id ? String(dish.id) : null,
+        name: dish.name || '',
+        brand: dish.brand || '',
+        source: dish.source || 'maison',
+        barcode: dish.barcode || '',
+        quantity: dish.quantity || '',
+        nutriscore: dish.nutriscore || '',
+        ingredients: (dish.ingredients || []).slice(),
+        portion: 'normale',
+        moment: currentFoodMoment(),
+        note: ''
+      };
+    }
+
+    function openMealSheet(dish) {
+      foodSheet = newSheetState('meal', dish);
+      renderFoodSheet();
+    }
+
+    function openDishSheet(dish) {
+      foodSheet = newSheetState('dish', dish);
+      renderFoodSheet();
+    }
+
+    function closeFoodSheet() {
+      byId('food-sheet').style.display = 'none';
+      foodSheet = null;
+      updateModalState();
+    }
+
+    function renderFoodSheet() {
+      const st = foodSheet;
+      const isMeal = st.mode === 'meal';
+      byId('food-sheet-title').textContent = isMeal
+        ? (st.dishId ? 'Ajouter au repas' : (st.source === 'off' ? '🛒 Produit du commerce' : '➕ Nouveau plat'))
+        : (st.dishId ? 'Modifier le plat' : 'Nouveau plat');
+      const meta = [];
+      if (st.brand) meta.push(`Marque : ${esc(st.brand)}`);
+      if (st.quantity) meta.push(esc(st.quantity));
+      if (st.nutriscore && /^[a-e]$/i.test(st.nutriscore)) meta.push(`Nutri-Score ${esc(st.nutriscore.toUpperCase())}`);
+      if (st.barcode) meta.push(`Code ${esc(st.barcode)}`);
+      byId('food-sheet-body').innerHTML = `
+        <div class="action-label">Nom</div>
+        <input type="text" id="fs-name" class="date-picker-input" maxlength="80" placeholder="Ex : Pâtes bolognaise" value="${esc(st.name)}">
+        ${meta.length ? `<div class="fs-meta">${meta.join(' · ')}</div>` : ''}
+        <div class="action-label" style="margin-top: 10px;">Ingrédients</div>
+        <div id="fs-ings" class="ing-chips"></div>
+        <div class="action-row">
+          <input type="text" id="fs-ing-input" class="date-picker-input" list="ingredient-suggestions" autocomplete="off" placeholder="Ajouter (plusieurs : séparer par des virgules)" style="margin-top: 0;">
+          <button class="btn-add" type="button" style="flex: none; padding: 12px 16px; background: #ea580c; color: white;" id="fs-ing-add">+</button>
+        </div>
+        ${isMeal ? `
+          <div class="action-label" style="margin-top: 10px;">Moment</div>
+          <div class="chip-row" id="fs-moments"></div>
+          <div class="action-label" style="margin-top: 10px;">Portion</div>
+          <div class="chip-row" id="fs-portions"></div>
+          <div class="action-label" style="margin-top: 10px;">Remarque (facultatif)</div>
+          <input type="text" id="fs-note" class="date-picker-input" maxlength="200" placeholder="Ex : mangé à moitié, mal digéré…" style="margin-top: 0;">
+          <label class="sync-check" style="margin-top: 10px;"><input type="checkbox" id="fs-save" ${st.dishId ? '' : 'checked'}>
+            ${st.dishId ? 'Mettre aussi à jour « Mes plats » avec ces ingrédients' : 'Enregistrer dans « Mes plats » pour la prochaine fois'}</label>
+          <button class="sync-btn" type="button" id="fs-submit" style="margin-top: 12px; background: #ea580c;"></button>
+        ` : `
+          <button class="sync-btn" type="button" id="fs-submit" style="margin-top: 12px; background: #ea580c;">💾 Enregistrer le plat</button>
+          ${st.dishId ? '<button class="btn-sub" type="button" id="fs-delete" style="width: 100%; margin-top: 8px;">🗑 Supprimer ce plat</button>' : ''}
+        `}
+        <div id="fs-msg" class="weight-feedback"></div>`;
+
+      byId('fs-name').oninput = e => { st.name = e.target.value; };
+      byId('fs-ing-add').onclick = () => addSheetIngredients();
+      byId('fs-ing-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addSheetIngredients(); } });
+      byId('fs-ing-input').addEventListener('change', e => { if (e.target.value.includes(',')) addSheetIngredients(); });
+      if (isMeal) {
+        byId('fs-note').oninput = e => { st.note = e.target.value; };
+        byId('fs-submit').onclick = submitMealSheet;
+      } else {
+        byId('fs-submit').onclick = submitDishSheet;
+        if (st.dishId) {
+          const del = byId('fs-delete');
+          del.onclick = () => confirmTap(del, deleteDishFromSheet, {
+            arm: () => { del.textContent = '🗑 Confirmer la suppression ?'; del.style.background = '#dc2626'; del.style.color = 'white'; },
+            disarm: () => { del.textContent = '🗑 Supprimer ce plat'; del.style.background = ''; del.style.color = ''; }
+          });
+        }
+      }
+      renderSheetChips();
+      byId('food-sheet').style.display = 'flex';
+      updateModalState();
+      if (!st.name) setTimeout(() => byId('fs-name').focus(), 50);
+    }
+
+    function renderSheetChips() {
+      const st = foodSheet;
+      const ings = byId('fs-ings');
+      ings.innerHTML = '';
+      if (!st.ingredients.length) {
+        ings.innerHTML = '<span class="rp-muted" style="font-size: 0.8rem;">Aucun ingrédient pour l\'instant.</span>';
+      }
+      st.ingredients.forEach((ing, idx) => {
+        const chip = document.createElement('span');
+        chip.className = 'ing-chip';
+        chip.textContent = ing;
+        const x = document.createElement('button');
+        x.type = 'button';
+        x.textContent = '×';
+        x.setAttribute('aria-label', `Retirer ${ing}`);
+        x.onclick = () => { st.ingredients.splice(idx, 1); renderSheetChips(); };
+        chip.appendChild(x);
+        ings.appendChild(chip);
+      });
+      if (st.mode !== 'meal') return;
+      const mBox = byId('fs-moments');
+      mBox.innerHTML = '';
+      FOOD_MOMENTS.forEach(m => {
+        const c = document.createElement('button');
+        c.type = 'button';
+        c.className = 'chip' + (st.moment === m.key ? ' active' : '');
+        c.textContent = `${m.icon} ${m.name}`;
+        c.onclick = () => { st.moment = m.key; renderSheetChips(); };
+        mBox.appendChild(c);
+      });
+      const pBox = byId('fs-portions');
+      pBox.innerHTML = '';
+      PORTIONS.forEach(p => {
+        const c = document.createElement('button');
+        c.type = 'button';
+        c.className = 'chip' + (st.portion === p.key ? ' active' : '');
+        c.textContent = p.name;
+        c.onclick = () => { st.portion = p.key; renderSheetChips(); };
+        pBox.appendChild(c);
+      });
+      byId('fs-submit').textContent = `✅ Ajouter ${foodMomentByKey(st.moment).to}`;
+    }
+
+    function addSheetIngredients() {
+      const input = byId('fs-ing-input');
+      const parts = input.value.split(/[,;\n]/).map(cleanIngredient).filter(Boolean);
+      parts.forEach(p => {
+        if (!foodSheet.ingredients.some(i => normalizeText(i) === normalizeText(p))) foodSheet.ingredients.push(p);
+      });
+      input.value = '';
+      renderSheetChips();
+      input.focus();
+    }
+
+    function sheetMsg(text) {
+      const el = byId('fs-msg');
+      el.className = 'weight-feedback err';
+      el.textContent = text;
+    }
+
+    function saveDish(st) {
+      const id = st.dishId ? Number(st.dishId) : newId();
+      const now = new Date();
+      upsertLocal({
+        id: id,
+        type: 'food_dish',
+        volume: 0,
+        label: st.name.slice(0, 200),
+        data: JSON.stringify({ name: st.name, brand: st.brand, source: st.source, barcode: st.barcode, quantity: st.quantity, nutriscore: st.nutriscore, ingredients: st.ingredients }),
+        isoDate: getLocalIsoDate(now),
+        dateStr: now.toLocaleDateString('fr-FR'),
+        timeStr: nowTimeStr()
+      });
+      return String(id);
+    }
+
+    function submitMealSheet() {
+      const st = foodSheet;
+      if (byId('fs-ing-input').value.trim()) addSheetIngredients();
+      st.name = byId('fs-name').value.trim().slice(0, 80);
+      if (!st.name) return sheetMsg('Indique le nom de ce que tu as mangé.');
+      let dishId = st.dishId;
+      if (byId('fs-save').checked) {
+        // Un plat du même nom existe déjà : on le met à jour au lieu de créer un doublon
+        if (!st.dishId) {
+          const same = getDishes().find(d => normalizeText(d.name) === normalizeText(st.name) && (d.barcode || '') === (st.barcode || ''));
+          if (same) st.dishId = same.id;
+        }
+        dishId = saveDish(st);
+      }
+
+      const iso = foodDate();
+      const moment = foodMomentByKey(st.moment);
+      const portion = portionByKey(st.portion);
+      const [y, m, d] = iso.split('-');
+      let label = `${moment.name} : ${st.name}${st.brand ? ' (' + st.brand + ')' : ''} · portion ${portion.name.toLowerCase()}`;
+      if (st.ingredients.length) label += ` — ${st.ingredients.join(', ')}`;
+      const entry = {
+        id: newId(),
+        type: 'repas',
+        volume: 0,
+        label: label.slice(0, 200),
+        detail: `${moment.key}|${portion.key}`,
+        data: JSON.stringify({ dishId: dishId, name: st.name, brand: st.brand, source: st.source, barcode: st.barcode, ingredients: st.ingredients, portion: portion.key, moment: moment.key, note: (st.note || '').trim() }),
+        isoDate: iso,
+        dateStr: `${d}/${m}/${y}`,
+        timeStr: iso === getLocalIsoDate() ? nowTimeStr() : ''
+      };
+      upsertLocal(entry);
+      foodMoment = moment.key;
+      byId('food-search').value = '';
+      byId('food-off-results').innerHTML = '';
+      setFoodMsg('');
+      closeFoodSheet();
+      commitChanges();
+      showToast(`🍽️ ${st.name} · ${moment.name.toLowerCase()}`, () => {
+        deleteWhere(r => String(r.id) === String(entry.id));
+        commitChanges();
+        showToast('Repas retiré');
+      });
+    }
+
+    function submitDishSheet() {
+      const st = foodSheet;
+      if (byId('fs-ing-input').value.trim()) addSheetIngredients();
+      st.name = byId('fs-name').value.trim().slice(0, 80);
+      if (!st.name) return sheetMsg('Indique le nom du plat.');
+      saveDish(st);
+      closeFoodSheet();
+      commitChanges();
+      showToast(`📚 « ${st.name} » enregistré`);
+    }
+
+    function deleteDishFromSheet() {
+      const id = foodSheet.dishId;
+      const name = foodSheet.name;
+      deleteWhere(r => String(r.id) === String(id));
+      closeFoodSheet();
+      commitChanges();
+      showToast(`🗑 « ${name} » retiré de Mes plats`, () => {
+        const r = records.find(x => String(x.id) === String(id));
+        if (r && r.deleted) {
+          const copy = Object.assign({}, r);
+          delete copy.deleted;
+          upsertLocal(copy);
+          commitChanges();
+        }
+      });
+    }
+
+    // ----- Open Food Facts -----
+    async function offFetch(url) {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 15000);
+      try {
+        const r = await fetch(url, { signal: ctrl.signal });
+        if (!r.ok) throw new Error('http ' + r.status);
+        return await r.json();
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    // Découpe « a, b (c, d), e » au niveau des virgules principales
+    function splitIngredients(text) {
+      const out = [];
+      let depth = 0, cur = '';
+      for (const ch of String(text || '')) {
+        if (ch === '(' || ch === '[') depth++;
+        if (ch === ')' || ch === ']') depth = Math.max(0, depth - 1);
+        if ((ch === ',' || ch === ';') && depth === 0) { out.push(cur); cur = ''; } else cur += ch;
+      }
+      out.push(cur);
+      return out;
+    }
+
+    function cleanIngredient(s) {
+      let t = String(s || '').replace(/_/g, '').replace(/\*/g, '').replace(/\s+/g, ' ').trim();
+      t = t.replace(/^(ingr[ée]dients?\s*:\s*)/i, '').replace(/^[\s,.;:-]+|[\s,.;:-]+$/g, '');
+      if (!t) return '';
+      return (t.charAt(0).toUpperCase() + t.slice(1)).slice(0, 80);
+    }
+
+    function offIngredients(p) {
+      let list = [];
+      if (Array.isArray(p.ingredients) && p.ingredients.length) list = p.ingredients.map(i => i && i.text);
+      else list = splitIngredients(p.ingredients_text_fr || p.ingredients_text || '');
+      const seen = new Set();
+      return list.map(cleanIngredient).filter(i => {
+        const k = normalizeText(i);
+        if (!i || seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      }).slice(0, 40);
+    }
+
+    function offToDish(p, code) {
+      return {
+        name: (p.product_name_fr || p.product_name || p.generic_name_fr || `Produit ${code}`).trim().slice(0, 80),
+        brand: String(p.brands || '').split(',')[0].trim().slice(0, 60),
+        quantity: String(p.quantity || '').slice(0, 30),
+        nutriscore: String(p.nutriscore_grade || ''),
+        barcode: String(code || p.code || ''),
+        ingredients: offIngredients(p),
+        source: 'off'
+      };
+    }
+
+    function offErrorMessage() {
+      return navigator.onLine ? 'Open Food Facts ne répond pas pour le moment, réessaie un peu plus tard.' : 'Pas de connexion Internet.';
+    }
+
+    async function lookupBarcode(raw) {
+      const code = String(raw || '').replace(/\D/g, '');
+      if (code.length < 8 || code.length > 14) {
+        byId('scan-msg').textContent = 'Code invalide : il faut entre 8 et 14 chiffres.';
+        return;
+      }
+      stopScan();
+      const known = getDishes().find(d => d.barcode === code);
+      if (known) { openMealSheet(known); return; }
+      setFoodMsg('Recherche du produit dans Open Food Facts…');
+      try {
+        const j = await offFetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=${OFF_FIELDS}`);
+        if (j.status !== 1 || !j.product) {
+          setFoodMsg(`Produit ${code} absent d'Open Food Facts : complète la fiche à la main.`, 'err');
+          openMealSheet({ source: 'off', barcode: code });
+          return;
+        }
+        setFoodMsg('');
+        openMealSheet(offToDish(j.product, code));
+      } catch (e) {
+        setFoodMsg(offErrorMessage(), 'err');
+      }
+    }
+
+    async function searchOFF() {
+      const input = byId('food-search');
+      const q = input.value.trim();
+      const box = byId('food-off-results');
+      if (q.length < 2) {
+        setFoodMsg('Tape d\'abord le nom du produit dans la barre de recherche, puis « 🌍 Chercher ».', 'err');
+        input.focus();
+        return;
+      }
+      setFoodMsg('');
+      box.innerHTML = '<div class="drink-empty">Recherche dans Open Food Facts…</div>';
+      try {
+        const j = await offFetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=15&fields=${OFF_FIELDS}`);
+        const products = (j.products || []).filter(p => p.product_name_fr || p.product_name);
+        box.innerHTML = '';
+        if (!products.length) {
+          box.innerHTML = '<div class="drink-empty">Aucun produit trouvé. Essaie un autre nom ou scanne le code-barres.</div>';
+          return;
+        }
+        const t = document.createElement('div');
+        t.className = 'food-results-title';
+        t.textContent = 'Produits du commerce (Open Food Facts)';
+        box.appendChild(t);
+        products.forEach(p => {
+          const dish = offToDish(p, p.code);
+          const known = getDishes().find(d => d.barcode && d.barcode === dish.barcode);
+          box.appendChild(foodRow(dish.name, [dish.brand, dish.quantity].filter(Boolean).join(' · ') || 'Produit du commerce', '🛒', () => openMealSheet(known || dish)));
+        });
+      } catch (e) {
+        box.innerHTML = '';
+        setFoodMsg(offErrorMessage(), 'err');
+      }
+    }
+
+    // ----- Scan de code-barres (caméra) -----
+    async function startScan() {
+      const view = byId('scan-view');
+      const video = byId('scan-video');
+      const msg = byId('scan-msg');
+      byId('scan-manual').value = '';
+      view.style.display = 'flex';
+      updateModalState();
+      if (!('BarcodeDetector' in window) || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        video.style.display = 'none';
+        msg.textContent = 'Le scan automatique n\'est pas disponible sur ce navigateur : tape les chiffres sous le code-barres.';
+        return;
+      }
+      try {
+        const supported = await BarcodeDetector.getSupportedFormats();
+        const formats = ['ean_13', 'ean_8', 'upc_a', 'upc_e'].filter(f => supported.includes(f));
+        if (!formats.length) throw new Error('formats');
+        const detector = new BarcodeDetector({ formats: formats });
+        scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+        video.srcObject = scanStream;
+        video.style.display = 'block';
+        msg.textContent = 'Vise le code-barres du produit.';
+        await video.play();
+        scanTimer = setInterval(async () => {
+          if (!scanStream || video.readyState < 2) return;
+          try {
+            const codes = await detector.detect(video);
+            if (codes.length && codes[0].rawValue) {
+              clearInterval(scanTimer);
+              scanTimer = null;
+              if (navigator.vibrate) { try { navigator.vibrate(60); } catch (e) {} }
+              lookupBarcode(codes[0].rawValue);
+            }
+          } catch (e) { /* image suivante */ }
+        }, 250);
+      } catch (e) {
+        video.style.display = 'none';
+        msg.textContent = (e && e.name === 'NotAllowedError')
+          ? 'Accès à la caméra refusé : autorise-le dans les réglages du navigateur, ou tape le code ci-dessous.'
+          : 'Caméra indisponible : tape les chiffres sous le code-barres.';
+      }
+    }
+
+    function stopScan() {
+      clearInterval(scanTimer);
+      scanTimer = null;
+      if (scanStream) scanStream.getTracks().forEach(t => t.stop());
+      scanStream = null;
+      const video = byId('scan-video');
+      video.srcObject = null;
+      byId('scan-view').style.display = 'none';
+      updateModalState();
+    }
+
+    // ================== RAPPORT MÉDECIN ==================
+    const REPORT_PERIODS = [
+      { key: 7, name: '7 jours' },
+      { key: 14, name: '14 jours' },
+      { key: 30, name: '30 jours' },
+      { key: 'custom', name: 'Dates…' }
+    ];
+    let reportPeriod = 7;
+    let reportCharts = [];
+
+    function openReport() {
+      byId('report-view').style.display = 'block';
+      byId('report-view').scrollTop = 0;
+      byId('report-name').value = prefGet('hydra_report_name', '');
+      const today = getLocalIsoDate();
+      if (!byId('report-to').value) byId('report-to').value = today;
+      if (!byId('report-from').value) byId('report-from').value = shiftIsoDate(today, -6);
+      byId('report-from').max = today;
+      byId('report-to').max = today;
+      updateModalState();
+      renderReportPeriods();
+      generateReport();
+    }
+
+    function closeReport() {
+      byId('report-view').style.display = 'none';
+      reportCharts.forEach(c => c.destroy());
+      reportCharts = [];
+      updateModalState();
+    }
+
+    function renderReportPeriods() {
+      const box = byId('report-periods');
+      box.innerHTML = '';
+      REPORT_PERIODS.forEach(p => {
+        const c = document.createElement('button');
+        c.type = 'button';
+        c.className = 'chip' + (reportPeriod === p.key ? ' active' : '');
+        c.textContent = p.name;
+        c.onclick = () => { reportPeriod = p.key; renderReportPeriods(); generateReport(); };
+        box.appendChild(c);
+      });
+      byId('report-custom').style.display = reportPeriod === 'custom' ? 'flex' : 'none';
+    }
+
+    function reportRange() {
+      const today = getLocalIsoDate();
+      if (reportPeriod !== 'custom') return { from: shiftIsoDate(today, -(reportPeriod - 1)), to: today };
+      let from = byId('report-from').value || shiftIsoDate(today, -6);
+      let to = byId('report-to').value || today;
+      if (to > today) to = today;
+      if (from > to) [from, to] = [to, from];
+      if (shiftIsoDate(from, 92) < to) from = shiftIsoDate(to, -92);
+      return { from: from, to: to };
+    }
+
+    function fmtDateLong(iso) {
+      const [y, m, d] = iso.split('-').map(Number);
+      return new Date(y, m - 1, d).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    }
+    function fmtDateShort(iso) {
+      const [y, m, d] = iso.split('-');
+      return `${d}/${m}`;
+    }
+
+    function collectDay(iso, weightsMap, plan) {
+      const day = { iso: iso, drinks: [], losses: [], meals: [], fluids: { plain: 0, sro: 0, other: 0 } };
+      logs.filter(l => l.isoDate === iso).sort((a, b) => Number(a.id) - Number(b.id)).forEach(l => {
+        const vol = Number(l.volume) || 0;
+        if (FLUID_TYPES.includes(l.type)) {
+          day.drinks.push(l);
+          if (l.type === 'eau_claire') day.fluids.plain += vol;
+          if (l.type === 'eau_sro') day.fluids.sro += vol;
+          if (l.type === 'autre_boisson') day.fluids.other += vol;
+        } else if (LOSS_TYPES.includes(l.type) || COUNT_TYPES.includes(l.type)) {
+          day.losses.push(l);
+        } else if (l.type === 'repas') {
+          day.meals.push(Object.assign({ rec: l }, parseData(l)));
+        }
+      });
+      day.fluids.plain = Math.max(0, day.fluids.plain);
+      day.fluids.sro = Math.max(0, day.fluids.sro);
+      day.fluids.other = Math.max(0, day.fluids.other);
+      day.total = day.fluids.plain + day.fluids.sro + day.fluids.other;
+      day.loss = getDayLosses(iso);
+      day.balance = day.total - day.loss.total;
+      day.weight = weightsMap[iso] || {};
+      day.meds = MOMENTS.map(m => Object.assign({ moment: m }, getMomentStatus(plan, iso, m))).filter(s => s.meds.length);
+      day.medDue = day.meds.reduce((a, s) => a + s.meds.length, 0);
+      day.medDone = day.meds.reduce((a, s) => a + s.taken.length, 0);
+      day.liquidStools = day.losses.filter(l => l.type === 'perte_selle' && String(l.detail || '').startsWith('liquide')).length;
+      day.hasData = !!(day.drinks.length || day.losses.length || day.meals.length || day.weight.matin != null || day.weight.soir != null || day.medDone);
+      return day;
+    }
+
+    function generateReport() {
+      const name = byId('report-name').value.trim();
+      prefSet('hydra_report_name', name);
+      const { from, to } = reportRange();
+      const isoDays = [];
+      for (let d = from; d <= to; d = shiftIsoDate(d, 1)) isoDays.push(d);
+      const weightsMap = getWeightsByDate();
+      const plan = getMedPlan();
+      const days = isoDays.map(iso => collectDay(iso, weightsMap, plan));
+      const filled = days.filter(d => d.hasData);
+      const avg = arr => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+      const avg1 = arr => arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1).replace('.', ',') : '0';
+
+      const morning = days.filter(d => d.weight.matin != null);
+      const wFirst = morning.length ? morning[0].weight.matin : null;
+      const wLast = morning.length ? morning[morning.length - 1].weight.matin : null;
+      const allW = days.flatMap(d => [d.weight.matin, d.weight.soir]).filter(v => v != null);
+      const medDue = days.reduce((a, d) => a + d.medDue, 0);
+      const medDone = days.reduce((a, d) => a + d.medDone, 0);
+      const deficitDays = filled.filter(d => d.balance < 0).length;
+      const liquid = days.reduce((a, d) => a + d.liquidStools, 0);
+
+      const kpi = (value, label) => `<div class="rp-kpi"><b>${value}</b><span>${label}</span></div>`;
+      let html = `
+        <div class="rp-head">
+          <h1>Suivi hydrique, alimentaire et traitements</h1>
+          ${name ? `<div><strong>Patient :</strong> ${esc(name)}</div>` : ''}
+          <div><strong>Période :</strong> du ${fmtDateLong(from)} au ${fmtDateLong(to)} (${isoDays.length} jours, ${filled.length} jour(s) renseigné(s))</div>
+          <div>Édité le ${new Date().toLocaleDateString('fr-FR')} à ${nowTimeStr()} · Suivi Hydrique Pro</div>
+        </div>
+        <h2>Synthèse (moyennes par jour renseigné)</h2>
+        <div class="rp-kpis">
+          ${kpi(`${avg(filled.map(d => d.total))} ml`, 'Liquides bus')}
+          ${kpi(`${avg(filled.map(d => d.fluids.sro))} ml`, 'dont SRO')}
+          ${kpi(`${avg(filled.map(d => d.loss.total))} ml`, 'Pertes estimées')}
+          ${kpi(`${avg(filled.map(d => d.balance)) > 0 ? '+' : ''}${avg(filled.map(d => d.balance))} ml`, `Bilan moyen · ${deficitDays} jour(s) en déficit`)}
+          ${kpi(`${avg1(filled.map(d => d.loss.urineCount))} / j`, `Urines (≈ ${avg(filled.map(d => d.loss.urineMl))} ml/j)`)}
+          ${kpi(`${avg1(filled.map(d => d.loss.stoolCount))} / j`, `Selles · ${liquid} liquide(s) sur la période`)}
+          ${kpi(wFirst != null ? `${fmtKg(wFirst)} → ${fmtKg(wLast)}` : '—', wFirst != null ? `Poids du matin (${fmtDelta(wLast - wFirst)})` : 'Poids du matin')}
+          ${kpi(allW.length ? `${fmtKg(Math.min(...allW))} – ${fmtKg(Math.max(...allW))}` : '—', 'Poids min – max')}
+          ${kpi(medDue ? `${medDone}/${medDue} (${Math.round(medDone / medDue * 100)} %)` : '—', 'Prises de compléments')}
+          ${kpi(`${filled.reduce((a, d) => a + d.meals.length, 0)}`, 'Aliments / plats notés')}
+        </div>
+        <canvas id="rp-chart-fluids" class="rp-chart" width="760" height="230" style="width: 100%; height: auto;"></canvas>
+        <canvas id="rp-chart-weight" class="rp-chart" width="760" height="200" style="width: 100%; height: auto;"></canvas>
+
+        <h2>Tableau jour par jour</h2>
+        <div class="rp-table-wrap"><table class="rp-table">
+          <thead><tr><th>Date</th><th>Bu (ml)</th><th>dont SRO</th><th>Urines<br>n / ml</th><th>Selles<br>n / ml</th><th>Pertes est.</th><th>Bilan</th><th>Poids<br>matin</th><th>Poids<br>soir</th><th>Compl.</th><th>Repas</th></tr></thead>
+          <tbody>
+          ${days.map(d => d.hasData ? `<tr>
+            <td>${fmtDateShort(d.iso)}</td><td>${d.total}</td><td>${d.fluids.sro}</td>
+            <td>${d.loss.urineCount} / ${d.loss.urineMl}</td><td>${d.loss.stoolCount} / ${d.loss.stoolMl}${d.liquidStools ? ` (${d.liquidStools} liq.)` : ''}</td>
+            <td>${d.loss.total}</td><td class="${d.balance < 0 ? 'neg' : ''}">${d.balance > 0 ? '+' : ''}${d.balance}</td>
+            <td>${d.weight.matin != null ? fmtKg(d.weight.matin) : '—'}</td><td>${d.weight.soir != null ? fmtKg(d.weight.soir) : '—'}</td>
+            <td>${d.medDue ? `${d.medDone}/${d.medDue}` : '—'}</td><td>${d.meals.length}</td></tr>`
+            : `<tr class="rp-muted"><td>${fmtDateShort(d.iso)}</td><td colspan="10">Aucune saisie</td></tr>`).join('')}
+          </tbody>
+        </table></div>
+
+        <h2>Détail par jour</h2>`;
+
+      if (!filled.length) html += '<p class="rp-muted">Aucune donnée sur cette période.</p>';
+      filled.forEach(d => {
+        const drinks = d.drinks.map(l => `<li>${esc(l.timeStr || '')} · ${esc(DRINK_CATEGORIES[l.type] ? DRINK_CATEGORIES[l.type].name : '')} : ${esc(l.label || '')}</li>`).join('');
+        const losses = d.losses.map(l => `<li>${esc(l.timeStr || '')} · ${esc(l.label || '')}</li>`).join('');
+        const meals = FOOD_MOMENTS.map(m => {
+          const list = d.meals.filter(ml => (ml.moment || String(ml.rec.detail || '').split('|')[0]) === m.key);
+          if (!list.length) return '';
+          return `<li><strong>${m.name}</strong> : ${list.map(ml =>
+            `${esc(ml.name || ml.rec.label)}${ml.brand ? ' (' + esc(ml.brand) + ')' : ''} — portion ${esc(portionByKey(ml.portion).name.toLowerCase())}` +
+            `${ml.ingredients && ml.ingredients.length ? ` <span class="rp-muted">[${esc(ml.ingredients.join(', '))}]</span>` : ''}` +
+            `${ml.note ? ` <em>📝 ${esc(ml.note)}</em>` : ''}`).join(' ; ')}</li>`;
+        }).join('');
+        const meds = d.meds.map(s => `<li><strong>${s.moment.name}</strong> (${esc(plan.times[s.moment.key])}) : ${s.meds.map(med => {
+          const t = s.intakes[`${med.id}|${s.moment.key}`];
+          return t ? `${esc(med.name)} ✓ ${esc(t.timeStr || '')}` : `${esc(med.name)} ✗ non pris`;
+        }).join(', ')}</li>`).join('');
+        html += `
+          <section class="rp-day">
+            <h3>${fmtDateLong(d.iso)} — bu ${d.total} ml · pertes est. ${d.loss.total} ml · bilan <span style="color:${d.balance < 0 ? '#b91c1c' : '#166534'}">${d.balance > 0 ? '+' : ''}${d.balance} ml</span></h3>
+            <div class="rp-cols">
+              <div><h4>Boissons</h4>${drinks ? `<ul>${drinks}</ul>` : '<div class="rp-muted">—</div>'}</div>
+              <div><h4>Urines et selles</h4>${losses ? `<ul>${losses}</ul>` : '<div class="rp-muted">—</div>'}</div>
+            </div>
+            <h4>Alimentation</h4>${meals ? `<ul>${meals}</ul>` : '<div class="rp-muted">—</div>'}
+            ${meds ? `<h4>Compléments</h4><ul>${meds}</ul>` : ''}
+            <h4>Poids</h4><div>Matin : ${d.weight.matin != null ? fmtKg(d.weight.matin) : '—'} · Soir : ${d.weight.soir != null ? fmtKg(d.weight.soir) : '—'}</div>
+          </section>`;
+      });
+
+      html += `<div class="rp-foot">
+        Méthode : données saisies par le patient. Les volumes d'urines et de selles sont estimés d'après la taille et la consistance déclarées
+        (urine petite ≈ 150 ml, moyenne ≈ 300 ml, grande ≈ 500 ml ou quantité mesurée ; selle de 50 à 500 ml selon consistance et quantité).
+        Les pertes invisibles (respiration, peau) sont comptées forfaitairement à ${BASE_LOSS_ML} ml par jour.
+        Bilan = liquides bus − pertes estimées. L'eau contenue dans les aliments n'est pas comptée.
+      </div>`;
+
+      reportCharts.forEach(c => c.destroy());
+      reportCharts = [];
+      byId('report-content').innerHTML = html;
+
+      const labels = isoDays.map(fmtDateShort);
+      const common = { responsive: false, animation: false, devicePixelRatio: 2, plugins: { legend: { position: 'bottom' } } };
+      reportCharts.push(new Chart(byId('rp-chart-fluids').getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Liquides bus (ml)', data: days.map(d => d.hasData ? d.total : null), backgroundColor: '#2563eb' },
+            { label: 'Pertes estimées (ml)', data: days.map(d => d.hasData ? d.loss.total : null), backgroundColor: '#ef4444' }
+          ]
+        },
+        options: Object.assign({}, common, { scales: { y: { beginAtZero: true } } })
+      }));
+      if (allW.length) {
+        reportCharts.push(new Chart(byId('rp-chart-weight').getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              { label: 'Poids matin (kg)', data: days.map(d => d.weight.matin != null ? d.weight.matin : null), borderColor: '#ea580c', backgroundColor: '#ea580c', spanGaps: true, tension: 0.2 },
+              { label: 'Poids soir (kg)', data: days.map(d => d.weight.soir != null ? d.weight.soir : null), borderColor: '#4f46e5', backgroundColor: '#4f46e5', spanGaps: true, tension: 0.2 }
+            ]
+          },
+          options: common
+        }));
+      } else {
+        byId('rp-chart-weight').style.display = 'none';
+      }
+    }
+
+    // ================== NAVIGATION ==================
+    const TABS = ['today', 'food', 'history'];
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + tabName));
       if (tabName === 'today') {
-        document.querySelectorAll('.tab-btn')[0].classList.add('active');
-        document.getElementById('tab-today').classList.add('active');
         renderToday();
         renderMeds();
+      } else if (tabName === 'food') {
+        renderFood();
       } else {
-        document.querySelectorAll('.tab-btn')[1].classList.add('active');
-        document.getElementById('tab-history').classList.add('active');
         renderHistory();
         renderChart();
         renderWeightChart();
@@ -1599,15 +2661,12 @@
       // Pas de changement d'onglet quand on balaie dans un champ ou sur une courbe
       const tag = (document.activeElement && document.activeElement.tagName) || '';
       if (tag === 'INPUT') return;
+      if (document.body.classList.contains('modal-open')) return;
       const threshold = 50;
-      const isTodayActive = document.getElementById('tab-today').classList.contains('active');
-
-      if (touchEndX < touchStartX - threshold) {
-        if (isTodayActive) switchTab('history');
-      }
-      if (touchEndX > touchStartX + threshold) {
-        if (!isTodayActive) switchTab('today');
-      }
+      const active = document.querySelector('.tab-content.active');
+      const idx = Math.max(0, TABS.indexOf(active ? active.id.replace('tab-', '') : 'today'));
+      if (touchEndX < touchStartX - threshold && idx < TABS.length - 1) switchTab(TABS[idx + 1]);
+      if (touchEndX > touchStartX + threshold && idx > 0) switchTab(TABS[idx - 1]);
     }
 
     // ================== AFFICHAGE : AUJOURD'HUI ==================
@@ -1667,7 +2726,7 @@
 
       logs.forEach(item => {
         if (item.isoDate === selectedDate) {
-          if (item.type === 'med_plan') return;
+          if (item.type === 'med_plan' || item.type === 'food_dish') return;
           // Pesée remplacée par une plus récente : on ne l'affiche pas
           if (item.type === 'poids_matin' && Number(item.id) !== weightDay.matinId) return;
           if (item.type === 'poids_soir' && Number(item.id) !== weightDay.soirId) return;
@@ -1687,6 +2746,7 @@
           else if (item.type === 'perte_urine') { cssClass = 'item-urine'; badge = '🟡 Urine'; }
           else if (item.type === 'perte_selle') { cssClass = 'item-stool'; badge = '🟣 Selle'; }
           else if (item.type === 'med_prise') { cssClass = 'item-weight-pm'; badge = '💊 Complément'; }
+          else if (item.type === 'repas') { cssClass = 'item-weight-am'; badge = '🍽️ Repas'; }
 
           const vol = Number(item.volume) || 0;
           const volDisplay = (vol !== 0 && FLUID_TYPES.includes(item.type)) ? ` (${vol > 0 ? '+' : ''}${vol} ml)` : '';
@@ -1701,6 +2761,13 @@
           time.textContent = `${item.label || ''} à ${item.timeStr || ''}`;
           inner.appendChild(title);
           inner.appendChild(time);
+          if (item.type === 'repas') {
+            const md = parseData(item);
+            const ingLine = document.createElement('div');
+            ingLine.className = 'item-time';
+            ingLine.textContent = (md.ingredients && md.ingredients.length ? 'Ingrédients : ' + md.ingredients.join(', ') : '') + (md.note ? `  📝 ${md.note}` : '');
+            if (ingLine.textContent) inner.appendChild(ingLine);
+          }
           div.appendChild(inner);
           historyContainer.appendChild(div);
         }
@@ -1724,6 +2791,8 @@
         `🟣 ${losses.stoolCount} selle(s) · ${losses.stoolMl} ml`
       ];
       if (adherence.due) extra.push(`💊 ${adherence.done}/${adherence.due} prise(s)`);
+      const mealCount = getMeals(selectedDate).length;
+      if (mealCount) extra.push(`🍽️ ${mealCount} aliment(s)`);
       document.getElementById('hist-extra').textContent = extra.join('  ·  ');
       const diff = totalFluid - totalLoss;
 
@@ -2391,6 +3460,13 @@
     });
     document.getElementById('gate-code-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') loginWithCode();
+    });
+
+    document.getElementById('scan-manual').addEventListener('keydown', e => {
+      if (e.key === 'Enter') lookupBarcode(e.target.value);
+    });
+    document.getElementById('food-search').addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); searchOFF(); }
     });
 
     // ================== DÉMARRAGE ==================

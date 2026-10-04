@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hydra-pwa-v7';
+const CACHE_NAME = 'hydra-pwa-v8';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -65,7 +65,8 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET' ||
       e.request.url.includes('script.google.com') ||
       e.request.url.includes('script.googleusercontent.com') ||
-      e.request.url.includes('accounts.google.com')) {
+      e.request.url.includes('accounts.google.com') ||
+      e.request.url.includes('openfoodfacts.org')) {
     return;
   }
 
