@@ -100,6 +100,9 @@
     .drink-today-item .d-vol { font-weight: 700; white-space: nowrap; }
     .drink-del { border: none; background: transparent; color: #94a3b8; font-size: 1rem; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
     .drink-del:hover { background: #fee2e2; color: #b91c1c; }
+    .drink-del.armed { background: #dc2626; color: white; font-size: 0.78rem; font-weight: 700; padding: 6px 10px; }
+    .med-row.armed { border-color: #dc2626; background: #fef2f2; }
+    .med-row.armed .med-time { color: #b91c1c; font-weight: 700; }
     .drink-more { width: 100%; margin-top: 6px; padding: 7px; border: none; border-radius: 8px; background: #f1f5f9; color: #64748b; font-weight: 600; font-size: 0.8rem; cursor: pointer; font-family: inherit; }
     .drink-empty { text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 8px; }
 
@@ -946,7 +949,7 @@
         del.textContent = '✕';
         del.title = 'Supprimer cette saisie';
         del.setAttribute('aria-label', `Supprimer ${it.label || ''}`);
-        del.onclick = () => removeDrinkEntry(it.id);
+        del.onclick = () => confirmTap(del, () => removeDrinkEntry(it.id));
         row.appendChild(del);
         list.appendChild(row);
       });
@@ -1103,7 +1106,13 @@
             if (late) t.classList.add('late');
           }
           row.setAttribute('aria-pressed', intake ? 'true' : 'false');
-          row.onclick = () => intake ? uncheckIntake(intake) : checkIntakes([med], moment);
+          row.onclick = () => {
+            if (!intake) return checkIntakes([med], moment);
+            confirmTap(row, () => uncheckIntake(intake), {
+              arm: () => { row.dataset.prev = row.querySelector('.med-time').textContent; row.querySelector('.med-time').textContent = 'Décocher ?'; },
+              disarm: () => { row.querySelector('.med-time').textContent = row.dataset.prev || ''; }
+            });
+          };
           block.appendChild(row);
         });
 
@@ -1469,7 +1478,7 @@
         del.textContent = '✕';
         del.title = 'Supprimer cette saisie';
         del.setAttribute('aria-label', `Supprimer ${it.label || ''}`);
-        del.onclick = () => removeDrinkEntry(it.id);
+        del.onclick = () => confirmTap(del, () => removeDrinkEntry(it.id));
         row.appendChild(del);
         list.appendChild(row);
       });
@@ -1500,6 +1509,27 @@
           commitChanges();
         }
       });
+    }
+
+    // ----- Confirmation en deux temps (suppressions) -----
+    // 1er appui : le bouton passe en rouge « Supprimer ? » pendant 3 s ; 2e appui : l'action est faite.
+    function confirmTap(el, action, hooks) {
+      hooks = hooks || {};
+      if (el.classList.contains('armed')) {
+        clearTimeout(el._confirmTimer);
+        el.classList.remove('armed');
+        action();
+        return;
+      }
+      el.classList.add('armed');
+      if (hooks.arm) hooks.arm();
+      else { el.dataset.prev = el.textContent; el.textContent = 'Supprimer ?'; }
+      if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
+      el._confirmTimer = setTimeout(() => {
+        el.classList.remove('armed');
+        if (hooks.disarm) hooks.disarm();
+        else el.textContent = el.dataset.prev || '✕';
+      }, 3000);
     }
 
     // ----- Message temporaire avec « Annuler » -----
