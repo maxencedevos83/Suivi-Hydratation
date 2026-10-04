@@ -295,7 +295,11 @@
     .pdf-viewer { position: fixed; inset: 0; z-index: 80; background: #334155; overflow-y: auto; display: none; }
     .pdf-bar { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #0f172a; color: white; font-weight: 600; font-size: 0.9rem; }
     .pdf-bar button { border: none; background: #334155; color: white; width: 34px; height: 34px; border-radius: 50%; font-size: 1rem; cursor: pointer; flex-shrink: 0; }
-    .pdf-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pdf-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+    .pdf-bar .pdf-action { background: #1e293b; }
+    .pdf-bar .pdf-action:disabled { opacity: 0.4; }
+    .email-body { font-family: inherit; line-height: 1.45; resize: vertical; margin-top: 0; }
+    #email-sheet .chip.active { background: #0f766e; border-color: #0f766e; }
     .pdf-status { color: #bbf7d0; font-size: 0.8rem; text-align: center; padding: 8px 12px 0; }
     .pdf-status.err { color: #fecaca; font-weight: 600; }
     .pdf-pages { max-width: 900px; margin: 0 auto; padding: 10px; box-sizing: border-box; }
@@ -304,8 +308,14 @@
 
     @media print {
       body { background: white !important; padding: 0 !important; max-width: none !important; margin: 0 !important; }
-      body > *:not(#report-view) { display: none !important; }
-      #report-view { position: static !important; display: block !important; overflow: visible !important; background: white !important; }
+      body:not(.print-doc) > *:not(#report-view) { display: none !important; }
+      body:not(.print-doc) #report-view { position: static !important; display: block !important; overflow: visible !important; background: white !important; }
+      body.print-doc > *:not(#pdf-viewer) { display: none !important; }
+      body.print-doc #pdf-viewer { position: static !important; display: block !important; overflow: visible !important; background: white !important; }
+      body.print-doc .pdf-bar, body.print-doc .pdf-status { display: none !important; }
+      body.print-doc .pdf-pages { padding: 0; max-width: none; }
+      body.print-doc .pdf-pages canvas { width: 100% !important; height: auto !important; margin: 0 !important; box-shadow: none !important; break-after: page; page-break-after: always; }
+      body.print-doc .pdf-pages canvas:last-child { break-after: auto; page-break-after: auto; }
       .no-print { display: none !important; }
       .report-content { margin: 0; padding: 0; max-width: none; font-size: 9.5pt; }
       .rp-day, .rp-kpis, .rp-chart { break-inside: avoid; }
@@ -329,7 +339,7 @@
         <input type="password" id="gate-code-input" class="date-picker-input" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX">
         <button class="sync-btn" type="button" style="margin-top: 8px;" onclick="loginWithCode()">Déverrouiller</button>
       </div>
-      <div class="gate-foot">🔒 Tes données ne sont accessibles qu'avec ton compte.<br>Version 2026-10-04 · v10</div>
+      <div class="gate-foot">🔒 Tes données ne sont accessibles qu'avec ton compte.<br>Version 2026-10-04 · v11</div>
     </div>
   </div>
 
@@ -591,7 +601,8 @@
   <!-- ONGLET 2 : HISTORIQUE ET COURBE -->
   <div id="tab-history" class="tab-content">
     <div class="card" style="padding: 12px;">
-      <button class="sync-btn" style="background: #0f766e;" onclick="openReport()">🩺 Rapport pour le médecin (imprimer / PDF)</button>
+      <button class="sync-btn" style="background: #0f766e;" onclick="openReport()">🖨️ Imprimer l'historique / 🩺 Rapport médecin</button>
+      <div class="sync-note" style="text-align: center;">Choisis la période (un jour, 7 jours, 30 jours ou des dates précises), puis « Imprimer / PDF ».</div>
     </div>
     
     <div class="card">
@@ -687,11 +698,21 @@
     </div>
   </div>
 
+  <!-- Envoi d'un document par email -->
+  <div id="email-sheet" class="sheet" onclick="if (event.target === this) closeEmailSheet()">
+    <div class="sheet-box">
+      <div class="sheet-head"><span>✉️ Envoyer par email</span><button type="button" onclick="closeEmailSheet()" aria-label="Fermer">✕</button></div>
+      <div id="email-sheet-body"></div>
+    </div>
+  </div>
+
   <!-- Visionneuse PDF (document déchiffré en mémoire uniquement) -->
   <div id="pdf-viewer" class="pdf-viewer">
     <div class="pdf-bar">
       <button type="button" onclick="closePdfViewer()" aria-label="Fermer">✕</button>
       <span id="pdf-title"></span>
+      <button type="button" class="pdf-action" id="pdf-email" aria-label="Envoyer par email" title="Envoyer par email">✉️</button>
+      <button type="button" class="pdf-action" id="pdf-print" onclick="printDoc()" aria-label="Imprimer" title="Imprimer">🖨️</button>
     </div>
     <div id="pdf-status" class="pdf-status"></div>
     <div id="pdf-pages" class="pdf-pages"></div>
@@ -725,7 +746,7 @@
       <input type="text" id="report-name" class="date-picker-input" maxlength="80" placeholder="Nom affiché sur le rapport (facultatif)">
       <div class="action-row" style="margin-top: 8px;">
         <button class="btn-sub" onclick="generateReport()">↻ Actualiser</button>
-        <button class="btn-add" style="background: #0f766e; color: white;" onclick="window.print()">🖨️ Imprimer / PDF</button>
+        <button class="btn-add" style="background: #0f766e; color: white;" onclick="printReport()">🖨️ Imprimer / PDF</button>
       </div>
       <div class="sync-note" style="margin-top: 4px;">Sur Android : « Imprimer », puis choisir l'imprimante « Enregistrer au format PDF ».</div>
     </div>
@@ -740,7 +761,7 @@
 
   <script>
     // ================== SERVICE WORKER ==================
-    const APP_VERSION = '2026-10-04 · v10';
+    const APP_VERSION = '2026-10-04 · v11';
     if ('serviceWorker' in navigator) {
       // Quand une nouvelle version de l'appli est installée, on recharge une fois pour l'afficher
       const hadController = !!navigator.serviceWorker.controller;
@@ -1872,7 +1893,7 @@
     }
 
     function updateModalState() {
-      const open = ['food-sheet', 'scan-view', 'doc-viewer'].some(id => byId(id) && byId(id).style.display === 'flex') ||
+      const open = ['food-sheet', 'scan-view', 'doc-viewer', 'email-sheet'].some(id => byId(id) && byId(id).style.display === 'flex') ||
         ['report-view', 'pdf-viewer'].some(id => byId(id) && byId(id).style.display === 'block');
       document.body.classList.toggle('modal-open', open);
     }
@@ -2502,6 +2523,7 @@
 
     // ================== RAPPORT MÉDECIN ==================
     const REPORT_PERIODS = [
+      { key: 1, name: 'Aujourd\'hui' },
       { key: 7, name: '7 jours' },
       { key: 14, name: '14 jours' },
       { key: 30, name: '30 jours' },
@@ -2997,6 +3019,7 @@
       docBlobUrls = [];
       closeDocViewer();
       closePdfViewer();
+      if (byId('email-sheet').style.display === 'flex') closeEmailSheet();
       renderDocs();
       if (wasOpen && message) setDocsLockMsg(message);
     }
@@ -3624,7 +3647,11 @@
             <div>${doc.legacy ? '⚠️ <strong>Non chiffré</strong> : lisible dans Drive' : doc.broken ? '❌ Impossible de déchiffrer ce document' : '🔒 Chiffré de bout en bout (AES-256)'}${doc.pages ? ` · ${doc.pages} page(s)` : ''}${doc.size ? ` · ${esc(fmtSize(doc.size))}` : ''}</div>
             ${doc.note ? `<div>📝 ${esc(doc.note)}</div>` : ''}
           </div>
-          ${doc.broken ? '' : '<button class="sync-btn" type="button" id="dv-view" style="background: #0f766e;">👁️ Voir le document</button>'}
+          ${doc.broken ? '' : `<button class="sync-btn" type="button" id="dv-view" style="background: #0f766e;">👁️ Voir le document</button>
+            <div class="action-row" style="margin-top: 8px;">
+              <button class="btn-add" type="button" id="dv-email" style="background: #e0f2fe; color: #075985;">✉️ Envoyer par email</button>
+              <button class="btn-add" type="button" id="dv-print" style="background: #f1f5f9; color: #334155;">🖨️ Imprimer</button>
+            </div>`}
           <div class="action-row" style="margin-top: 8px;">
             ${doc.legacy || doc.broken ? '' : '<button class="btn-sub" type="button" id="dv-edit">✏️ Modifier</button>'}
             <button class="btn-sub" type="button" id="dv-delete">🗑 Corbeille</button>
@@ -3632,6 +3659,8 @@
           ${doc.broken ? '' : '<button class="gate-link" type="button" id="dv-export">Exporter une copie lisible sur cet appareil</button>'}
           <div id="dv-msg" class="weight-feedback"></div>`;
         if (byId('dv-view')) byId('dv-view').onclick = () => viewDocPdf(doc);
+        if (byId('dv-email')) byId('dv-email').onclick = () => openEmailSheet(doc);
+        if (byId('dv-print')) byId('dv-print').onclick = async () => { await viewDocPdf(doc); printDoc(); };
         if (byId('dv-edit')) byId('dv-edit').onclick = () => openDocViewer(doc, true);
         if (byId('dv-export')) {
           const ex = byId('dv-export');
@@ -3662,6 +3691,7 @@
 
     function closePdfViewer() {
       pdfRenderToken++;
+      pdfReady = false;
       const v = byId('pdf-viewer');
       if (!v) return;
       v.style.display = 'none';
@@ -3672,6 +3702,9 @@
 
     async function viewDocPdf(doc) {
       const token = ++pdfRenderToken;
+      pdfReady = false;
+      byId('pdf-print').disabled = true;
+      byId('pdf-email').onclick = () => openEmailSheet(doc);
       byId('pdf-title').textContent = doc.title;
       byId('pdf-pages').innerHTML = '';
       const status = byId('pdf-status');
@@ -3688,7 +3721,7 @@
         if (integrity === false) status.className = 'pdf-status err';
         const pdf = await lib.getDocument({ data: bytes }).promise;
         const width = Math.min(byId('pdf-pages').clientWidth || window.innerWidth, 900);
-        const ratio = Math.min(window.devicePixelRatio || 1, 2);
+        const ratio = Math.max(Math.min(window.devicePixelRatio || 1, 2), 1240 / width > 2 ? 2 : 1240 / width);
         for (let n = 1; n <= Math.min(pdf.numPages, 60); n++) {
           if (token !== pdfRenderToken) return;
           const page = await pdf.getPage(n);
@@ -3703,6 +3736,10 @@
           touchDocs();
         }
         pdf.destroy();
+        if (token === pdfRenderToken) {
+          pdfReady = true;
+          byId('pdf-print').disabled = false;
+        }
       } catch (e) {
         if (token !== pdfRenderToken || e.message === 'unauthorized') return;
         status.className = 'pdf-status err';
@@ -3747,6 +3784,201 @@
         byId('dv-msg').textContent = docsErrorMessage(e.message);
       }
     }
+
+    // ----- Envoi par email (messagerie par défaut, document en pièce jointe) -----
+    const EMAIL_CONTEXT = {
+      ordonnance: 'Il s\'agit de mon ordonnance en cours, que je vous transmets pour information et pour le suivi de mon traitement.',
+      analyses: 'Il s\'agit des résultats de mes analyses, que je vous adresse afin que vous puissiez en prendre connaissance et me faire part de vos éventuelles observations.',
+      compte_rendu: 'Il s\'agit du compte rendu relatif à ma prise en charge, que je vous transmets afin de compléter mon dossier médical.',
+      imagerie: 'Il s\'agit de résultats d\'imagerie, que je vous adresse pour information et pour la suite de ma prise en charge.',
+      courrier: 'Je vous transmets ce courrier pour information et afin de faciliter la coordination de mon suivi.',
+      autre: 'Je vous transmets ce document pour information et pour le suivi de mon dossier médical.'
+    };
+    const EMAIL_TITLES = [
+      { key: 'docteur', name: 'Docteur' },
+      { key: 'madame', name: 'Madame' },
+      { key: 'monsieur', name: 'Monsieur' },
+      { key: 'autre', name: 'Autre / service' }
+    ];
+    let emailState = null;
+
+    function openMailto(url) { window.location.href = url; }
+    function safeFileName(s) { return String(s || 'document').replace(/[\\/:*?"<>|]/g, '-').trim().slice(0, 100); }
+
+    function emailSubject(doc, signature) {
+      return `Transmission de document médical – ${doc.title}${doc.docDate ? ` (${fmtIsoFr(doc.docDate)})` : ''}${signature ? ` – ${signature}` : ''}`;
+    }
+
+    function emailBody(doc, st) {
+      const name = st.name.trim();
+      const greeting = {
+        docteur: name ? `Bonjour Docteur ${name},` : 'Bonjour Docteur,',
+        madame: name ? `Bonjour Madame ${name},` : 'Bonjour Madame,',
+        monsieur: name ? `Bonjour Monsieur ${name},` : 'Bonjour Monsieur,',
+        autre: 'Madame, Monsieur,'
+      }[st.title];
+      const formule = { docteur: 'Docteur', madame: 'Madame', monsieur: 'Monsieur', autre: 'Madame, Monsieur' }[st.title];
+      const lines = [
+        greeting,
+        '',
+        `Je vous prie de trouver ci-joint le document « ${doc.title} »${doc.docDate ? `, daté du ${fmtIsoFr(doc.docDate)}` : ''}.`,
+        '',
+        EMAIL_CONTEXT[doc.category] || EMAIL_CONTEXT.autre,
+        '',
+        'Je reste à votre disposition pour tout renseignement complémentaire.',
+        '',
+        `Je vous remercie par avance de l'attention que vous porterez à ce document et vous prie d'agréer, ${formule}, l'expression de mes salutations distinguées.`
+      ];
+      if (st.signature.trim()) lines.push('', st.signature.trim());
+      return lines.join('\n');
+    }
+
+    function closeEmailSheet() {
+      byId('email-sheet').style.display = 'none';
+      emailState = null;
+      updateModalState();
+    }
+
+    function openEmailSheet(doc) {
+      touchDocs();
+      const last = lsGet('hydra_email_last', {}) || {};
+      emailState = {
+        doc: doc,
+        title: last.title || 'docteur',
+        name: last.name || '',
+        email: last.email || '',
+        signature: prefGet('hydra_signature', prefGet('hydra_report_name', '')),
+        edited: false,
+        file: null,
+        error: null
+      };
+      const st = emailState;
+      byId('email-sheet-body').innerHTML = `
+        <div class="fs-meta">📎 Pièce jointe : <strong>${esc(doc.title)}</strong> (PDF${doc.size ? `, ${esc(fmtSize(doc.size))}` : ''})</div>
+        <div class="action-label">Destinataire</div>
+        <div class="chip-row" id="em-titles"></div>
+        <input type="text" id="em-name" class="date-picker-input" maxlength="80" placeholder="Nom (ex : Martin)" value="${esc(st.name)}">
+        <input type="email" id="em-email" class="date-picker-input" maxlength="120" autocomplete="email" placeholder="Adresse email (facultatif)" value="${esc(st.email)}">
+        <div class="action-label" style="margin-top: 10px;">Ta signature</div>
+        <input type="text" id="em-signature" class="date-picker-input" maxlength="120" placeholder="Prénom Nom" value="${esc(st.signature)}" style="margin-top: 0;">
+        <div class="action-label" style="margin-top: 10px;">Objet</div>
+        <input type="text" id="em-subject" class="date-picker-input" maxlength="200" style="margin-top: 0;">
+        <div class="action-label" style="margin-top: 10px;">Message (tu peux le modifier)</div>
+        <textarea id="em-body" class="date-picker-input email-body" rows="12"></textarea>
+        <button class="sync-btn" type="button" id="em-send" style="background: #0f766e; margin-top: 12px;" disabled>Préparation du document…</button>
+        <div class="sync-note">Le document sera joint en PDF lisible (il n'est plus chiffré une fois envoyé). Tu choisiras ta messagerie, puis le destinataire${st.email ? '' : ''} : son adresse est copiée automatiquement pour que tu n'aies qu'à la coller.</div>
+        <div id="em-msg" class="weight-feedback"></div>`;
+
+      const refresh = () => {
+        if (!emailState) return;
+        byId('em-subject').value = emailSubject(doc, st.signature.trim());
+        if (!st.edited) byId('em-body').value = emailBody(doc, st);
+      };
+      const titles = byId('em-titles');
+      EMAIL_TITLES.forEach(t => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'chip' + (st.title === t.key ? ' active' : '');
+        chip.textContent = t.name;
+        chip.onclick = () => {
+          st.title = t.key;
+          titles.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          byId('em-name').style.display = t.key === 'autre' ? 'none' : 'block';
+          refresh();
+        };
+        titles.appendChild(chip);
+      });
+      byId('em-name').style.display = st.title === 'autre' ? 'none' : 'block';
+      byId('em-name').oninput = e => { st.name = e.target.value; refresh(); };
+      byId('em-email').oninput = e => { st.email = e.target.value.trim(); };
+      byId('em-signature').oninput = e => { st.signature = e.target.value; refresh(); };
+      byId('em-body').oninput = () => { st.edited = true; };
+      byId('em-send').onclick = sendDocEmail;
+      refresh();
+      byId('email-sheet').style.display = 'flex';
+      updateModalState();
+
+      // Le document est déchiffré dès maintenant, pour que l'envoi soit immédiat au moment du clic
+      fetchDocPlain(doc).then(({ bytes }) => {
+        if (emailState !== st) return;
+        st.file = new File([bytes], `${doc.docDate || 'document'} - ${safeFileName(doc.title)}.pdf`, { type: 'application/pdf' });
+        byId('em-send').disabled = false;
+        byId('em-send').textContent = '✉️ Ouvrir ma messagerie avec le document';
+      }).catch(e => {
+        if (emailState !== st || e.message === 'unauthorized') return;
+        byId('em-send').textContent = 'Document indisponible';
+        byId('em-msg').className = 'weight-feedback err';
+        byId('em-msg').textContent = docsErrorMessage(e.message);
+      });
+    }
+
+    async function sendDocEmail() {
+      const st = emailState;
+      if (!st || !st.file) return;
+      const subject = byId('em-subject').value.trim();
+      const body = byId('em-body').value;
+      const msg = byId('em-msg');
+      if (st.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(st.email)) {
+        msg.className = 'weight-feedback err';
+        msg.textContent = 'Adresse email invalide.';
+        return;
+      }
+      lsSet('hydra_email_last', { title: st.title, name: st.name.trim(), email: st.email });
+      prefSet('hydra_signature', st.signature.trim());
+      touchDocs();
+      docsPickerOpen = true;   // l'appli passe au second plan pendant le partage : on ne verrouille pas
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [st.file] })) {
+          if (st.email) { try { await navigator.clipboard.writeText(st.email); } catch (e) {} }
+          await navigator.share({ files: [st.file], title: subject, text: body });
+          msg.className = 'weight-feedback ok';
+          msg.textContent = st.email ? `✅ Messagerie ouverte. L'adresse ${st.email} est copiée : colle-la dans « À ».` : '✅ Messagerie ouverte avec le document en pièce jointe.';
+        } else {
+          // Ordinateur sans partage de fichiers : on télécharge le PDF puis on ouvre la messagerie préremplie
+          const url = URL.createObjectURL(st.file);
+          docBlobUrls.push(url);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = st.file.name;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          const fullBody = `${body}\n\n(Pièce jointe : ${st.file.name})`;
+          openMailto(`mailto:${encodeURIComponent(st.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(fullBody)}`);
+          msg.className = 'weight-feedback ok';
+          msg.textContent = `✅ Le document « ${st.file.name} » vient d'être téléchargé : ajoute-le en pièce jointe dans le message qui s'est ouvert.`;
+        }
+      } catch (e) {
+        if (e && e.name === 'AbortError') {
+          msg.className = 'weight-feedback';
+          msg.textContent = 'Envoi annulé.';
+        } else {
+          msg.className = 'weight-feedback err';
+          msg.textContent = 'Impossible d\'ouvrir la messagerie sur cet appareil.';
+        }
+      } finally {
+        setTimeout(() => { docsPickerOpen = false; }, 2000);
+      }
+    }
+
+    // ----- Impression d'un document (visionneuse) -----
+    let pdfReady = false;
+    function printDoc() {
+      if (!pdfReady) return;
+      touchDocs();
+      docsPickerOpen = true;   // la fenêtre d'impression peut faire passer l'appli au second plan
+      document.body.classList.add('print-doc');
+      window.print();
+    }
+    function printReport() {
+      document.body.classList.remove('print-doc');
+      window.print();
+    }
+    window.addEventListener('afterprint', () => {
+      document.body.classList.remove('print-doc');
+      setTimeout(() => { docsPickerOpen = false; }, 1500);
+    });
 
     // ----- Verrouillage automatique -----
     document.addEventListener('visibilitychange', () => {
