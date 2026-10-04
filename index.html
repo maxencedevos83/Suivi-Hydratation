@@ -31,7 +31,7 @@
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; max-width: 450px; margin: auto; background: var(--bg); color: #1e293b; touch-action: pan-y; }
     
     .tabs { display: flex; gap: 8px; margin-bottom: 15px; background: #e2e8f0; padding: 4px; border-radius: 12px; }
-    .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; background: transparent; color: #64748b; transition: 0.2s; }
+    .tab-btn { flex: 1; padding: 10px 2px; border: none; border-radius: 8px; font-weight: 600; font-size: 0.8rem; white-space: nowrap; cursor: pointer; background: transparent; color: #64748b; transition: 0.2s; font-family: inherit; }
     .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     
     .tab-content { display: none; }
@@ -263,6 +263,32 @@
     .rp-foot { font-size: 0.72rem; color: #64748b; margin-top: 16px; line-height: 1.5; }
     .rp-chart { width: 100%; max-width: 760px; margin: 6px 0 4px; }
 
+    /* Dossier médical */
+    .docs-lock { text-align: center; padding: 26px 18px; }
+    .docs-lock-icon { font-size: 2.4rem; }
+    .docs-lock h3 { margin: 8px 0 6px; font-size: 1.1rem; }
+    .docs-lock p { color: #64748b; font-size: 0.86rem; line-height: 1.45; margin: 0 0 16px; }
+    .docs-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .docs-lock-btn { border: 1px solid #cbd5e1; background: white; border-radius: 8px; padding: 6px 10px; font-size: 0.78rem; font-weight: 600; color: #475569; cursor: pointer; font-family: inherit; }
+    .docs-actions { grid-template-columns: 1fr 1fr; margin-top: 0; }
+    .docs-actions .food-action, .doc-page.add { cursor: pointer; }
+    .docs-actions .food-action { border-color: #99f6e4; background: #f0fdfa; color: #115e59; }
+    .docs-actions .food-action small { color: #0f766e; }
+    #tab-docs .chip.active { background: #0f766e; border-color: #0f766e; }
+    .doc-pages { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; }
+    .doc-page { position: relative; height: 104px; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; background: #f8fafc; }
+    .doc-page img { width: 100%; height: 100%; object-fit: cover; }
+    .doc-page span { position: absolute; left: 4px; bottom: 4px; background: rgba(15,23,42,0.7); color: white; font-size: 0.7rem; border-radius: 6px; padding: 1px 6px; }
+    .doc-page button { position: absolute; top: 3px; right: 3px; width: 24px; height: 24px; border-radius: 50%; border: none; background: rgba(15,23,42,0.7); color: white; cursor: pointer; }
+    .doc-page.add { display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px dashed #5eead4; color: #0f766e; font-weight: 600; font-size: 0.8rem; }
+    .doc-page.add b { font-size: 1.4rem; }
+    .doc-pdf { padding: 12px; border-radius: 10px; background: #f0fdfa; border: 1px solid #99f6e4; font-weight: 600; font-size: 0.88rem; word-break: break-all; }
+    .doc-draft { margin-top: 4px; }
+    .doc-note { font-size: 0.85rem; color: #334155; margin-bottom: 10px; }
+    .doc-open { display: block; text-align: center; text-decoration: none; box-sizing: border-box; background: #0f766e; }
+    .docs-folder-link { display: block; font-size: 0.82rem; color: #0f766e; font-weight: 600; text-decoration: none; margin-bottom: 8px; }
+    #tab-docs .food-row .fr-badge:empty { display: none; }
+
     @media print {
       body { background: white !important; padding: 0 !important; max-width: none !important; margin: 0 !important; }
       body > *:not(#report-view) { display: none !important; }
@@ -290,7 +316,7 @@
         <input type="password" id="gate-code-input" class="date-picker-input" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX">
         <button class="sync-btn" type="button" style="margin-top: 8px;" onclick="loginWithCode()">Déverrouiller</button>
       </div>
-      <div class="gate-foot">🔒 Tes données ne sont accessibles qu'avec ton compte.<br>Version 2026-10-04 · v8</div>
+      <div class="gate-foot">🔒 Tes données ne sont accessibles qu'avec ton compte.<br>Version 2026-10-04 · v9</div>
     </div>
   </div>
 
@@ -322,6 +348,7 @@
   <div class="tabs">
     <button class="tab-btn active" data-tab="today" onclick="switchTab('today')">Aujourd'hui</button>
     <button class="tab-btn" data-tab="food" onclick="switchTab('food')">🍽️ Nourriture</button>
+    <button class="tab-btn" data-tab="docs" onclick="switchTab('docs')">📁 Dossier</button>
     <button class="tab-btn" data-tab="history" onclick="switchTab('history')">Historique</button>
   </div>
 
@@ -507,6 +534,41 @@
     <datalist id="ingredient-suggestions"></datalist>
   </div>
 
+  <!-- ONGLET DOSSIER MÉDICAL -->
+  <div id="tab-docs" class="tab-content">
+    <div id="docs-locked" class="card docs-lock">
+      <div class="docs-lock-icon">🔒</div>
+      <h3>Dossier médical</h3>
+      <p id="docs-lock-text">Tes documents médicaux sont protégés par ton empreinte.</p>
+      <button class="sync-btn" type="button" id="docs-unlock-btn" style="background: #0f766e;" onclick="unlockDocs()">👆 Déverrouiller avec l'empreinte</button>
+      <div id="docs-google" style="display: none; justify-content: center; margin-top: 10px;"></div>
+      <div id="docs-lock-msg" class="weight-feedback"></div>
+      <button class="gate-link" type="button" id="docs-reset-btn" style="display: none;" onclick="resetBiometric()">Réinitialiser l'empreinte sur cet appareil</button>
+    </div>
+
+    <div id="docs-unlocked" style="display: none;">
+      <div class="card">
+        <div class="docs-head">
+          <div class="card-title" style="margin: 0;">📁 Ajouter un document</div>
+          <button class="docs-lock-btn" type="button" onclick="lockDocs('Dossier verrouillé.')">🔒 Verrouiller</button>
+        </div>
+        <div id="doc-add-buttons" class="food-actions docs-actions">
+          <label class="food-action">📷 Photographier<br><small>une ou plusieurs pages</small><input type="file" id="doc-photo-input" accept="image/*" capture="environment" hidden></label>
+          <label class="food-action">📄 Importer<br><small>PDF ou photos</small><input type="file" id="doc-file-input" accept="application/pdf,image/*" multiple hidden></label>
+        </div>
+        <div id="doc-draft"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🗂️ Mes documents</div>
+        <a id="docs-folder-link" class="docs-folder-link" target="_blank" rel="noopener" style="display: none;">📂 Ouvrir tout le dossier dans Google Drive</a>
+        <div class="chip-row" id="docs-filters" style="margin-bottom: 8px;"></div>
+        <div id="docs-list" class="food-results"></div>
+        <div class="sync-note">Les documents sont rangés dans un dossier privé de ton Google Drive. Rien n'est gardé sur le téléphone : le dossier se reverrouille dès que tu quittes l'appli ou après 5 minutes sans activité.</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ONGLET 2 : HISTORIQUE ET COURBE -->
   <div id="tab-history" class="tab-content">
     <div class="card" style="padding: 12px;">
@@ -598,6 +660,14 @@
     </div>
   </div>
 
+  <!-- Document du dossier médical -->
+  <div id="doc-viewer" class="sheet" onclick="if (event.target === this) closeDocViewer()">
+    <div class="sheet-box">
+      <div class="sheet-head"><span id="doc-viewer-title">Document</span><button type="button" onclick="closeDocViewer()" aria-label="Fermer">✕</button></div>
+      <div id="doc-viewer-body"></div>
+    </div>
+  </div>
+
   <!-- Scan de code-barres -->
   <div id="scan-view" class="sheet">
     <div class="sheet-box">
@@ -641,7 +711,7 @@
 
   <script>
     // ================== SERVICE WORKER ==================
-    const APP_VERSION = '2026-10-04 · v8';
+    const APP_VERSION = '2026-10-04 · v9';
     if ('serviceWorker' in navigator) {
       // Quand une nouvelle version de l'appli est installée, on recharge une fois pour l'afficher
       const hadController = !!navigator.serviceWorker.controller;
@@ -1773,7 +1843,7 @@
     }
 
     function updateModalState() {
-      const open = ['food-sheet', 'scan-view'].some(id => byId(id).style.display === 'flex') || byId('report-view').style.display === 'block';
+      const open = ['food-sheet', 'scan-view', 'doc-viewer'].some(id => byId(id) && byId(id).style.display === 'flex') || byId('report-view').style.display === 'block';
       document.body.classList.toggle('modal-open', open);
     }
 
@@ -2627,9 +2697,658 @@
       }
     }
 
+    // ================== DOSSIER MÉDICAL ==================
+    const DOC_CATEGORIES = [
+      { key: 'ordonnance', name: 'Ordonnance', icon: '💊' },
+      { key: 'analyses', name: 'Analyses', icon: '🧪' },
+      { key: 'compte_rendu', name: 'Compte rendu', icon: '📋' },
+      { key: 'imagerie', name: 'Imagerie', icon: '🩻' },
+      { key: 'courrier', name: 'Courrier', icon: '✉️' },
+      { key: 'autre', name: 'Autre', icon: '📄' }
+    ];
+    const DOCS_LOCK_MS = 5 * 60 * 1000;          // re-verrouillage après 5 min sans activité
+    const MAX_DOC_BYTES = 20 * 1024 * 1024;       // 20 Mo par document
+    const LS_WEBAUTHN = 'hydra_webauthn';         // identifiant de l'empreinte enregistrée sur CET appareil
+    let docsUnlockedUntil = 0;
+    let docsList = null;          // liste gardée en mémoire seulement, jamais enregistrée sur l'appareil
+    let docsFolderUrl = '';
+    let docsFilter = 'tous';
+    let docDraft = null;          // document en préparation
+    let docsPickerOpen = false;   // appareil photo / sélecteur de fichiers ouvert
+    let docsGoogleFallback = false;
+    let pendingDocsGoogle = false;
+    let docBlobUrls = [];
+
+    function docCat(key) { return DOC_CATEGORIES.find(c => c.key === key) || DOC_CATEGORIES[DOC_CATEGORIES.length - 1]; }
+    function fmtSize(b) {
+      b = Number(b) || 0;
+      return b < 1024 * 1024 ? `${Math.max(1, Math.round(b / 1024))} Ko` : `${(b / 1048576).toFixed(1).replace('.', ',')} Mo`;
+    }
+    function fmtIsoFr(iso) {
+      const [y, m, d] = String(iso || '').split('-');
+      return d ? `${d}/${m}/${y}` : '';
+    }
+    function docsUnlocked() { return Date.now() < docsUnlockedUntil; }
+    function touchDocs() { if (docsUnlocked()) docsUnlockedUntil = Date.now() + DOCS_LOCK_MS; }
+
+    function setDocsLockMsg(text, kind) {
+      const el = byId('docs-lock-msg');
+      el.className = 'weight-feedback' + (kind ? ' ' + kind : '');
+      el.textContent = text || '';
+    }
+
+    function lockDocs(message) {
+      const wasOpen = docsUnlocked() || docsList !== null;
+      docsUnlockedUntil = 0;
+      docsList = null;
+      docDraft = null;
+      docBlobUrls.forEach(u => URL.revokeObjectURL(u));
+      docBlobUrls = [];
+      closeDocViewer();
+      renderDocs();
+      if (wasOpen && message) setDocsLockMsg(message);
+    }
+
+    // ----- Empreinte (WebAuthn, capteur du téléphone) -----
+    function bufToB64u(buf) {
+      let s = '';
+      new Uint8Array(buf).forEach(b => { s += String.fromCharCode(b); });
+      return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+    function b64uToBuf(str) {
+      const s = atob(str.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((str.length + 3) % 4));
+      return Uint8Array.from(s, c => c.charCodeAt(0));
+    }
+    function randomBytes(n) { return crypto.getRandomValues(new Uint8Array(n)); }
+    // Indicateur « utilisateur vérifié » (empreinte ou code du téléphone) dans la réponse du capteur
+    function uvFlag(authData) {
+      const a = new Uint8Array(authData);
+      return a.length > 32 && (a[32] & 0x04) !== 0;
+    }
+
+    async function biometricAvailable() {
+      try {
+        return !!(window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable &&
+          await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable());
+      } catch (e) {
+        return false;
+      }
+    }
+
+    async function registerBiometric() {
+      const email = (syncConf.session && syncConf.session.email) || 'moi';
+      const cred = await navigator.credentials.create({
+        publicKey: {
+          challenge: randomBytes(32),
+          rp: { name: 'Suivi Hydrique Pro', id: location.hostname },
+          user: { id: randomBytes(16), name: email, displayName: 'Dossier médical — Suivi Hydrique Pro' },
+          pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+          authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'discouraged' },
+          timeout: 60000,
+          attestation: 'none'
+        }
+      });
+      if (!cred) throw new Error('cancel');
+      const authData = cred.response.getAuthenticatorData ? cred.response.getAuthenticatorData() : null;
+      if (authData && !uvFlag(authData)) throw new Error('uv');
+      lsSet(LS_WEBAUTHN, { credId: bufToB64u(cred.rawId), created: Date.now() });
+    }
+
+    async function verifyBiometric(conf) {
+      const assertion = await navigator.credentials.get({
+        publicKey: {
+          challenge: randomBytes(32),
+          rpId: location.hostname,
+          allowCredentials: [{ type: 'public-key', id: b64uToBuf(conf.credId), transports: ['internal'] }],
+          userVerification: 'required',
+          timeout: 60000
+        }
+      });
+      if (!assertion || !uvFlag(assertion.response.authenticatorData)) throw new Error('uv');
+    }
+
+    async function unlockDocs() {
+      if (!navigator.onLine) return setDocsLockMsg('Le dossier médical a besoin d\'une connexion Internet.', 'err');
+      if (!(await biometricAvailable())) {
+        // Pas de capteur ni de verrouillage d'écran : on redemande la connexion Google
+        docsGoogleFallback = true;
+        pendingDocsGoogle = true;
+        renderDocs();
+        initGoogleButton();
+        return;
+      }
+      const conf = lsGet(LS_WEBAUTHN, null);
+      const btn = byId('docs-unlock-btn');
+      btn.disabled = true;
+      setDocsLockMsg(conf ? 'Pose ton doigt sur le capteur…' : 'Enregistrement de ton empreinte pour ce dossier…');
+      try {
+        if (conf && conf.credId) await verifyBiometric(conf);
+        else await registerBiometric();
+        grantDocs();
+      } catch (e) {
+        const name = e && e.name;
+        setDocsLockMsg(name === 'NotAllowedError'
+          ? 'Authentification annulée ou non reconnue. Réessaie.'
+          : 'Empreinte non vérifiée. Réessaie, ou réinitialise l\'empreinte ci-dessous.', 'err');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function grantDocs() {
+      docsUnlockedUntil = Date.now() + DOCS_LOCK_MS;
+      docsGoogleFallback = false;
+      pendingDocsGoogle = false;
+      setDocsLockMsg('');
+      renderDocs();
+      loadDocs();
+    }
+
+    function resetBiometric() {
+      if (!confirm('Réinitialiser l\'empreinte du dossier médical sur cet appareil ?\nTu devras la réactiver (avec le capteur du téléphone).')) return;
+      try { localStorage.removeItem(LS_WEBAUTHN); } catch (e) {}
+      setDocsLockMsg('Empreinte réinitialisée : touche le bouton pour la réactiver.');
+      renderDocs();
+    }
+
+    // ----- Échanges avec le script Google -----
+    function docsErrorMessage(code) {
+      const messages = {
+        not_found: 'Document introuvable (il a peut-être été supprimé).',
+        too_big: 'Fichier trop lourd : 20 Mo maximum.',
+        bad_type: 'Type de fichier non accepté : PDF, JPEG ou PNG.',
+        bad_file: 'Le fichier semble abîmé ou n\'est pas un vrai PDF / image.',
+        server: 'Le script Google n\'a pas pu accéder à Drive. As-tu exécuté « autoriserDossierMedical » ?',
+        unknown_action: 'Le script Google n\'est pas encore à jour (version 4 nécessaire).',
+        format: 'Le script Google ne répond pas comme prévu.',
+        locked: 'Trop de tentatives refusées : accès bloqué 15 minutes.'
+      };
+      return messages[code] || (navigator.onLine ? 'Erreur de communication avec Google Drive. Réessaie.' : 'Pas de connexion Internet.');
+    }
+
+    async function docsCall(payload) {
+      if (!hasSession()) {
+        endSession('Ta session a expiré : reconnecte-toi.');
+        throw new Error('unauthorized');
+      }
+      const data = await apiCall(Object.assign({ session: syncConf.session.token }, payload));
+      if (!data.ok) {
+        if (data.error === 'unauthorized') endSession('Ta session a expiré ou a été fermée : reconnecte-toi.');
+        throw new Error(data.error || 'server');
+      }
+      touchDocs();
+      return data;
+    }
+
+    async function loadDocs() {
+      if (!docsUnlocked()) return;
+      byId('docs-list').innerHTML = '<div class="drink-empty">Chargement de tes documents…</div>';
+      try {
+        const data = await docsCall({ action: 'docs_list' });
+        if (!docsUnlocked()) return;
+        docsList = Array.isArray(data.docs) ? data.docs : [];
+        docsFolderUrl = data.folderUrl || '';
+        renderDocsList();
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        byId('docs-list').innerHTML = '';
+        const msg = document.createElement('div');
+        msg.className = 'weight-feedback err';
+        msg.textContent = docsErrorMessage(e.message);
+        byId('docs-list').appendChild(msg);
+      }
+    }
+
+    // ----- Affichage -----
+    async function renderDocs() {
+      const unlocked = docsUnlocked();
+      byId('docs-locked').style.display = unlocked ? 'none' : 'block';
+      byId('docs-unlocked').style.display = unlocked ? 'block' : 'none';
+      if (!unlocked) {
+        const conf = lsGet(LS_WEBAUTHN, null);
+        const btn = byId('docs-unlock-btn');
+        btn.textContent = conf ? '👆 Déverrouiller avec l\'empreinte' : '👆 Activer l\'empreinte et ouvrir';
+        btn.style.display = docsGoogleFallback ? 'none' : 'block';
+        byId('docs-reset-btn').style.display = conf && !docsGoogleFallback ? 'inline-block' : 'none';
+        byId('docs-lock-text').textContent = docsGoogleFallback
+          ? 'Cet appareil n\'a pas de capteur d\'empreinte ni de verrouillage d\'écran : confirme ton identité avec ton compte Google.'
+          : (conf ? 'Tes documents médicaux sont protégés par ton empreinte.'
+                  : 'Première ouverture sur cet appareil : ton téléphone va te demander ton empreinte (ou son code) pour protéger ce dossier.');
+        byId('docs-google').style.display = docsGoogleFallback ? 'flex' : 'none';
+        return;
+      }
+      renderDocDraft();
+      renderDocsList();
+    }
+
+    function renderDocsList() {
+      const box = byId('docs-list');
+      const link = byId('docs-folder-link');
+      link.style.display = docsFolderUrl ? 'block' : 'none';
+      if (docsFolderUrl) link.href = docsFolderUrl;
+      const filters = byId('docs-filters');
+      filters.innerHTML = '';
+      if (docsList === null) return;
+      const present = DOC_CATEGORIES.filter(c => docsList.some(d => d.category === c.key));
+      if (present.length > 1) {
+        [{ key: 'tous', name: 'Tous', icon: '' }].concat(present).forEach(c => {
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'chip' + (docsFilter === c.key ? ' active' : '');
+          chip.textContent = `${c.icon ? c.icon + ' ' : ''}${c.name}`;
+          chip.onclick = () => { docsFilter = c.key; renderDocsList(); };
+          filters.appendChild(chip);
+        });
+      }
+      box.innerHTML = '';
+      const list = docsList.filter(d => docsFilter === 'tous' || d.category === docsFilter);
+      if (!list.length) {
+        box.innerHTML = '<div class="drink-empty">Aucun document pour l\'instant.</div>';
+        return;
+      }
+      list.forEach(d => {
+        const cat = docCat(d.category);
+        const sub = [cat.name, fmtIsoFr(d.docDate), d.pages ? `${d.pages} page(s)` : '', fmtSize(d.size)].filter(Boolean).join(' · ');
+        box.appendChild(foodRow(`${cat.icon} ${d.title}`, sub, '', () => openDocViewer(d)));
+      });
+    }
+
+    // ----- Préparation d'un document -----
+    function docTitleFromFile(file) {
+      return String(file.name || '').replace(/\.[a-z0-9]+$/i, '').replace(/[_-]+/g, ' ').trim().slice(0, 120);
+    }
+
+    function newDocDraft(kind) {
+      return { kind: kind, pages: [], pdf: null, title: '', category: 'autre', docDate: getLocalIsoDate(), note: '' };
+    }
+
+    function addDocImages(files) {
+      const images = files.filter(f => /^image\//.test(f.type));
+      if (!images.length) return;
+      if (!docDraft || docDraft.kind !== 'photos') docDraft = newDocDraft('photos');
+      images.forEach(f => {
+        const url = URL.createObjectURL(f);
+        docBlobUrls.push(url);
+        docDraft.pages.push({ file: f, url: url });
+      });
+      if (!docDraft.title) docDraft.title = images.length === 1 && !/^(image|img|photo|pxl|dsc)/i.test(images[0].name) ? docTitleFromFile(images[0]) : `Document du ${fmtIsoFr(getLocalIsoDate())}`;
+      renderDocDraft();
+    }
+
+    function onDocFilesChosen(input) {
+      docsPickerOpen = false;
+      touchDocs();
+      const files = Array.from(input.files || []);
+      input.value = '';
+      if (!files.length || !docsUnlocked()) return;
+      const pdf = files.find(f => f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
+      if (pdf) {
+        if (pdf.size > MAX_DOC_BYTES) { showToast('📄 PDF trop lourd : 20 Mo maximum.'); return; }
+        docDraft = newDocDraft('pdf');
+        docDraft.pdf = pdf;
+        docDraft.title = docTitleFromFile(pdf) || 'Document';
+        if (files.length > 1) showToast('Un seul PDF à la fois : seul le premier a été gardé.');
+        renderDocDraft();
+        return;
+      }
+      addDocImages(files);
+    }
+
+    function renderDocDraft() {
+      const box = byId('doc-draft');
+      byId('doc-add-buttons').style.display = docDraft ? 'none' : 'grid';
+      box.innerHTML = '';
+      if (!docDraft) return;
+      const d = docDraft;
+      box.innerHTML = `
+        <div class="doc-draft">
+          ${d.kind === 'pdf'
+            ? `<div class="doc-pdf">📄 ${esc(d.pdf.name)} · ${fmtSize(d.pdf.size)}</div>`
+            : `<div class="action-label">Pages (${d.pages.length}) — elles seront réunies en un seul PDF</div>
+               <div class="doc-pages" id="dd-pages"></div>`}
+          <div class="action-label" style="margin-top: 10px;">Titre</div>
+          <input type="text" id="dd-title" class="date-picker-input" maxlength="120" value="${esc(d.title)}" style="margin-top: 0;">
+          <div class="action-label" style="margin-top: 10px;">Catégorie</div>
+          <div class="chip-row" id="dd-cats"></div>
+          <div class="action-label" style="margin-top: 10px;">Date du document</div>
+          <input type="date" id="dd-date" class="date-picker-input" value="${esc(d.docDate)}" max="${getLocalIsoDate()}" style="margin-top: 0;">
+          <div class="action-label" style="margin-top: 10px;">Remarque (facultatif)</div>
+          <input type="text" id="dd-note" class="date-picker-input" maxlength="500" value="${esc(d.note)}" placeholder="Ex : bilan sanguin du Dr Martin" style="margin-top: 0;">
+          <div class="action-row" style="margin-top: 12px;">
+            <button class="btn-add" type="button" id="dd-save" style="background: #0f766e; color: white;">☁️ Enregistrer dans Drive</button>
+            <button class="btn-sub" type="button" id="dd-cancel">Annuler</button>
+          </div>
+          <div id="dd-msg" class="weight-feedback"></div>
+        </div>`;
+
+      if (d.kind === 'photos') {
+        const pages = byId('dd-pages');
+        d.pages.forEach((p, i) => {
+          const el = document.createElement('div');
+          el.className = 'doc-page';
+          const img = document.createElement('img');
+          img.src = p.url;
+          img.alt = `Page ${i + 1}`;
+          const num = document.createElement('span');
+          num.textContent = i + 1;
+          const del = document.createElement('button');
+          del.type = 'button';
+          del.textContent = '×';
+          del.setAttribute('aria-label', `Retirer la page ${i + 1}`);
+          del.onclick = () => {
+            d.pages.splice(i, 1);
+            if (!d.pages.length) docDraft = null;
+            renderDocDraft();
+          };
+          el.appendChild(img);
+          el.appendChild(num);
+          el.appendChild(del);
+          pages.appendChild(el);
+        });
+        const add = document.createElement('label');
+        add.className = 'doc-page add';
+        add.innerHTML = '<b>＋</b>Page<input type="file" accept="image/*" capture="environment" hidden>';
+        const input = add.querySelector('input');
+        input.addEventListener('click', () => { docsPickerOpen = true; });
+        input.addEventListener('cancel', () => { docsPickerOpen = false; });
+        input.addEventListener('change', () => onDocFilesChosen(input));
+        pages.appendChild(add);
+      }
+
+      const cats = byId('dd-cats');
+      DOC_CATEGORIES.forEach(c => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'chip' + (d.category === c.key ? ' active' : '');
+        chip.textContent = `${c.icon} ${c.name}`;
+        chip.onclick = () => {
+          d.category = c.key;
+          cats.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+          chip.classList.add('active');
+        };
+        cats.appendChild(chip);
+      });
+      byId('dd-title').oninput = e => { d.title = e.target.value; };
+      byId('dd-date').oninput = e => { d.docDate = e.target.value; };
+      byId('dd-note').oninput = e => { d.note = e.target.value; };
+      byId('dd-cancel').onclick = () => { docDraft = null; renderDocDraft(); };
+      byId('dd-save').onclick = saveDocDraft;
+    }
+
+    // ----- Photos → un seul PDF (fabriqué sur le téléphone, sans service extérieur) -----
+    async function pageToJpeg(file) {
+      let src;
+      try {
+        src = await createImageBitmap(file, { imageOrientation: 'from-image' });
+      } catch (e) {
+        const url = URL.createObjectURL(file);
+        src = new Image();
+        src.src = url;
+        await src.decode();
+        URL.revokeObjectURL(url);
+      }
+      const scale = Math.min(1, 2000 / Math.max(src.width, src.height));
+      const w = Math.max(1, Math.round(src.width * scale));
+      const h = Math.max(1, Math.round(src.height * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const g = canvas.getContext('2d');
+      g.fillStyle = '#ffffff';
+      g.fillRect(0, 0, w, h);
+      g.drawImage(src, 0, 0, w, h);
+      if (src.close) src.close();
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.82));
+      return { bytes: new Uint8Array(await blob.arrayBuffer()), w: w, h: h };
+    }
+
+    function buildPdf(images) {
+      const enc = new TextEncoder();
+      const parts = [];
+      const offsets = [];
+      let pos = 0;
+      const push = data => {
+        const u = typeof data === 'string' ? enc.encode(data) : data;
+        parts.push(u);
+        pos += u.length;
+      };
+      const obj = (num, write) => {
+        offsets[num] = pos;
+        push(`${num} 0 obj\n`);
+        write();
+        push('\nendobj\n');
+      };
+      push('%PDF-1.4\n%âãÏÓ\n');
+      const n = images.length;
+      obj(1, () => push('<< /Type /Catalog /Pages 2 0 R >>'));
+      obj(2, () => push(`<< /Type /Pages /Count ${n} /Kids [${images.map((_, i) => `${3 + 3 * i} 0 R`).join(' ')}] >>`));
+      images.forEach((im, i) => {
+        const landscape = im.w > im.h;
+        const pw = landscape ? 841.89 : 595.28;
+        const ph = landscape ? 595.28 : 841.89;
+        const margin = 18;
+        const s = Math.min((pw - 2 * margin) / im.w, (ph - 2 * margin) / im.h);
+        const dw = im.w * s, dh = im.h * s;
+        const x = (pw - dw) / 2, y = (ph - dh) / 2;
+        const p = 3 + 3 * i;
+        obj(p, () => push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pw} ${ph}] /Resources << /XObject << /Im${i} ${p + 1} 0 R >> >> /Contents ${p + 2} 0 R >>`));
+        obj(p + 1, () => {
+          push(`<< /Type /XObject /Subtype /Image /Width ${im.w} /Height ${im.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.bytes.length} >>\nstream\n`);
+          push(im.bytes);
+          push('\nendstream');
+        });
+        const content = `q ${dw.toFixed(2)} 0 0 ${dh.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)} cm /Im${i} Do Q`;
+        obj(p + 2, () => push(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`));
+      });
+      const xrefPos = pos;
+      const total = 3 + 3 * n;
+      let xref = `xref\n0 ${total}\n0000000000 65535 f \n`;
+      for (let k = 1; k < total; k++) xref += String(offsets[k]).padStart(10, '0') + ' 00000 n \n';
+      push(xref);
+      push(`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xrefPos}\n%%EOF\n`);
+      return new Blob(parts, { type: 'application/pdf' });
+    }
+
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result).split(',')[1] || '');
+        r.onerror = () => reject(r.error);
+        r.readAsDataURL(blob);
+      });
+    }
+
+    async function saveDocDraft() {
+      const d = docDraft;
+      const msg = byId('dd-msg');
+      const btn = byId('dd-save');
+      d.title = byId('dd-title').value.trim();
+      if (!d.title) { msg.className = 'weight-feedback err'; msg.textContent = 'Donne un titre au document.'; return; }
+      btn.disabled = true;
+      byId('dd-cancel').disabled = true;
+      msg.className = 'weight-feedback';
+      try {
+        let blob, pages = 0;
+        if (d.kind === 'pdf') {
+          blob = d.pdf;
+        } else {
+          const images = [];
+          for (let i = 0; i < d.pages.length; i++) {
+            btn.textContent = `Préparation de la page ${i + 1}/${d.pages.length}…`;
+            touchDocs();
+            images.push(await pageToJpeg(d.pages[i].file));
+          }
+          blob = buildPdf(images);
+          pages = images.length;
+        }
+        if (blob.size > MAX_DOC_BYTES) throw new Error('too_big');
+        btn.textContent = '☁️ Envoi vers Google Drive…';
+        const content = await blobToBase64(blob);
+        const data = await docsCall({
+          action: 'docs_upload',
+          mime: 'application/pdf',
+          content: content,
+          meta: { title: d.title, category: d.category, docDate: d.docDate, note: d.note.trim(), pages: pages }
+        });
+        if (docsList) docsList.unshift(data.doc);
+        docDraft = null;
+        renderDocs();
+        showToast(`📁 « ${data.doc.title} » enregistré dans ton Drive`);
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        if (byId('dd-msg')) {
+          byId('dd-msg').className = 'weight-feedback err';
+          byId('dd-msg').textContent = docsErrorMessage(e.message);
+        }
+        if (byId('dd-save')) {
+          byId('dd-save').disabled = false;
+          byId('dd-save').textContent = '☁️ Réessayer';
+          byId('dd-cancel').disabled = false;
+        }
+      }
+    }
+
+    // ----- Consultation d'un document -----
+    function closeDocViewer() {
+      const v = byId('doc-viewer');
+      if (v) v.style.display = 'none';
+      updateModalState();
+    }
+
+    function openDocViewer(doc, editing) {
+      touchDocs();
+      const cat = docCat(doc.category);
+      byId('doc-viewer-title').textContent = `${cat.icon} ${doc.title}`;
+      const body = byId('doc-viewer-body');
+      if (editing) {
+        body.innerHTML = `
+          <div class="action-label">Titre</div>
+          <input type="text" id="dv-title" class="date-picker-input" maxlength="120" value="${esc(doc.title)}" style="margin-top: 0;">
+          <div class="action-label" style="margin-top: 10px;">Catégorie</div>
+          <div class="chip-row" id="dv-cats"></div>
+          <div class="action-label" style="margin-top: 10px;">Date du document</div>
+          <input type="date" id="dv-date" class="date-picker-input" value="${esc(doc.docDate)}" max="${getLocalIsoDate()}" style="margin-top: 0;">
+          <div class="action-label" style="margin-top: 10px;">Remarque</div>
+          <input type="text" id="dv-note" class="date-picker-input" maxlength="500" value="${esc(doc.note)}" style="margin-top: 0;">
+          <div class="action-row" style="margin-top: 12px;">
+            <button class="btn-add" type="button" id="dv-save" style="background: #0f766e; color: white;">💾 Enregistrer</button>
+            <button class="btn-sub" type="button" id="dv-cancel">Annuler</button>
+          </div>
+          <div id="dv-msg" class="weight-feedback"></div>`;
+        let category = doc.category;
+        const cats = byId('dv-cats');
+        DOC_CATEGORIES.forEach(c => {
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'chip' + (category === c.key ? ' active' : '');
+          chip.textContent = `${c.icon} ${c.name}`;
+          chip.onclick = () => { category = c.key; cats.querySelectorAll('.chip').forEach(x => x.classList.remove('active')); chip.classList.add('active'); };
+          cats.appendChild(chip);
+        });
+        byId('dv-cancel').onclick = () => openDocViewer(doc);
+        byId('dv-save').onclick = async () => {
+          const title = byId('dv-title').value.trim();
+          if (!title) { byId('dv-msg').className = 'weight-feedback err'; byId('dv-msg').textContent = 'Le titre est obligatoire.'; return; }
+          byId('dv-save').disabled = true;
+          try {
+            const data = await docsCall({ action: 'docs_update', id: doc.id, meta: { title: title, category: category, docDate: byId('dv-date').value, note: byId('dv-note').value.trim() } });
+            const i = docsList ? docsList.findIndex(x => x.id === doc.id) : -1;
+            if (i >= 0) docsList[i] = data.doc;
+            renderDocsList();
+            openDocViewer(data.doc);
+            showToast('✏️ Document mis à jour');
+          } catch (e) {
+            if (e.message === 'unauthorized') return;
+            byId('dv-msg').className = 'weight-feedback err';
+            byId('dv-msg').textContent = docsErrorMessage(e.message);
+            byId('dv-save').disabled = false;
+          }
+        };
+      } else {
+        body.innerHTML = `
+          <div class="fs-meta">${esc(cat.name)} · daté du ${esc(fmtIsoFr(doc.docDate))}${doc.pages ? ` · ${doc.pages} page(s)` : ''} · ${esc(fmtSize(doc.size))}</div>
+          ${doc.note ? `<div class="doc-note">📝 ${esc(doc.note)}</div>` : ''}
+          <a class="sync-btn doc-open" href="${esc(doc.url)}" target="_blank" rel="noopener">📂 Ouvrir dans Google Drive</a>
+          <button class="btn-sub" type="button" id="dv-download" style="width: 100%; margin-top: 8px;">⬇️ Télécharger sur cet appareil</button>
+          <div class="action-row" style="margin-top: 8px;">
+            <button class="btn-sub" type="button" id="dv-edit">✏️ Modifier</button>
+            <button class="btn-sub" type="button" id="dv-delete">🗑 Corbeille</button>
+          </div>
+          <div id="dv-msg" class="weight-feedback"></div>`;
+        byId('dv-edit').onclick = () => openDocViewer(doc, true);
+        byId('dv-download').onclick = () => downloadDoc(doc);
+        const del = byId('dv-delete');
+        del.onclick = () => confirmTap(del, () => deleteDoc(doc), {
+          arm: () => { del.textContent = 'Confirmer ?'; del.style.background = '#dc2626'; del.style.color = 'white'; },
+          disarm: () => { del.textContent = '🗑 Corbeille'; del.style.background = ''; del.style.color = ''; }
+        });
+      }
+      byId('doc-viewer').style.display = 'flex';
+      updateModalState();
+    }
+
+    async function downloadDoc(doc) {
+      const btn = byId('dv-download');
+      btn.disabled = true;
+      btn.textContent = 'Téléchargement…';
+      try {
+        const data = await docsCall({ action: 'docs_get', id: doc.id });
+        const bin = atob(data.content);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        const url = URL.createObjectURL(new Blob([bytes], { type: data.doc.mime || 'application/pdf' }));
+        docBlobUrls.push(url);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = data.doc.name || 'document.pdf';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        btn.textContent = '✅ Téléchargé';
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        btn.disabled = false;
+        btn.textContent = '⬇️ Télécharger sur cet appareil';
+        byId('dv-msg').className = 'weight-feedback err';
+        byId('dv-msg').textContent = docsErrorMessage(e.message);
+      }
+    }
+
+    async function deleteDoc(doc) {
+      try {
+        await docsCall({ action: 'docs_delete', id: doc.id });
+        if (docsList) docsList = docsList.filter(x => x.id !== doc.id);
+        closeDocViewer();
+        renderDocsList();
+        showToast('🗑 Document mis dans la corbeille de Drive (récupérable 30 jours)');
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        byId('dv-msg').className = 'weight-feedback err';
+        byId('dv-msg').textContent = docsErrorMessage(e.message);
+      }
+    }
+
+    // ----- Verrouillage automatique -----
+    document.addEventListener('visibilitychange', () => {
+      // L'appareil photo ou le sélecteur de fichiers fait passer l'appli en arrière-plan : on ne verrouille pas
+      if (document.visibilityState === 'hidden' && !docsPickerOpen) lockDocs('Dossier verrouillé quand tu as quitté l\'appli.');
+      if (document.visibilityState === 'visible') setTimeout(() => { docsPickerOpen = false; }, 1500);
+    });
+    document.addEventListener('pointerdown', () => touchDocs(), true);
+    setInterval(() => {
+      if (docsUnlockedUntil && !docsUnlocked()) lockDocs('Dossier verrouillé après 5 minutes sans activité.');
+    }, 10000);
+    ['doc-photo-input', 'doc-file-input'].forEach(id => {
+      const input = byId(id);
+      input.addEventListener('click', () => { docsPickerOpen = true; });
+      input.addEventListener('cancel', () => { docsPickerOpen = false; });
+      input.addEventListener('change', () => onDocFilesChosen(input));
+    });
+
     // ================== NAVIGATION ==================
-    const TABS = ['today', 'food', 'history'];
+    const TABS = ['today', 'food', 'docs', 'history'];
     function switchTab(tabName) {
+      if (tabName !== 'docs') lockDocs();
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + tabName));
       if (tabName === 'today') {
@@ -2637,6 +3356,8 @@
         renderMeds();
       } else if (tabName === 'food') {
         renderFood();
+      } else if (tabName === 'docs') {
+        renderDocs();
       } else {
         renderHistory();
         renderChart();
@@ -3181,6 +3902,11 @@
       }
       box.innerHTML = '';
       google.accounts.id.renderButton(box, { theme: 'filled_blue', size: 'large', shape: 'pill', text: 'signin_with', locale: 'fr', width: 260 });
+      const docsBox = document.getElementById('docs-google');
+      if (docsBox && docsGoogleFallback) {
+        docsBox.innerHTML = '';
+        google.accounts.id.renderButton(docsBox, { theme: 'filled_blue', size: 'large', shape: 'pill', text: 'continue_with', locale: 'fr', width: 260 });
+      }
       google.accounts.id.prompt();
     }
 
@@ -3208,8 +3934,10 @@
           throw err;
         }
         startSession(data);
+        if (pendingDocsGoogle) grantDocs();
       } catch (err) {
         setGateMsg(loginErrorMessage(err), 'err');
+        if (pendingDocsGoogle) setDocsLockMsg(loginErrorMessage(err), 'err');
       }
     }
 

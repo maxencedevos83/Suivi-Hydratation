@@ -1,5 +1,5 @@
 /**
- * Suivi Hydrique Pro — serveur Google Apps Script (version 3.1 : repas et ingrédients)
+ * Suivi Hydrique Pro — serveur Google Apps Script (version 4 : dossier médical dans Google Drive)
  * =============================================================================
  *
  * MISE À JOUR DEPUIS LA VERSION PRÉCÉDENTE
@@ -19,6 +19,14 @@
  *   Pour le supprimer définitivement : exécutez « desactiverCodeSecret ».
  * - Appareil perdu ? Exécutez « deconnecterTousLesAppareils ».
  * - Après 20 tentatives refusées en 15 minutes, tout accès est bloqué 15 minutes.
+ *
+ * DOSSIER MÉDICAL (nouveau en version 4)
+ * - Les documents sont rangés dans un dossier privé de votre Google Drive :
+ *   « Suivi Hydrique Pro — Dossier médical ». Personne d'autre n'y a accès.
+ * - Après avoir collé ce code : exécutez une fois « autoriserDossierMedical » et acceptez
+ *   l'accès à Google Drive, puis redéployez (Nouvelle version).
+ * - L'appli ne peut lire, modifier ou supprimer QUE les fichiers de ce dossier.
+ *   Une suppression envoie le fichier dans la corbeille de Drive (récupérable 30 jours).
  *
  * RAPPELS DE COMPLÉMENTS
  * - Toutes les 5 minutes, le script regarde le plan de compléments enregistré dans l'appli.
@@ -42,6 +50,10 @@ const MAX_FAILS = 20;
 const FAIL_WINDOW_S = 900;
 const MAX_RECORDS_PER_REQUEST = 5000;
 const MOMENT_LABELS = { matin: 'du matin', midi: 'du midi', soir: 'du soir' };
+const DOCS_FOLDER_NAME = 'Suivi Hydrique Pro — Dossier médical';
+const MAX_DOC_BYTES = 20 * 1024 * 1024;   // 20 Mo par document
+const DOC_CATEGORIES = { ordonnance: 'Ordonnance', analyses: 'Analyses', compte_rendu: 'Compte rendu',
+                         imagerie: 'Imagerie', courrier: 'Courrier', autre: 'Autre' };
 
 // ---------------------------------------------------------------------------
 // Fonctions à lancer depuis l'éditeur
@@ -61,6 +73,12 @@ function testerAlerte() {
   sendAlert_('🧪 Test des rappels — Suivi Hydrique Pro',
     'Si tu vois ce message (et une notification sur ton téléphone), les rappels de compléments fonctionnent.\n\n' + APP_URL);
   Logger.log('E-mail de test envoyé à ' + ownerEmail_());
+}
+
+/** À exécuter une fois : autorise l'accès à Google Drive et crée le dossier médical. */
+function autoriserDossierMedical() {
+  const folder = docsFolder_();
+  Logger.log('Dossier médical prêt : ' + folder.getUrl());
 }
 
 /** Déconnecte tous les appareils (ils devront se reconnecter avec Google). */
@@ -130,6 +148,11 @@ function doPost(e) {
       return json_({ ok: true });
     }
     if (body.action === 'sync') return json_(sync_(body));
+    if (body.action === 'docs_list') return json_(docsList_());
+    if (body.action === 'docs_upload') return json_(docsUpload_(body));
+    if (body.action === 'docs_get') return json_(docsAction_(body, f => ({ ok: true, doc: docMeta_(f), content: Utilities.base64Encode(f.getBlob().getBytes()) })));
+    if (body.action === 'docs_update') return json_(docsAction_(body, f => docsUpdate_(f, body)));
+    if (body.action === 'docs_delete') return json_(docsAction_(body, f => { f.setTrashed(true); return { ok: true }; }));
     return json_({ ok: false, error: 'unknown_action' });
   } catch (err) {
     console.error(err);
@@ -455,4 +478,122 @@ function parseHHMM_(s) {
 
 function sendAlert_(subject, body) {
   MailApp.sendEmail({ to: ownerEmail_(), subject: subject, body: body, name: 'Suivi Hydrique Pro' });
+}
+
+// ---------------------------------------------------------------------------
+// Dossier médical (Google Drive)
+// ---------------------------------------------------------------------------
+
+function docsFolder_() {
+  const props = PropertiesService.getScriptProperties();
+  const id = props.getProperty('DOCS_FOLDER_ID');
+  if (id) {
+    try {
+      const existing = DriveApp.getFolderById(id);
+      if (!existing.isTrashed()) return existing;
+    } catch (err) { /* dossier supprimé : on en recrée un */ }
+  }
+  const folder = DriveApp.createFolder(DOCS_FOLDER_NAME);
+  props.setProperty('DOCS_FOLDER_ID', folder.getId());
+  return folder;
+}
+
+function cleanDocMeta_(m, previous) {
+  m = (m && typeof m === 'object') ? m : {};
+  previous = previous || {};
+  const pick = (k) => (m[k] !== undefined ? m[k] : previous[k]);
+  const today = Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM-dd');
+  const category = String(pick('category') || 'autre');
+  const docDate = String(pick('docDate') || '');
+  return {
+    title: String(pick('title') || 'Document').replace(/\s+/g, ' ').trim().slice(0, 120) || 'Document',
+    category: DOC_CATEGORIES[category] ? category : 'autre',
+    docDate: /^\d{4}-\d{2}-\d{2}$/.test(docDate) ? docDate : today,
+    note: String(pick('note') || '').slice(0, 500),
+    pages: Math.max(0, Math.min(500, Number(pick('pages')) || 0))
+  };
+}
+
+function docFileName_(meta, ext) {
+  const name = meta.docDate + ' - ' + DOC_CATEGORIES[meta.category] + ' - ' + meta.title;
+  return name.replace(/[\\/:*?"<>|]/g, '-').slice(0, 150) + '.' + ext;
+}
+
+function docMeta_(file) {
+  let meta = {};
+  try { meta = JSON.parse(file.getDescription() || '{}') || {}; } catch (err) { meta = {}; }
+  return {
+    id: file.getId(),
+    name: file.getName(),
+    title: meta.title || file.getName().replace(/\.[a-z0-9]+$/i, ''),
+    category: DOC_CATEGORIES[meta.category] ? meta.category : 'autre',
+    docDate: meta.docDate || Utilities.formatDate(file.getDateCreated(), TIMEZONE, 'yyyy-MM-dd'),
+    note: meta.note || '',
+    pages: meta.pages || 0,
+    size: file.getSize(),
+    mime: file.getMimeType(),
+    created: file.getDateCreated().getTime(),
+    url: file.getUrl()
+  };
+}
+
+function docsList_() {
+  const folder = docsFolder_();
+  const docs = [];
+  const it = folder.getFiles();
+  while (it.hasNext()) {
+    const f = it.next();
+    if (!f.isTrashed()) docs.push(docMeta_(f));
+  }
+  docs.sort((a, b) => b.docDate.localeCompare(a.docDate) || b.created - a.created);
+  return { ok: true, docs: docs, folderUrl: folder.getUrl() };
+}
+
+function docsUpload_(body) {
+  const allowed = { 'application/pdf': 'pdf', 'image/jpeg': 'jpg', 'image/png': 'png' };
+  const mime = String(body.mime || '');
+  if (!allowed[mime]) return { ok: false, error: 'bad_type' };
+  const b64 = String(body.content || '');
+  if (!b64 || b64.length > MAX_DOC_BYTES * 1.4) return { ok: false, error: 'too_big' };
+  let bytes;
+  try { bytes = Utilities.base64Decode(b64); } catch (err) { return { ok: false, error: 'bad_file' }; }
+  if (!bytes.length || bytes.length > MAX_DOC_BYTES) return { ok: false, error: 'too_big' };
+  // Vérifie que le contenu correspond bien au type annoncé
+  const b = i => (bytes[i] + 256) % 256;
+  const magicOk = mime === 'application/pdf' ? (b(0) === 0x25 && b(1) === 0x50 && b(2) === 0x44 && b(3) === 0x46)
+    : mime === 'image/jpeg' ? (b(0) === 0xFF && b(1) === 0xD8)
+    : (b(0) === 0x89 && b(1) === 0x50 && b(2) === 0x4E && b(3) === 0x47);
+  if (!magicOk) return { ok: false, error: 'bad_file' };
+
+  const meta = cleanDocMeta_(body.meta);
+  const file = docsFolder_().createFile(Utilities.newBlob(bytes, mime, docFileName_(meta, allowed[mime])));
+  file.setDescription(JSON.stringify(meta));
+  return { ok: true, doc: docMeta_(file) };
+}
+
+/** N'autorise l'accès qu'aux fichiers rangés dans le dossier médical. */
+function docsAction_(body, fn) {
+  let file;
+  try {
+    file = DriveApp.getFileById(String(body.id || ''));
+  } catch (err) {
+    return { ok: false, error: 'not_found' };
+  }
+  const folderId = docsFolder_().getId();
+  let inside = false;
+  const parents = file.getParents();
+  while (parents.hasNext()) if (parents.next().getId() === folderId) inside = true;
+  if (!inside || file.isTrashed()) return { ok: false, error: 'not_found' };
+  if (file.getSize() > MAX_DOC_BYTES) return { ok: false, error: 'too_big' };
+  return fn(file);
+}
+
+function docsUpdate_(file, body) {
+  let previous = {};
+  try { previous = JSON.parse(file.getDescription() || '{}') || {}; } catch (err) { previous = {}; }
+  const meta = cleanDocMeta_(body.meta, previous);
+  const ext = (file.getName().match(/\.([a-z0-9]+)$/i) || [null, 'pdf'])[1];
+  file.setDescription(JSON.stringify(meta));
+  file.setName(docFileName_(meta, ext));
+  return { ok: true, doc: docMeta_(file) };
 }
