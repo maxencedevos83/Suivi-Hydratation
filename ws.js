@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hydra-pwa-v9';
+const CACHE_NAME = 'hydra-pwa-v10';
 const ASSETS = [
   './index.html',
   './manifest.json',

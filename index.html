@@ -286,7 +286,20 @@
     .doc-draft { margin-top: 4px; }
     .doc-note { font-size: 0.85rem; color: #334155; margin-bottom: 10px; }
     .doc-open { display: block; text-align: center; text-decoration: none; box-sizing: border-box; background: #0f766e; }
-    .docs-folder-link { display: block; font-size: 0.82rem; color: #0f766e; font-weight: 600; text-decoration: none; margin-bottom: 8px; }
+    .vault-input { margin-top: 8px !important; }
+    .vault-strength { font-size: 0.75rem; color: #64748b; text-align: left; margin-top: 4px; }
+    .vault-check { justify-content: flex-start; text-align: left; }
+    .docs-legacy { padding: 10px 12px; border-radius: 12px; background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; font-size: 0.85rem; font-weight: 600; margin-bottom: 10px; }
+    .docs-tools { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px; }
+    .doc-facts { font-size: 0.85rem; color: #334155; line-height: 1.7; margin-bottom: 12px; }
+    .pdf-viewer { position: fixed; inset: 0; z-index: 80; background: #334155; overflow-y: auto; display: none; }
+    .pdf-bar { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #0f172a; color: white; font-weight: 600; font-size: 0.9rem; }
+    .pdf-bar button { border: none; background: #334155; color: white; width: 34px; height: 34px; border-radius: 50%; font-size: 1rem; cursor: pointer; flex-shrink: 0; }
+    .pdf-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pdf-status { color: #bbf7d0; font-size: 0.8rem; text-align: center; padding: 8px 12px 0; }
+    .pdf-status.err { color: #fecaca; font-weight: 600; }
+    .pdf-pages { max-width: 900px; margin: 0 auto; padding: 10px; box-sizing: border-box; }
+    .pdf-pages canvas { display: block; background: white; margin: 0 auto 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
     #tab-docs .food-row .fr-badge:empty { display: none; }
 
     @media print {
@@ -316,7 +329,7 @@
         <input type="password" id="gate-code-input" class="date-picker-input" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX">
         <button class="sync-btn" type="button" style="margin-top: 8px;" onclick="loginWithCode()">Déverrouiller</button>
       </div>
-      <div class="gate-foot">🔒 Tes données ne sont accessibles qu'avec ton compte.<br>Version 2026-10-04 · v9</div>
+      <div class="gate-foot">🔒 Tes données ne sont accessibles qu'avec ton compte.<br>Version 2026-10-04 · v10</div>
     </div>
   </div>
 
@@ -546,6 +559,8 @@
       <button class="gate-link" type="button" id="docs-reset-btn" style="display: none;" onclick="resetBiometric()">Réinitialiser l'empreinte sur cet appareil</button>
     </div>
 
+    <div id="docs-vault" class="card docs-lock" style="display: none;"></div>
+
     <div id="docs-unlocked" style="display: none;">
       <div class="card">
         <div class="docs-head">
@@ -561,10 +576,14 @@
 
       <div class="card">
         <div class="card-title">🗂️ Mes documents</div>
-        <a id="docs-folder-link" class="docs-folder-link" target="_blank" rel="noopener" style="display: none;">📂 Ouvrir tout le dossier dans Google Drive</a>
+        <div id="docs-legacy"></div>
         <div class="chip-row" id="docs-filters" style="margin-bottom: 8px;"></div>
         <div id="docs-list" class="food-results"></div>
-        <div class="sync-note">Les documents sont rangés dans un dossier privé de ton Google Drive. Rien n'est gardé sur le téléphone : le dossier se reverrouille dès que tu quittes l'appli ou après 5 minutes sans activité.</div>
+        <div class="sync-note">🔒 Chaque document est chiffré sur ton appareil avant l'envoi, puis horodaté. Dans Google Drive, il n'existe que sous forme de fichier illisible : on ne peut le lire que dans cette appli, avec ta phrase secrète et ton empreinte. Le dossier se reverrouille dès que tu quittes l'appli ou après 5 minutes sans activité.</div>
+        <div class="docs-tools">
+          <button class="gate-link" type="button" onclick="openPassChange()">🔑 Changer la phrase secrète</button>
+          <button class="gate-link" type="button" onclick="forgetDeviceKey()">Retirer la clé de cet appareil</button>
+        </div>
       </div>
     </div>
   </div>
@@ -668,6 +687,16 @@
     </div>
   </div>
 
+  <!-- Visionneuse PDF (document déchiffré en mémoire uniquement) -->
+  <div id="pdf-viewer" class="pdf-viewer">
+    <div class="pdf-bar">
+      <button type="button" onclick="closePdfViewer()" aria-label="Fermer">✕</button>
+      <span id="pdf-title"></span>
+    </div>
+    <div id="pdf-status" class="pdf-status"></div>
+    <div id="pdf-pages" class="pdf-pages"></div>
+  </div>
+
   <!-- Scan de code-barres -->
   <div id="scan-view" class="sheet">
     <div class="sheet-box">
@@ -711,7 +740,7 @@
 
   <script>
     // ================== SERVICE WORKER ==================
-    const APP_VERSION = '2026-10-04 · v9';
+    const APP_VERSION = '2026-10-04 · v10';
     if ('serviceWorker' in navigator) {
       // Quand une nouvelle version de l'appli est installée, on recharge une fois pour l'afficher
       const hadController = !!navigator.serviceWorker.controller;
@@ -1843,7 +1872,8 @@
     }
 
     function updateModalState() {
-      const open = ['food-sheet', 'scan-view', 'doc-viewer'].some(id => byId(id) && byId(id).style.display === 'flex') || byId('report-view').style.display === 'block';
+      const open = ['food-sheet', 'scan-view', 'doc-viewer'].some(id => byId(id) && byId(id).style.display === 'flex') ||
+        ['report-view', 'pdf-viewer'].some(id => byId(id) && byId(id).style.display === 'block');
       document.body.classList.toggle('modal-open', open);
     }
 
@@ -2697,7 +2727,9 @@
       }
     }
 
-    // ================== DOSSIER MÉDICAL ==================
+    // ================== DOSSIER MÉDICAL CHIFFRÉ ==================
+    // Les documents sont chiffrés ICI, sur l'appareil (AES-256-GCM), avant d'être envoyés dans Google Drive.
+    // La clé du dossier est protégée par la phrase secrète (PBKDF2) : ni Google ni le script ne peuvent la lire.
     const DOC_CATEGORIES = [
       { key: 'ordonnance', name: 'Ordonnance', icon: '💊' },
       { key: 'analyses', name: 'Analyses', icon: '🧪' },
@@ -2709,16 +2741,25 @@
     const DOCS_LOCK_MS = 5 * 60 * 1000;          // re-verrouillage après 5 min sans activité
     const MAX_DOC_BYTES = 20 * 1024 * 1024;       // 20 Mo par document
     const LS_WEBAUTHN = 'hydra_webauthn';         // identifiant de l'empreinte enregistrée sur CET appareil
+    const ENC_MIME = 'application/x-hsp-encrypted';
+    const ENC_MAGIC = new Uint8Array([0x48, 0x53, 0x50, 0x45, 0x4E, 0x43, 0x31, 0x00]);   // « HSPENC1 »
+    const PBKDF2_ITER = 600000;
+    const PDFJS_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/';
     let docsUnlockedUntil = 0;
-    let docsList = null;          // liste gardée en mémoire seulement, jamais enregistrée sur l'appareil
-    let docsFolderUrl = '';
+    let docsStage = 'open';       // 'loading' | 'vault-create' | 'vault-enter' | 'passphrase' | 'open'
+    let docsKey = null;           // clé du dossier, en mémoire seulement pendant l'ouverture
+    let docsVault = null;
+    let docsList = null;          // liste déchiffrée, en mémoire seulement
     let docsFilter = 'tous';
-    let docDraft = null;          // document en préparation
-    let docsPickerOpen = false;   // appareil photo / sélecteur de fichiers ouvert
+    let docDraft = null;
+    let docsPickerOpen = false;
     let docsGoogleFallback = false;
     let pendingDocsGoogle = false;
     let docBlobUrls = [];
+    let pdfjsPromise = null;
+    let pdfRenderToken = 0;
 
+    // ----- Outils -----
     function docCat(key) { return DOC_CATEGORIES.find(c => c.key === key) || DOC_CATEGORIES[DOC_CATEGORIES.length - 1]; }
     function fmtSize(b) {
       b = Number(b) || 0;
@@ -2728,28 +2769,17 @@
       const [y, m, d] = String(iso || '').split('-');
       return d ? `${d}/${m}/${y}` : '';
     }
+    function fmtStamp(ms) {
+      const d = new Date(Number(ms) || 0);
+      return `${d.toLocaleDateString('fr-FR')} à ${d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+    }
     function docsUnlocked() { return Date.now() < docsUnlockedUntil; }
     function touchDocs() { if (docsUnlocked()) docsUnlockedUntil = Date.now() + DOCS_LOCK_MS; }
-
     function setDocsLockMsg(text, kind) {
       const el = byId('docs-lock-msg');
       el.className = 'weight-feedback' + (kind ? ' ' + kind : '');
       el.textContent = text || '';
     }
-
-    function lockDocs(message) {
-      const wasOpen = docsUnlocked() || docsList !== null;
-      docsUnlockedUntil = 0;
-      docsList = null;
-      docDraft = null;
-      docBlobUrls.forEach(u => URL.revokeObjectURL(u));
-      docBlobUrls = [];
-      closeDocViewer();
-      renderDocs();
-      if (wasOpen && message) setDocsLockMsg(message);
-    }
-
-    // ----- Empreinte (WebAuthn, capteur du téléphone) -----
     function bufToB64u(buf) {
       let s = '';
       new Uint8Array(buf).forEach(b => { s += String.fromCharCode(b); });
@@ -2759,13 +2789,96 @@
       const s = atob(str.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((str.length + 3) % 4));
       return Uint8Array.from(s, c => c.charCodeAt(0));
     }
+    function toB64(bytes) {
+      let s = '';
+      const u = new Uint8Array(bytes);
+      for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+      return btoa(s);
+    }
+    function fromB64(str) {
+      const s = atob(str);
+      const u = new Uint8Array(s.length);
+      for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
+      return u;
+    }
     function randomBytes(n) { return crypto.getRandomValues(new Uint8Array(n)); }
-    // Indicateur « utilisateur vérifié » (empreinte ou code du téléphone) dans la réponse du capteur
+    async function sha256Hex(bytes) {
+      const h = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
+      return Array.from(h, b => b.toString(16).padStart(2, '0')).join('');
+    }
     function uvFlag(authData) {
       const a = new Uint8Array(authData);
       return a.length > 32 && (a[32] & 0x04) !== 0;
     }
 
+    // ----- Clé locale de l'appareil (IndexedDB, clé non exportable) -----
+    function idbOpen() {
+      return new Promise((resolve, reject) => {
+        const r = indexedDB.open('hydra-secure', 1);
+        r.onupgradeneeded = () => r.result.createObjectStore('keys');
+        r.onsuccess = () => resolve(r.result);
+        r.onerror = () => reject(r.error);
+      });
+    }
+    async function idbReq(mode, fn) {
+      const db = await idbOpen();
+      try {
+        return await new Promise((resolve, reject) => {
+          const tx = db.transaction('keys', mode);
+          const req = fn(tx.objectStore('keys'));
+          tx.oncomplete = () => resolve(req && req.result);
+          tx.onerror = () => reject(tx.error);
+        });
+      } finally {
+        db.close();
+      }
+    }
+    const idbGet = k => idbReq('readonly', s => s.get(k)).catch(() => null);
+    const idbSet = (k, v) => idbReq('readwrite', s => s.put(v, k));
+    const idbDel = k => idbReq('readwrite', s => s.delete(k)).catch(() => null);
+
+    // ----- Chiffrement -----
+    async function deriveKek(pass, salt, iter) {
+      const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass.normalize('NFC')), 'PBKDF2', false, ['deriveKey']);
+      return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: iter, hash: 'SHA-256' }, base,
+        { name: 'AES-GCM', length: 256 }, false, ['wrapKey', 'unwrapKey']);
+    }
+    async function wrapForVault(dataKey, pass) {
+      const salt = randomBytes(16), iv = randomBytes(12);
+      const kek = await deriveKek(pass, salt, PBKDF2_ITER);
+      const wrapped = await crypto.subtle.wrapKey('raw', dataKey, kek, { name: 'AES-GCM', iv: iv });
+      return { salt: toB64(salt), iter: PBKDF2_ITER, iv: toB64(iv), wrapped: toB64(wrapped) };
+    }
+    async function unwrapVault(vault, pass, extractable) {
+      const kek = await deriveKek(pass, fromB64(vault.salt), vault.iter);
+      return crypto.subtle.unwrapKey('raw', fromB64(vault.wrapped), kek, { name: 'AES-GCM', iv: fromB64(vault.iv) },
+        { name: 'AES-GCM' }, !!extractable, ['encrypt', 'decrypt']);
+    }
+    async function encryptBytes(key, bytes) {
+      const iv = randomBytes(12);
+      const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv, additionalData: ENC_MAGIC }, key, bytes));
+      const out = new Uint8Array(ENC_MAGIC.length + iv.length + ct.length);
+      out.set(ENC_MAGIC, 0);
+      out.set(iv, ENC_MAGIC.length);
+      out.set(ct, ENC_MAGIC.length + iv.length);
+      return out;
+    }
+    async function decryptBytes(key, bytes) {
+      for (let i = 0; i < ENC_MAGIC.length; i++) if (bytes[i] !== ENC_MAGIC[i]) throw new Error('bad_file');
+      const iv = bytes.subarray(ENC_MAGIC.length, ENC_MAGIC.length + 12);
+      return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv, additionalData: ENC_MAGIC }, key, bytes.subarray(ENC_MAGIC.length + 12)));
+    }
+    async function encryptMeta(key, obj) {
+      const iv = randomBytes(12);
+      const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, new TextEncoder().encode(JSON.stringify(obj)));
+      return { iv: toB64(iv), data: toB64(ct) };
+    }
+    async function decryptMeta(key, iv, data) {
+      const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromB64(iv) }, key, fromB64(data));
+      return JSON.parse(new TextDecoder().decode(pt));
+    }
+
+    // ----- Empreinte (WebAuthn, capteur du téléphone) -----
     async function biometricAvailable() {
       try {
         return !!(window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable &&
@@ -2774,7 +2887,6 @@
         return false;
       }
     }
-
     async function registerBiometric() {
       const email = (syncConf.session && syncConf.session.email) || 'moi';
       const cred = await navigator.credentials.create({
@@ -2793,7 +2905,6 @@
       if (authData && !uvFlag(authData)) throw new Error('uv');
       lsSet(LS_WEBAUTHN, { credId: bufToB64u(cred.rawId), created: Date.now() });
     }
-
     async function verifyBiometric(conf) {
       const assertion = await navigator.credentials.get({
         publicKey: {
@@ -2810,7 +2921,6 @@
     async function unlockDocs() {
       if (!navigator.onLine) return setDocsLockMsg('Le dossier médical a besoin d\'une connexion Internet.', 'err');
       if (!(await biometricAvailable())) {
-        // Pas de capteur ni de verrouillage d'écran : on redemande la connexion Google
         docsGoogleFallback = true;
         pendingDocsGoogle = true;
         renderDocs();
@@ -2826,8 +2936,7 @@
         else await registerBiometric();
         grantDocs();
       } catch (e) {
-        const name = e && e.name;
-        setDocsLockMsg(name === 'NotAllowedError'
+        setDocsLockMsg(e && e.name === 'NotAllowedError'
           ? 'Authentification annulée ou non reconnue. Réessaie.'
           : 'Empreinte non vérifiée. Réessaie, ou réinitialise l\'empreinte ci-dessous.', 'err');
       } finally {
@@ -2835,13 +2944,32 @@
       }
     }
 
-    function grantDocs() {
+    // Empreinte validée : on récupère la clé de cet appareil, ou on demande la phrase secrète
+    async function grantDocs() {
       docsUnlockedUntil = Date.now() + DOCS_LOCK_MS;
       docsGoogleFallback = false;
       pendingDocsGoogle = false;
       setDocsLockMsg('');
+      docsStage = 'loading';
       renderDocs();
-      loadDocs();
+      try {
+        const key = await idbGet('docsKey');
+        if (key) {
+          docsKey = key;
+          docsStage = 'open';
+          renderDocs();
+          loadDocs();
+          return;
+        }
+        const data = await docsCall({ action: 'vault_get' });
+        docsVault = data.vault || null;
+        docsStage = docsVault ? 'vault-enter' : 'vault-create';
+        renderDocs();
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        lockDocs();
+        setDocsLockMsg(docsErrorMessage(e.message), 'err');
+      }
     }
 
     function resetBiometric() {
@@ -2851,15 +2979,193 @@
       renderDocs();
     }
 
+    async function forgetDeviceKey() {
+      if (!confirm('Retirer la clé du dossier de cet appareil ?\nTes documents restent dans ton Drive ; il faudra retaper ta phrase secrète pour les rouvrir ici.')) return;
+      await idbDel('docsKey');
+      try { localStorage.removeItem(LS_WEBAUTHN); } catch (e) {}
+      lockDocs('Clé retirée de cet appareil.');
+    }
+
+    function lockDocs(message) {
+      const wasOpen = docsUnlocked() || docsList !== null || docsKey !== null;
+      docsUnlockedUntil = 0;
+      docsKey = null;
+      docsList = null;
+      docDraft = null;
+      docsStage = 'open';
+      docBlobUrls.forEach(u => URL.revokeObjectURL(u));
+      docBlobUrls = [];
+      closeDocViewer();
+      closePdfViewer();
+      renderDocs();
+      if (wasOpen && message) setDocsLockMsg(message);
+    }
+
+    // ----- Phrase secrète -----
+    function passStrength(p) {
+      let score = 0;
+      if (p.length >= 10) score++;
+      if (p.length >= 16) score++;
+      if (/[A-Z]/.test(p) && /[a-z]/.test(p)) score++;
+      if (/\d/.test(p)) score++;
+      if (/[^A-Za-z0-9]/.test(p) || /\s/.test(p)) score++;
+      return score <= 2 ? 'faible' : score === 3 ? 'correcte' : 'solide';
+    }
+
+    function renderVaultForm() {
+      const box = byId('docs-vault');
+      if (docsStage === 'loading') {
+        box.innerHTML = '<div class="docs-lock-icon">🔐</div><p>Ouverture du coffre…</p>';
+        return;
+      }
+      const create = docsStage === 'vault-create';
+      const change = docsStage === 'passphrase';
+      box.innerHTML = `
+        <div class="docs-lock-icon">🔐</div>
+        <h3>${create ? 'Crée la phrase secrète de ton dossier' : change ? 'Changer la phrase secrète' : 'Phrase secrète du dossier'}</h3>
+        <p>${create
+          ? 'Elle chiffre tous tes documents. Elle ne quitte jamais ton appareil : <strong>ni Google ni personne ne peut la retrouver</strong>. Note-la dans un endroit sûr : sans elle, tes documents seraient définitivement illisibles.'
+          : change ? 'Tes documents restent les mêmes : seule la phrase qui protège la clé change. Elle s\'appliquera à tous tes appareils.'
+          : 'Première ouverture sur cet appareil : tape ta phrase secrète une seule fois. Ensuite, ton empreinte suffira.'}</p>
+        ${change ? '<input type="password" id="vp-old" class="date-picker-input vault-input" autocomplete="current-password" placeholder="Phrase secrète actuelle">' : ''}
+        <input type="password" id="vp-1" class="date-picker-input vault-input" autocomplete="${create || change ? 'new-password' : 'current-password'}" placeholder="${change ? 'Nouvelle phrase secrète' : 'Phrase secrète'}">
+        ${create || change ? `
+          <div id="vp-strength" class="vault-strength"></div>
+          <input type="password" id="vp-2" class="date-picker-input vault-input" autocomplete="new-password" placeholder="Retape la phrase secrète">
+          <label class="sync-check vault-check"><input type="checkbox" id="vp-noted"> J'ai noté ma phrase secrète dans un endroit sûr</label>` : ''}
+        <label class="sync-check vault-check"><input type="checkbox" id="vp-show"> Afficher</label>
+        <button class="sync-btn" type="button" id="vp-submit" style="background: #0f766e; margin-top: 10px;">${create ? '🔐 Créer le coffre' : change ? '🔑 Changer la phrase' : '🔓 Ouvrir le dossier'}</button>
+        ${change ? '<button class="btn-sub" type="button" id="vp-cancel" style="width: 100%; margin-top: 8px;">Annuler</button>' : ''}
+        <div id="vp-msg" class="weight-feedback"></div>`;
+      const inputs = ['vp-old', 'vp-1', 'vp-2'].map(byId).filter(Boolean);
+      byId('vp-show').onchange = e => inputs.forEach(i => { i.type = e.target.checked ? 'text' : 'password'; });
+      if (byId('vp-strength')) byId('vp-1').oninput = e => {
+        const v = e.target.value;
+        byId('vp-strength').textContent = v ? `Solidité : ${passStrength(v)}${v.length < 10 ? ' (10 caractères minimum)' : ''}` : '';
+      };
+      inputs.forEach(i => i.addEventListener('keydown', e => { if (e.key === 'Enter') byId('vp-submit').click(); }));
+      byId('vp-submit').onclick = create ? submitVaultCreate : change ? submitPassChange : submitVaultEnter;
+      if (byId('vp-cancel')) byId('vp-cancel').onclick = () => { docsStage = 'open'; renderDocs(); };
+      setTimeout(() => (inputs[0] || {}).focus && inputs[0].focus(), 50);
+    }
+
+    function vaultMsg(text, kind) {
+      const el = byId('vp-msg');
+      el.className = 'weight-feedback' + (kind ? ' ' + kind : '');
+      el.textContent = text;
+    }
+
+    function checkNewPass() {
+      const p1 = byId('vp-1').value, p2 = byId('vp-2').value;
+      if (p1.length < 10) return vaultMsg('La phrase secrète doit faire au moins 10 caractères.', 'err'), null;
+      if (p1 !== p2) return vaultMsg('Les deux phrases ne sont pas identiques.', 'err'), null;
+      if (!byId('vp-noted').checked) return vaultMsg('Coche la case pour confirmer que tu l\'as notée.', 'err'), null;
+      return p1;
+    }
+
+    async function storeDeviceKey(key, vault) {
+      await idbSet('docsKey', key);
+      docsKey = key;
+      docsVault = vault;
+      docsStage = 'open';
+      renderDocs();
+      loadDocs();
+    }
+
+    async function submitVaultCreate() {
+      const pass = checkNewPass();
+      if (!pass) return;
+      const btn = byId('vp-submit');
+      btn.disabled = true;
+      vaultMsg('Création du coffre… (quelques secondes)');
+      try {
+        const dataKey = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+        const vault = await wrapForVault(dataKey, pass);
+        let data;
+        try {
+          data = await docsCall({ action: 'vault_set', vault: vault });
+        } catch (e) {
+          if (e.message === 'vault_exists') {
+            docsVault = e.data && e.data.vault;
+            docsStage = 'vault-enter';
+            renderDocs();
+            vaultMsg('Un coffre existe déjà (créé depuis un autre appareil) : tape sa phrase secrète.', 'err');
+            return;
+          }
+          throw e;
+        }
+        await storeDeviceKey(await unwrapVault(data.vault, pass, false), data.vault);
+        showToast('🔐 Coffre créé : tes documents seront chiffrés');
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        vaultMsg(docsErrorMessage(e.message), 'err');
+        btn.disabled = false;
+      }
+    }
+
+    async function submitVaultEnter() {
+      const pass = byId('vp-1').value;
+      if (!pass) return;
+      const btn = byId('vp-submit');
+      btn.disabled = true;
+      vaultMsg('Vérification…');
+      try {
+        const key = await unwrapVault(docsVault, pass, false);
+        await storeDeviceKey(key, docsVault);
+      } catch (e) {
+        vaultMsg(e && e.name === 'OperationError' ? 'Phrase secrète incorrecte.' : docsErrorMessage(e.message), 'err');
+        btn.disabled = false;
+      }
+    }
+
+    function openPassChange() {
+      docsStage = 'passphrase';
+      renderDocs();
+    }
+
+    async function submitPassChange() {
+      const old = byId('vp-old').value;
+      const pass = checkNewPass();
+      if (!old || !pass) { if (!old) vaultMsg('Tape ta phrase secrète actuelle.', 'err'); return; }
+      const btn = byId('vp-submit');
+      btn.disabled = true;
+      vaultMsg('Changement en cours… (quelques secondes)');
+      try {
+        const current = (await docsCall({ action: 'vault_get' })).vault;
+        let dataKey;
+        try {
+          dataKey = await unwrapVault(current, old, true);
+        } catch (e) {
+          vaultMsg('Phrase secrète actuelle incorrecte.', 'err');
+          btn.disabled = false;
+          return;
+        }
+        const vault = await wrapForVault(dataKey, pass);
+        const data = await docsCall({ action: 'vault_set', vault: vault, previousSalt: current.salt });
+        docsVault = data.vault;
+        docsStage = 'open';
+        renderDocs();
+        showToast('🔑 Phrase secrète changée');
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        vaultMsg(docsErrorMessage(e.message), 'err');
+        btn.disabled = false;
+      }
+    }
+
     // ----- Échanges avec le script Google -----
     function docsErrorMessage(code) {
       const messages = {
         not_found: 'Document introuvable (il a peut-être été supprimé).',
         too_big: 'Fichier trop lourd : 20 Mo maximum.',
-        bad_type: 'Type de fichier non accepté : PDF, JPEG ou PNG.',
-        bad_file: 'Le fichier semble abîmé ou n\'est pas un vrai PDF / image.',
+        bad_type: 'Type de fichier non accepté.',
+        bad_file: 'Le fichier semble abîmé.',
+        not_pdf: 'Ce fichier n\'est pas un PDF valide.',
+        not_encrypted: 'Le script Google n\'accepte que des documents chiffrés : mets l\'appli à jour.',
+        bad_vault: 'Coffre invalide.',
+        integrity: 'Le document ne correspond plus à celui importé (empreinte différente).',
         server: 'Le script Google n\'a pas pu accéder à Drive. As-tu exécuté « autoriserDossierMedical » ?',
-        unknown_action: 'Le script Google n\'est pas encore à jour (version 4 nécessaire).',
+        unknown_action: 'Le script Google n\'est pas encore à jour (version 5 nécessaire).',
         format: 'Le script Google ne répond pas comme prévu.',
         locked: 'Trop de tentatives refusées : accès bloqué 15 minutes.'
       };
@@ -2874,20 +3180,34 @@
       const data = await apiCall(Object.assign({ session: syncConf.session.token }, payload));
       if (!data.ok) {
         if (data.error === 'unauthorized') endSession('Ta session a expiré ou a été fermée : reconnecte-toi.');
-        throw new Error(data.error || 'server');
+        const err = new Error(data.error || 'server');
+        err.data = data;
+        throw err;
       }
       touchDocs();
       return data;
     }
 
     async function loadDocs() {
-      if (!docsUnlocked()) return;
-      byId('docs-list').innerHTML = '<div class="drink-empty">Chargement de tes documents…</div>';
+      if (!docsUnlocked() || !docsKey) return;
+      byId('docs-list').innerHTML = '<div class="drink-empty">Déchiffrement de tes documents…</div>';
       try {
         const data = await docsCall({ action: 'docs_list' });
+        const list = [];
+        for (const d of (Array.isArray(data.docs) ? data.docs : [])) {
+          if (d.enc) {
+            try {
+              const meta = await decryptMeta(docsKey, d.metaIv, d.metaData);
+              list.push(Object.assign({}, meta, { id: d.id, enc: true, importedAt: d.importedAt, encSize: d.size }));
+            } catch (e) {
+              list.push({ id: d.id, enc: true, broken: true, title: 'Document illisible', category: 'autre', importedAt: d.importedAt, encSize: d.size });
+            }
+          } else {
+            list.push(Object.assign({}, d, { legacy: true }));
+          }
+        }
         if (!docsUnlocked()) return;
-        docsList = Array.isArray(data.docs) ? data.docs : [];
-        docsFolderUrl = data.folderUrl || '';
+        docsList = list;
         renderDocsList();
       } catch (e) {
         if (e.message === 'unauthorized') return;
@@ -2900,10 +3220,12 @@
     }
 
     // ----- Affichage -----
-    async function renderDocs() {
+    function renderDocs() {
       const unlocked = docsUnlocked();
+      const vaultStage = unlocked && docsStage !== 'open';
       byId('docs-locked').style.display = unlocked ? 'none' : 'block';
-      byId('docs-unlocked').style.display = unlocked ? 'block' : 'none';
+      byId('docs-vault').style.display = vaultStage ? 'block' : 'none';
+      byId('docs-unlocked').style.display = unlocked && !vaultStage ? 'block' : 'none';
       if (!unlocked) {
         const conf = lsGet(LS_WEBAUTHN, null);
         const btn = byId('docs-unlock-btn');
@@ -2912,23 +3234,29 @@
         byId('docs-reset-btn').style.display = conf && !docsGoogleFallback ? 'inline-block' : 'none';
         byId('docs-lock-text').textContent = docsGoogleFallback
           ? 'Cet appareil n\'a pas de capteur d\'empreinte ni de verrouillage d\'écran : confirme ton identité avec ton compte Google.'
-          : (conf ? 'Tes documents médicaux sont protégés par ton empreinte.'
+          : (conf ? 'Tes documents sont chiffrés et protégés par ton empreinte.'
                   : 'Première ouverture sur cet appareil : ton téléphone va te demander ton empreinte (ou son code) pour protéger ce dossier.');
         byId('docs-google').style.display = docsGoogleFallback ? 'flex' : 'none';
         return;
       }
+      if (vaultStage) return renderVaultForm();
       renderDocDraft();
       renderDocsList();
     }
 
     function renderDocsList() {
       const box = byId('docs-list');
-      const link = byId('docs-folder-link');
-      link.style.display = docsFolderUrl ? 'block' : 'none';
-      if (docsFolderUrl) link.href = docsFolderUrl;
       const filters = byId('docs-filters');
+      const legacyBox = byId('docs-legacy');
       filters.innerHTML = '';
+      legacyBox.innerHTML = '';
       if (docsList === null) return;
+      const legacy = docsList.filter(d => d.legacy);
+      if (legacy.length) {
+        legacyBox.innerHTML = `<div class="docs-legacy">⚠️ ${legacy.length} document(s) importé(s) avant le chiffrement sont encore lisibles dans Drive.
+          <button class="sync-btn" type="button" id="docs-migrate" style="background: #b45309; margin-top: 8px;">🔒 Les chiffrer maintenant</button></div>`;
+        byId('docs-migrate').onclick = migrateLegacyDocs;
+      }
       const present = DOC_CATEGORIES.filter(c => docsList.some(d => d.category === c.key));
       if (present.length > 1) {
         [{ key: 'tous', name: 'Tous', icon: '' }].concat(present).forEach(c => {
@@ -2948,8 +3276,8 @@
       }
       list.forEach(d => {
         const cat = docCat(d.category);
-        const sub = [cat.name, fmtIsoFr(d.docDate), d.pages ? `${d.pages} page(s)` : '', fmtSize(d.size)].filter(Boolean).join(' · ');
-        box.appendChild(foodRow(`${cat.icon} ${d.title}`, sub, '', () => openDocViewer(d)));
+        const sub = [d.docDate ? `du ${fmtIsoFr(d.docDate)}` : '', `importé le ${fmtStamp(d.importedAt)}`, d.pages ? `${d.pages} p.` : ''].filter(Boolean).join(' · ');
+        box.appendChild(foodRow(`${cat.icon} ${d.title}`, sub, d.legacy ? '⚠️ non chiffré' : (d.broken ? '❌' : '🔒'), () => openDocViewer(d)));
       });
     }
 
@@ -2957,11 +3285,9 @@
     function docTitleFromFile(file) {
       return String(file.name || '').replace(/\.[a-z0-9]+$/i, '').replace(/[_-]+/g, ' ').trim().slice(0, 120);
     }
-
     function newDocDraft(kind) {
       return { kind: kind, pages: [], pdf: null, title: '', category: 'autre', docDate: getLocalIsoDate(), note: '' };
     }
-
     function addDocImages(files) {
       const images = files.filter(f => /^image\//.test(f.type));
       if (!images.length) return;
@@ -2974,13 +3300,12 @@
       if (!docDraft.title) docDraft.title = images.length === 1 && !/^(image|img|photo|pxl|dsc)/i.test(images[0].name) ? docTitleFromFile(images[0]) : `Document du ${fmtIsoFr(getLocalIsoDate())}`;
       renderDocDraft();
     }
-
     function onDocFilesChosen(input) {
       docsPickerOpen = false;
       touchDocs();
       const files = Array.from(input.files || []);
       input.value = '';
-      if (!files.length || !docsUnlocked()) return;
+      if (!files.length || !docsUnlocked() || !docsKey) return;
       const pdf = files.find(f => f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
       if (pdf) {
         if (pdf.size > MAX_DOC_BYTES) { showToast('📄 PDF trop lourd : 20 Mo maximum.'); return; }
@@ -3015,12 +3340,11 @@
           <div class="action-label" style="margin-top: 10px;">Remarque (facultatif)</div>
           <input type="text" id="dd-note" class="date-picker-input" maxlength="500" value="${esc(d.note)}" placeholder="Ex : bilan sanguin du Dr Martin" style="margin-top: 0;">
           <div class="action-row" style="margin-top: 12px;">
-            <button class="btn-add" type="button" id="dd-save" style="background: #0f766e; color: white;">☁️ Enregistrer dans Drive</button>
+            <button class="btn-add" type="button" id="dd-save" style="background: #0f766e; color: white;">🔒 Chiffrer et enregistrer</button>
             <button class="btn-sub" type="button" id="dd-cancel">Annuler</button>
           </div>
           <div id="dd-msg" class="weight-feedback"></div>
         </div>`;
-
       if (d.kind === 'photos') {
         const pages = byId('dd-pages');
         d.pages.forEach((p, i) => {
@@ -3035,11 +3359,7 @@
           del.type = 'button';
           del.textContent = '×';
           del.setAttribute('aria-label', `Retirer la page ${i + 1}`);
-          del.onclick = () => {
-            d.pages.splice(i, 1);
-            if (!d.pages.length) docDraft = null;
-            renderDocDraft();
-          };
+          del.onclick = () => { d.pages.splice(i, 1); if (!d.pages.length) docDraft = null; renderDocDraft(); };
           el.appendChild(img);
           el.appendChild(num);
           el.appendChild(del);
@@ -3054,18 +3374,13 @@
         input.addEventListener('change', () => onDocFilesChosen(input));
         pages.appendChild(add);
       }
-
       const cats = byId('dd-cats');
       DOC_CATEGORIES.forEach(c => {
         const chip = document.createElement('button');
         chip.type = 'button';
         chip.className = 'chip' + (d.category === c.key ? ' active' : '');
         chip.textContent = `${c.icon} ${c.name}`;
-        chip.onclick = () => {
-          d.category = c.key;
-          cats.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
-          chip.classList.add('active');
-        };
+        chip.onclick = () => { d.category = c.key; cats.querySelectorAll('.chip').forEach(x => x.classList.remove('active')); chip.classList.add('active'); };
         cats.appendChild(chip);
       });
       byId('dd-title').oninput = e => { d.title = e.target.value; };
@@ -3075,7 +3390,7 @@
       byId('dd-save').onclick = saveDocDraft;
     }
 
-    // ----- Photos → un seul PDF (fabriqué sur le téléphone, sans service extérieur) -----
+    // ----- Photos → un seul PDF (fabriqué sur le téléphone) -----
     async function pageToJpeg(file) {
       let src;
       try {
@@ -3149,13 +3464,15 @@
       return new Blob(parts, { type: 'application/pdf' });
     }
 
-    function blobToBase64(blob) {
-      return new Promise((resolve, reject) => {
-        const r = new FileReader();
-        r.onload = () => resolve(String(r.result).split(',')[1] || '');
-        r.onerror = () => reject(r.error);
-        r.readAsDataURL(blob);
-      });
+    // Chiffre puis envoie un document ; renvoie la fiche déchiffrée
+    async function encryptAndUpload(bytes, meta) {
+      const sha = await sha256Hex(bytes);
+      const fullMeta = Object.assign({ v: 1, mime: 'application/pdf', size: bytes.length, sha256: sha, encryptedAt: Date.now() }, meta);
+      const encBytes = await encryptBytes(docsKey, bytes);
+      if (encBytes.length > MAX_DOC_BYTES) throw new Error('too_big');
+      const encMeta = await encryptMeta(docsKey, fullMeta);
+      const data = await docsCall({ action: 'docs_upload', mime: ENC_MIME, content: toB64(encBytes), meta: encMeta });
+      return Object.assign({}, fullMeta, { id: data.doc.id, enc: true, importedAt: data.doc.importedAt, encSize: data.doc.size });
     }
 
     async function saveDocDraft() {
@@ -3168,9 +3485,11 @@
       byId('dd-cancel').disabled = true;
       msg.className = 'weight-feedback';
       try {
-        let blob, pages = 0;
+        let bytes, pages = 0, originalName = '';
         if (d.kind === 'pdf') {
-          blob = d.pdf;
+          bytes = new Uint8Array(await d.pdf.arrayBuffer());
+          if (!(bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46)) throw new Error('not_pdf');
+          originalName = d.pdf.name;
         } else {
           const images = [];
           for (let i = 0; i < d.pages.length; i++) {
@@ -3178,22 +3497,16 @@
             touchDocs();
             images.push(await pageToJpeg(d.pages[i].file));
           }
-          blob = buildPdf(images);
+          bytes = new Uint8Array(await buildPdf(images).arrayBuffer());
           pages = images.length;
         }
-        if (blob.size > MAX_DOC_BYTES) throw new Error('too_big');
-        btn.textContent = '☁️ Envoi vers Google Drive…';
-        const content = await blobToBase64(blob);
-        const data = await docsCall({
-          action: 'docs_upload',
-          mime: 'application/pdf',
-          content: content,
-          meta: { title: d.title, category: d.category, docDate: d.docDate, note: d.note.trim(), pages: pages }
-        });
-        if (docsList) docsList.unshift(data.doc);
+        if (bytes.length > MAX_DOC_BYTES) throw new Error('too_big');
+        btn.textContent = '🔒 Chiffrement et envoi…';
+        const doc = await encryptAndUpload(bytes, { title: d.title, category: d.category, docDate: d.docDate, note: d.note.trim(), pages: pages, originalName: originalName });
+        if (docsList) docsList.unshift(doc);
         docDraft = null;
         renderDocs();
-        showToast(`📁 « ${data.doc.title} » enregistré dans ton Drive`);
+        showToast(`🔒 « ${doc.title} » chiffré et enregistré (${fmtStamp(doc.importedAt)})`);
       } catch (e) {
         if (e.message === 'unauthorized') return;
         if (byId('dd-msg')) {
@@ -3202,13 +3515,48 @@
         }
         if (byId('dd-save')) {
           byId('dd-save').disabled = false;
-          byId('dd-save').textContent = '☁️ Réessayer';
+          byId('dd-save').textContent = '🔒 Réessayer';
           byId('dd-cancel').disabled = false;
         }
       }
     }
 
-    // ----- Consultation d'un document -----
+    // Chiffre les documents importés avant la version chiffrée, puis met les originaux à la corbeille
+    async function migrateLegacyDocs() {
+      const btn = byId('docs-migrate');
+      const legacy = (docsList || []).filter(d => d.legacy);
+      btn.disabled = true;
+      let done = 0;
+      try {
+        for (const doc of legacy) {
+          btn.textContent = `Chiffrement ${done + 1}/${legacy.length}…`;
+          const data = await docsCall({ action: 'docs_get', id: doc.id });
+          const bytes = fromB64(data.content);
+          const encDoc = await encryptAndUpload(bytes, { title: doc.title, category: doc.category, docDate: doc.docDate, note: doc.note || '', pages: doc.pages || 0, originalName: '', firstImportedAt: doc.importedAt });
+          await docsCall({ action: 'docs_delete', id: doc.id });
+          docsList = docsList.filter(x => x.id !== doc.id);
+          docsList.unshift(encDoc);
+          done++;
+        }
+        renderDocsList();
+        showToast(`🔒 ${done} document(s) chiffré(s). Pense à vider la corbeille de Google Drive.`);
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        renderDocsList();
+        showToast(`Chiffrement interrompu (${done}/${legacy.length}) : ${docsErrorMessage(e.message)}`);
+      }
+    }
+
+    // ----- Lecture d'un document (déchiffré en mémoire uniquement) -----
+    async function fetchDocPlain(doc) {
+      const data = await docsCall({ action: 'docs_get', id: doc.id });
+      const raw = fromB64(data.content);
+      if (!doc.enc) return { bytes: raw, integrity: null };
+      const bytes = await decryptBytes(docsKey, raw);
+      const integrity = doc.sha256 ? (await sha256Hex(bytes)) === doc.sha256 : null;
+      return { bytes: bytes, integrity: integrity };
+    }
+
     function closeDocViewer() {
       const v = byId('doc-viewer');
       if (v) v.style.display = 'none';
@@ -3251,11 +3599,15 @@
           if (!title) { byId('dv-msg').className = 'weight-feedback err'; byId('dv-msg').textContent = 'Le titre est obligatoire.'; return; }
           byId('dv-save').disabled = true;
           try {
-            const data = await docsCall({ action: 'docs_update', id: doc.id, meta: { title: title, category: category, docDate: byId('dv-date').value, note: byId('dv-note').value.trim() } });
+            const meta = {};
+            ['v', 'mime', 'size', 'sha256', 'encryptedAt', 'pages', 'originalName', 'firstImportedAt'].forEach(k => { if (doc[k] !== undefined) meta[k] = doc[k]; });
+            Object.assign(meta, { title: title, category: category, docDate: byId('dv-date').value, note: byId('dv-note').value.trim() });
+            await docsCall({ action: 'docs_update', id: doc.id, meta: await encryptMeta(docsKey, meta) });
+            const updated = Object.assign({}, doc, meta);
             const i = docsList ? docsList.findIndex(x => x.id === doc.id) : -1;
-            if (i >= 0) docsList[i] = data.doc;
+            if (i >= 0) docsList[i] = updated;
             renderDocsList();
-            openDocViewer(data.doc);
+            openDocViewer(updated);
             showToast('✏️ Document mis à jour');
           } catch (e) {
             if (e.message === 'unauthorized') return;
@@ -3266,17 +3618,28 @@
         };
       } else {
         body.innerHTML = `
-          <div class="fs-meta">${esc(cat.name)} · daté du ${esc(fmtIsoFr(doc.docDate))}${doc.pages ? ` · ${doc.pages} page(s)` : ''} · ${esc(fmtSize(doc.size))}</div>
-          ${doc.note ? `<div class="doc-note">📝 ${esc(doc.note)}</div>` : ''}
-          <a class="sync-btn doc-open" href="${esc(doc.url)}" target="_blank" rel="noopener">📂 Ouvrir dans Google Drive</a>
-          <button class="btn-sub" type="button" id="dv-download" style="width: 100%; margin-top: 8px;">⬇️ Télécharger sur cet appareil</button>
+          <div class="doc-facts">
+            ${doc.docDate ? `<div>📅 Document du <strong>${esc(fmtIsoFr(doc.docDate))}</strong> · ${esc(cat.name)}</div>` : ''}
+            <div>🕒 Importé le <strong>${esc(fmtStamp(doc.importedAt))}</strong>${doc.firstImportedAt ? ` (premier import le ${esc(fmtStamp(doc.firstImportedAt))})` : ''}</div>
+            <div>${doc.legacy ? '⚠️ <strong>Non chiffré</strong> : lisible dans Drive' : doc.broken ? '❌ Impossible de déchiffrer ce document' : '🔒 Chiffré de bout en bout (AES-256)'}${doc.pages ? ` · ${doc.pages} page(s)` : ''}${doc.size ? ` · ${esc(fmtSize(doc.size))}` : ''}</div>
+            ${doc.note ? `<div>📝 ${esc(doc.note)}</div>` : ''}
+          </div>
+          ${doc.broken ? '' : '<button class="sync-btn" type="button" id="dv-view" style="background: #0f766e;">👁️ Voir le document</button>'}
           <div class="action-row" style="margin-top: 8px;">
-            <button class="btn-sub" type="button" id="dv-edit">✏️ Modifier</button>
+            ${doc.legacy || doc.broken ? '' : '<button class="btn-sub" type="button" id="dv-edit">✏️ Modifier</button>'}
             <button class="btn-sub" type="button" id="dv-delete">🗑 Corbeille</button>
           </div>
+          ${doc.broken ? '' : '<button class="gate-link" type="button" id="dv-export">Exporter une copie lisible sur cet appareil</button>'}
           <div id="dv-msg" class="weight-feedback"></div>`;
-        byId('dv-edit').onclick = () => openDocViewer(doc, true);
-        byId('dv-download').onclick = () => downloadDoc(doc);
+        if (byId('dv-view')) byId('dv-view').onclick = () => viewDocPdf(doc);
+        if (byId('dv-edit')) byId('dv-edit').onclick = () => openDocViewer(doc, true);
+        if (byId('dv-export')) {
+          const ex = byId('dv-export');
+          ex.onclick = () => confirmTap(ex, () => exportDoc(doc), {
+            arm: () => { ex.textContent = '⚠️ La copie ne sera plus chiffrée : toucher encore pour confirmer'; ex.style.color = '#b91c1c'; },
+            disarm: () => { ex.textContent = 'Exporter une copie lisible sur cet appareil'; ex.style.color = ''; }
+          });
+        }
         const del = byId('dv-delete');
         del.onclick = () => confirmTap(del, () => deleteDoc(doc), {
           arm: () => { del.textContent = 'Confirmer ?'; del.style.background = '#dc2626'; del.style.color = 'white'; },
@@ -3287,30 +3650,87 @@
       updateModalState();
     }
 
-    async function downloadDoc(doc) {
-      const btn = byId('dv-download');
-      btn.disabled = true;
-      btn.textContent = 'Téléchargement…';
+    function loadPdfJs() {
+      if (!pdfjsPromise) {
+        pdfjsPromise = import(PDFJS_URL + 'pdf.min.mjs').then(lib => {
+          lib.GlobalWorkerOptions.workerSrc = PDFJS_URL + 'pdf.worker.min.mjs';
+          return lib;
+        }).catch(e => { pdfjsPromise = null; throw e; });
+      }
+      return pdfjsPromise;
+    }
+
+    function closePdfViewer() {
+      pdfRenderToken++;
+      const v = byId('pdf-viewer');
+      if (!v) return;
+      v.style.display = 'none';
+      byId('pdf-pages').innerHTML = '';
+      byId('pdf-status').textContent = '';
+      updateModalState();
+    }
+
+    async function viewDocPdf(doc) {
+      const token = ++pdfRenderToken;
+      byId('pdf-title').textContent = doc.title;
+      byId('pdf-pages').innerHTML = '';
+      const status = byId('pdf-status');
+      status.className = 'pdf-status';
+      status.textContent = '🔓 Déchiffrement…';
+      byId('pdf-viewer').style.display = 'block';
+      updateModalState();
       try {
-        const data = await docsCall({ action: 'docs_get', id: doc.id });
-        const bin = atob(data.content);
-        const bytes = new Uint8Array(bin.length);
-        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-        const url = URL.createObjectURL(new Blob([bytes], { type: data.doc.mime || 'application/pdf' }));
+        const [{ bytes, integrity }, lib] = await Promise.all([fetchDocPlain(doc), loadPdfJs()]);
+        if (token !== pdfRenderToken) return;
+        status.textContent = integrity === true ? '✅ Intégrité vérifiée : identique au document importé'
+          : integrity === false ? '⚠️ Attention : ce document ne correspond pas à l\'empreinte enregistrée à l\'import'
+          : doc.legacy ? '⚠️ Document non chiffré' : '';
+        if (integrity === false) status.className = 'pdf-status err';
+        const pdf = await lib.getDocument({ data: bytes }).promise;
+        const width = Math.min(byId('pdf-pages').clientWidth || window.innerWidth, 900);
+        const ratio = Math.min(window.devicePixelRatio || 1, 2);
+        for (let n = 1; n <= Math.min(pdf.numPages, 60); n++) {
+          if (token !== pdfRenderToken) return;
+          const page = await pdf.getPage(n);
+          const base = page.getViewport({ scale: 1 });
+          const viewport = page.getViewport({ scale: (width / base.width) * ratio });
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          canvas.style.width = '100%';
+          byId('pdf-pages').appendChild(canvas);
+          await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
+          touchDocs();
+        }
+        pdf.destroy();
+      } catch (e) {
+        if (token !== pdfRenderToken || e.message === 'unauthorized') return;
+        status.className = 'pdf-status err';
+        status.textContent = e && e.name === 'OperationError' ? 'Impossible de déchiffrer ce document.'
+          : (e && /import|fetch|module/i.test(String(e.message || e))) ? 'La visionneuse n\'a pas pu se charger (connexion ?). Tu peux exporter une copie lisible depuis la fiche du document.'
+          : docsErrorMessage(e.message);
+      }
+    }
+
+    async function exportDoc(doc) {
+      const msg = byId('dv-msg');
+      msg.className = 'weight-feedback';
+      msg.textContent = 'Préparation de la copie…';
+      try {
+        const { bytes } = await fetchDocPlain(doc);
+        const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
         docBlobUrls.push(url);
         const a = document.createElement('a');
         a.href = url;
-        a.download = data.doc.name || 'document.pdf';
+        a.download = `${doc.docDate || 'document'} - ${String(doc.title).replace(/[\\/:*?"<>|]/g, '-')}.pdf`;
         document.body.appendChild(a);
         a.click();
         a.remove();
-        btn.textContent = '✅ Téléchargé';
+        msg.textContent = '✅ Copie lisible téléchargée sur cet appareil.';
       } catch (e) {
         if (e.message === 'unauthorized') return;
-        btn.disabled = false;
-        btn.textContent = '⬇️ Télécharger sur cet appareil';
-        byId('dv-msg').className = 'weight-feedback err';
-        byId('dv-msg').textContent = docsErrorMessage(e.message);
+        msg.className = 'weight-feedback err';
+        msg.textContent = docsErrorMessage(e.message);
       }
     }
 
@@ -3320,7 +3740,7 @@
         if (docsList) docsList = docsList.filter(x => x.id !== doc.id);
         closeDocViewer();
         renderDocsList();
-        showToast('🗑 Document mis dans la corbeille de Drive (récupérable 30 jours)');
+        showToast('🗑 Document mis dans la corbeille de Drive (récupérable 30 jours, toujours chiffré)');
       } catch (e) {
         if (e.message === 'unauthorized') return;
         byId('dv-msg').className = 'weight-feedback err';
@@ -3330,7 +3750,6 @@
 
     // ----- Verrouillage automatique -----
     document.addEventListener('visibilitychange', () => {
-      // L'appareil photo ou le sélecteur de fichiers fait passer l'appli en arrière-plan : on ne verrouille pas
       if (document.visibilityState === 'hidden' && !docsPickerOpen) lockDocs('Dossier verrouillé quand tu as quitté l\'appli.');
       if (document.visibilityState === 'visible') setTimeout(() => { docsPickerOpen = false; }, 1500);
     });

@@ -1,5 +1,5 @@
 /**
- * Suivi Hydrique Pro — serveur Google Apps Script (version 4 : dossier médical dans Google Drive)
+ * Suivi Hydrique Pro — serveur Google Apps Script (version 5 : dossier médical chiffré)
  * =============================================================================
  *
  * MISE À JOUR DEPUIS LA VERSION PRÉCÉDENTE
@@ -20,12 +20,15 @@
  * - Appareil perdu ? Exécutez « deconnecterTousLesAppareils ».
  * - Après 20 tentatives refusées en 15 minutes, tout accès est bloqué 15 minutes.
  *
- * DOSSIER MÉDICAL (nouveau en version 4)
- * - Les documents sont rangés dans un dossier privé de votre Google Drive :
- *   « Suivi Hydrique Pro — Dossier médical ». Personne d'autre n'y a accès.
- * - Après avoir collé ce code : exécutez une fois « autoriserDossierMedical » et acceptez
- *   l'accès à Google Drive, puis redéployez (Nouvelle version).
- * - L'appli ne peut lire, modifier ou supprimer QUE les fichiers de ce dossier.
+ * DOSSIER MÉDICAL CHIFFRÉ (version 5)
+ * - Les documents sont chiffrés SUR LE TÉLÉPHONE (AES-256) avant d'être envoyés : ce script et
+ *   Google Drive ne reçoivent que des fichiers illisibles (noms anonymes « doc-AAAAMMJJ-HHMMSS-xxxx.hsp »).
+ *   Titres, catégories et remarques sont chiffrés eux aussi.
+ * - La clé est protégée par la phrase secrète du patient : elle n'est jamais envoyée ici.
+ *   Ce script ne garde que la clé « emballée » (illisible sans la phrase secrète).
+ * - Chaque import est horodaté par le serveur.
+ * - Après avoir collé ce code : exécutez une fois « autoriserDossierMedical » (accès Drive), puis redéployez.
+ * - L'appli ne peut lire ou supprimer QUE les fichiers de ce dossier.
  *   Une suppression envoie le fichier dans la corbeille de Drive (récupérable 30 jours).
  *
  * RAPPELS DE COMPLÉMENTS
@@ -148,6 +151,8 @@ function doPost(e) {
       return json_({ ok: true });
     }
     if (body.action === 'sync') return json_(sync_(body));
+    if (body.action === 'vault_get') return json_({ ok: true, vault: loadVault_() });
+    if (body.action === 'vault_set') return json_(vaultSet_(body));
     if (body.action === 'docs_list') return json_(docsList_());
     if (body.action === 'docs_upload') return json_(docsUpload_(body));
     if (body.action === 'docs_get') return json_(docsAction_(body, f => ({ ok: true, doc: docMeta_(f), content: Utilities.base64Encode(f.getBlob().getBytes()) })));
@@ -481,8 +486,11 @@ function sendAlert_(subject, body) {
 }
 
 // ---------------------------------------------------------------------------
-// Dossier médical (Google Drive)
+// Dossier médical chiffré (Google Drive)
 // ---------------------------------------------------------------------------
+
+const ENC_MIME = 'application/x-hsp-encrypted';
+const ENC_MAGIC = [0x48, 0x53, 0x50, 0x45, 0x4E, 0x43, 0x31, 0x00];   // « HSPENC1 » + 0
 
 function docsFolder_() {
   const props = PropertiesService.getScriptProperties();
@@ -498,43 +506,63 @@ function docsFolder_() {
   return folder;
 }
 
-function cleanDocMeta_(m, previous) {
-  m = (m && typeof m === 'object') ? m : {};
-  previous = previous || {};
-  const pick = (k) => (m[k] !== undefined ? m[k] : previous[k]);
-  const today = Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM-dd');
-  const category = String(pick('category') || 'autre');
-  const docDate = String(pick('docDate') || '');
-  return {
-    title: String(pick('title') || 'Document').replace(/\s+/g, ' ').trim().slice(0, 120) || 'Document',
-    category: DOC_CATEGORIES[category] ? category : 'autre',
-    docDate: /^\d{4}-\d{2}-\d{2}$/.test(docDate) ? docDate : today,
-    note: String(pick('note') || '').slice(0, 500),
-    pages: Math.max(0, Math.min(500, Number(pick('pages')) || 0))
-  };
+function isB64_(s, max) {
+  return typeof s === 'string' && s.length > 0 && s.length <= max && /^[A-Za-z0-9+/=]+$/.test(s);
 }
 
-function docFileName_(meta, ext) {
-  const name = meta.docDate + ' - ' + DOC_CATEGORIES[meta.category] + ' - ' + meta.title;
-  return name.replace(/[\\/:*?"<>|]/g, '-').slice(0, 150) + '.' + ext;
+// ----- Coffre : clé du dossier « emballée » par la phrase secrète (illisible ici) -----
+function loadVault_() {
+  try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('DOCS_VAULT') || 'null'); } catch (err) { return null; }
+}
+
+function vaultSet_(body) {
+  const v = body.vault || {};
+  if (!isB64_(v.salt, 64) || !isB64_(v.iv, 32) || !isB64_(v.wrapped, 200)) return { ok: false, error: 'bad_vault' };
+  const iter = Math.floor(Number(v.iter) || 0);
+  if (iter < 100000 || iter > 5000000) return { ok: false, error: 'bad_vault' };
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const current = loadVault_();
+    // Remplacement seulement si l'appli prouve qu'elle connaît le coffre actuel (changement de phrase secrète)
+    if (current && body.previousSalt !== current.salt) return { ok: false, error: 'vault_exists', vault: current };
+    if (current) {
+      let history = [];
+      try { history = JSON.parse(props.getProperty('DOCS_VAULT_HISTORY') || '[]'); } catch (err) { history = []; }
+      history.unshift(current);
+      props.setProperty('DOCS_VAULT_HISTORY', JSON.stringify(history.slice(0, 5)));
+    }
+    const vault = { v: 1, salt: v.salt, iter: iter, iv: v.iv, wrapped: v.wrapped, created: Date.now() };
+    props.setProperty('DOCS_VAULT', JSON.stringify(vault));
+    return { ok: true, vault: vault };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// ----- Documents -----
+function readDesc_(file) {
+  try { return JSON.parse(file.getDescription() || '{}') || {}; } catch (err) { return {}; }
 }
 
 function docMeta_(file) {
-  let meta = {};
-  try { meta = JSON.parse(file.getDescription() || '{}') || {}; } catch (err) { meta = {}; }
-  return {
-    id: file.getId(),
-    name: file.getName(),
-    title: meta.title || file.getName().replace(/\.[a-z0-9]+$/i, ''),
-    category: DOC_CATEGORIES[meta.category] ? meta.category : 'autre',
-    docDate: meta.docDate || Utilities.formatDate(file.getDateCreated(), TIMEZONE, 'yyyy-MM-dd'),
-    note: meta.note || '',
-    pages: meta.pages || 0,
-    size: file.getSize(),
+  const d = readDesc_(file);
+  const base = { id: file.getId(), size: file.getSize(), created: file.getDateCreated().getTime() };
+  if (d.enc) {
+    return Object.assign(base, { enc: true, metaIv: d.iv, metaData: d.data, importedAt: d.importedAt || base.created });
+  }
+  // Ancien document non chiffré (avant la version 5) : à chiffrer depuis l'appli
+  return Object.assign(base, {
+    enc: false,
+    title: d.title || file.getName().replace(/\.[a-z0-9]+$/i, ''),
+    category: DOC_CATEGORIES[d.category] ? d.category : 'autre',
+    docDate: d.docDate || Utilities.formatDate(file.getDateCreated(), TIMEZONE, 'yyyy-MM-dd'),
+    note: d.note || '',
+    pages: d.pages || 0,
     mime: file.getMimeType(),
-    created: file.getDateCreated().getTime(),
-    url: file.getUrl()
-  };
+    importedAt: base.created
+  });
 }
 
 function docsList_() {
@@ -545,29 +573,28 @@ function docsList_() {
     const f = it.next();
     if (!f.isTrashed()) docs.push(docMeta_(f));
   }
-  docs.sort((a, b) => b.docDate.localeCompare(a.docDate) || b.created - a.created);
-  return { ok: true, docs: docs, folderUrl: folder.getUrl() };
+  docs.sort((a, b) => b.importedAt - a.importedAt);
+  return { ok: true, docs: docs };
 }
 
 function docsUpload_(body) {
-  const allowed = { 'application/pdf': 'pdf', 'image/jpeg': 'jpg', 'image/png': 'png' };
-  const mime = String(body.mime || '');
-  if (!allowed[mime]) return { ok: false, error: 'bad_type' };
+  if (body.mime !== ENC_MIME) return { ok: false, error: 'not_encrypted' };
+  const m = body.meta || {};
+  if (!isB64_(m.iv, 32) || !isB64_(m.data, 20000)) return { ok: false, error: 'bad_meta' };
   const b64 = String(body.content || '');
   if (!b64 || b64.length > MAX_DOC_BYTES * 1.4) return { ok: false, error: 'too_big' };
   let bytes;
   try { bytes = Utilities.base64Decode(b64); } catch (err) { return { ok: false, error: 'bad_file' }; }
-  if (!bytes.length || bytes.length > MAX_DOC_BYTES) return { ok: false, error: 'too_big' };
-  // Vérifie que le contenu correspond bien au type annoncé
-  const b = i => (bytes[i] + 256) % 256;
-  const magicOk = mime === 'application/pdf' ? (b(0) === 0x25 && b(1) === 0x50 && b(2) === 0x44 && b(3) === 0x46)
-    : mime === 'image/jpeg' ? (b(0) === 0xFF && b(1) === 0xD8)
-    : (b(0) === 0x89 && b(1) === 0x50 && b(2) === 0x4E && b(3) === 0x47);
-  if (!magicOk) return { ok: false, error: 'bad_file' };
-
-  const meta = cleanDocMeta_(body.meta);
-  const file = docsFolder_().createFile(Utilities.newBlob(bytes, mime, docFileName_(meta, allowed[mime])));
-  file.setDescription(JSON.stringify(meta));
+  if (bytes.length < 40 || bytes.length > MAX_DOC_BYTES) return { ok: false, error: 'too_big' };
+  // Le fichier doit être chiffré par l'appli (signature HSPENC1) : aucun document lisible n'est accepté
+  for (let i = 0; i < ENC_MAGIC.length; i++) {
+    if (((bytes[i] + 256) % 256) !== ENC_MAGIC[i]) return { ok: false, error: 'not_encrypted' };
+  }
+  const now = new Date();
+  const name = 'doc-' + Utilities.formatDate(now, TIMEZONE, 'yyyyMMdd-HHmmss') + '-' +
+               Utilities.getUuid().replace(/-/g, '').slice(0, 6) + '.hsp';
+  const file = docsFolder_().createFile(Utilities.newBlob(bytes, ENC_MIME, name));
+  file.setDescription(JSON.stringify({ enc: 1, v: 1, iv: m.iv, data: m.data, importedAt: now.getTime() }));
   return { ok: true, doc: docMeta_(file) };
 }
 
@@ -588,12 +615,12 @@ function docsAction_(body, fn) {
   return fn(file);
 }
 
+/** Remplace les informations chiffrées d'un document (titre, catégorie, date, remarque). */
 function docsUpdate_(file, body) {
-  let previous = {};
-  try { previous = JSON.parse(file.getDescription() || '{}') || {}; } catch (err) { previous = {}; }
-  const meta = cleanDocMeta_(body.meta, previous);
-  const ext = (file.getName().match(/\.([a-z0-9]+)$/i) || [null, 'pdf'])[1];
-  file.setDescription(JSON.stringify(meta));
-  file.setName(docFileName_(meta, ext));
+  const d = readDesc_(file);
+  if (!d.enc) return { ok: false, error: 'not_encrypted' };
+  const m = body.meta || {};
+  if (!isB64_(m.iv, 32) || !isB64_(m.data, 20000)) return { ok: false, error: 'bad_meta' };
+  file.setDescription(JSON.stringify({ enc: 1, v: 1, iv: m.iv, data: m.data, importedAt: d.importedAt || file.getDateCreated().getTime() }));
   return { ok: true, doc: docMeta_(file) };
 }
