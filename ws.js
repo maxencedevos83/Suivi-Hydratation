@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hydra-pwa-v12';
+const CACHE_NAME = 'hydra-pwa-v13';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -9,7 +9,8 @@ const ASSETS = [
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
+      // La table des aliments est gardée pour le hors-ligne, sans bloquer la mise à jour si elle manque
+      return cache.addAll(ASSETS).then(() => cache.add('./aliments.json').catch(() => {}));
     })
   );
   self.skipWaiting();

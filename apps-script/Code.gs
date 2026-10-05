@@ -1,5 +1,5 @@
 /**
- * Suivi Hydrique Pro — serveur Google Apps Script (version 6 : notifications sur le téléphone)
+ * Suivi Hydrique Pro — serveur Google Apps Script (version 7 : agenda médical)
  * =============================================================================
  *
  * MISE À JOUR DEPUIS LA VERSION PRÉCÉDENTE
@@ -30,6 +30,13 @@
  * - Après avoir collé ce code : exécutez une fois « autoriserDossierMedical » (accès Drive), puis redéployez.
  * - L'appli ne peut lire ou supprimer QUE les fichiers de ce dossier.
  *   Une suppression envoie le fichier dans la corbeille de Drive (récupérable 30 jours).
+ *
+ * AGENDA MÉDICAL (version 7)
+ * - Les rendez-vous sont rangés dans un agenda Google séparé « 🩺 RDV médicaux » (créé automatiquement),
+ *   visible dans Google Agenda / Gmail à côté de vos autres agendas.
+ * - Un RDV ajouté dans l'appli apparaît dans Google Agenda ; un RDV ajouté dans cet agenda depuis Google
+ *   apparaît dans l'appli. Vos autres agendas ne sont jamais lus.
+ * - Après avoir collé ce code : exécutez une fois « installerAgenda » (accès à Google Agenda), puis redéployez.
  *
  * RAPPELS DE COMPLÉMENTS
  * - Toutes les 5 minutes, le script regarde le plan de compléments enregistré dans l'appli.
@@ -167,6 +174,9 @@ function doPost(e) {
       PropertiesService.getScriptProperties().setProperty('REMINDER_CHANNEL', channel);
       return json_({ ok: true, channel: channel });
     }
+    if (body.action === 'agenda_list') return json_(agendaCall_(agendaList_));
+    if (body.action === 'agenda_save') return json_(agendaCall_(() => agendaSave_(body)));
+    if (body.action === 'agenda_delete') return json_(agendaCall_(() => agendaDelete_(body)));
     if (body.action === 'vault_get') return json_({ ok: true, vault: loadVault_() });
     if (body.action === 'vault_set') return json_(vaultSet_(body));
     if (body.action === 'docs_list') return json_(docsList_());
@@ -647,17 +657,19 @@ function docsUpdate_(file, body) {
 // ---------------------------------------------------------------------------
 
 const EC_P = BigInt('0xffffffff00000001000000000000000000000000ffffffffffffffffffffffff');
+// Petites constantes BigInt (l'éditeur Apps Script refuse les nombres BigInt écrits avec un « n » final)
+const N0_ = BigInt(0), N1_ = BigInt(1), N2_ = BigInt(2), N3_ = BigInt(3), N4_ = BigInt(4), N8_ = BigInt(8), N255_ = BigInt(255);
 const EC_N = BigInt('0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551');
 const EC_G = [BigInt('0x6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296'),
               BigInt('0x4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5')];
 const PUSH_HOSTS = /^https:\/\/(fcm\.googleapis\.com|android\.googleapis\.com|updates\.push\.services\.mozilla\.com|[a-z0-9.-]+\.notify\.windows\.com|web\.push\.apple\.com)\//;
 const MAX_PUSH_DEVICES = 10;
 
-function ecMod_(a, m) { const r = a % m; return r >= 0n ? r : r + m; }
+function ecMod_(a, m) { const r = a % m; return r >= N0_ ? r : r + m; }
 
 function ecInv_(a, m) {
-  let r0 = ecMod_(a, m), r1 = m, s0 = 1n, s1 = 0n;
-  while (r1 !== 0n) {
+  let r0 = ecMod_(a, m), r1 = m, s0 = N1_, s1 = N0_;
+  while (r1 !== N0_) {
     const q = r0 / r1;
     [r0, r1] = [r1, r0 - q * r1];
     [s0, s1] = [s1, s0 - q * s1];
@@ -667,14 +679,14 @@ function ecInv_(a, m) {
 
 // Points en coordonnées jacobiennes [X, Y, Z] ; null = point à l'infini
 function ecDouble_(P) {
-  if (!P || P[1] === 0n) return null;
+  if (!P || P[1] === N0_) return null;
   const p = EC_P, X = P[0], Y = P[1], Z = P[2];
   const YY = Y * Y % p, ZZ = Z * Z % p;
-  const S = 4n * X % p * YY % p;
-  const M = 3n * ecMod_(X - ZZ, p) % p * ((X + ZZ) % p) % p;   // a = -3
-  const X3 = ecMod_(M * M - 2n * S, p);
-  const Y3 = ecMod_(M * ecMod_(S - X3, p) - 8n * (YY * YY % p), p);
-  const Z3 = 2n * Y % p * Z % p;
+  const S = N4_ * X % p * YY % p;
+  const M = N3_ * ecMod_(X - ZZ, p) % p * ((X + ZZ) % p) % p;   // a = -3
+  const X3 = ecMod_(M * M - N2_ * S, p);
+  const Y3 = ecMod_(M * ecMod_(S - X3, p) - N8_ * (YY * YY % p), p);
+  const Z3 = N2_ * Y % p * Z % p;
   return [X3, Y3, Z3];
 }
 
@@ -686,20 +698,20 @@ function ecAdd_(P, Q) {
   const U1 = P[0] * Z2Z2 % p, U2 = Q[0] * Z1Z1 % p;
   const S1 = P[1] * Q[2] % p * Z2Z2 % p, S2 = Q[1] * P[2] % p * Z1Z1 % p;
   const H = ecMod_(U2 - U1, p), R = ecMod_(S2 - S1, p);
-  if (H === 0n) return R === 0n ? ecDouble_(P) : null;
+  if (H === N0_) return R === N0_ ? ecDouble_(P) : null;
   const HH = H * H % p, HHH = H * HH % p, V = U1 * HH % p;
-  const X3 = ecMod_(R * R - HHH - 2n * V, p);
+  const X3 = ecMod_(R * R - HHH - N2_ * V, p);
   const Y3 = ecMod_(R * ecMod_(V - X3, p) - S1 * HHH, p);
   const Z3 = H * P[2] % p * Q[2] % p;
   return [X3, Y3, Z3];
 }
 
 function ecMul_(k, P) {
-  let R = null, Q = [P[0], P[1], 1n];
-  while (k > 0n) {
-    if (k & 1n) R = ecAdd_(R, Q);
+  let R = null, Q = [P[0], P[1], N1_];
+  while (k > N0_) {
+    if (k & N1_) R = ecAdd_(R, Q);
     Q = ecDouble_(Q);
-    k >>= 1n;
+    k >>= N1_;
   }
   return R;
 }
@@ -711,8 +723,8 @@ function ecAffine_(P) {
 
 function u8_(signedBytes) { return signedBytes.map(b => (b + 256) % 256); }
 function s8_(bytes) { return bytes.map(b => (b > 127 ? b - 256 : b)); }
-function bytesToBig_(bytes) { let x = 0n; bytes.forEach(b => { x = (x << 8n) | BigInt(b); }); return x; }
-function bigToBytes_(x, len) { const out = []; for (let i = 0; i < len; i++) { out.unshift(Number(x & 255n)); x >>= 8n; } return out; }
+function bytesToBig_(bytes) { let x = N0_; bytes.forEach(b => { x = (x << N8_) | BigInt(b); }); return x; }
+function bigToBytes_(x, len) { const out = []; for (let i = 0; i < len; i++) { out.unshift(Number(x & N255_)); x >>= N8_; } return out; }
 function b64uBytes_(bytes) { return Utilities.base64EncodeWebSafe(s8_(bytes)).replace(/=+$/, ''); }
 function b64uText_(text) { return Utilities.base64EncodeWebSafe(text, Utilities.Charset.UTF_8).replace(/=+$/, ''); }
 function hmac_(key, data) { return u8_(Utilities.computeHmacSha256Signature(s8_(data), s8_(key))); }
@@ -727,7 +739,7 @@ function rfc6979K_(d, hash) {
   for (;;) {
     V = hmac_(K, V);
     const k = bytesToBig_(V);
-    if (k > 0n && k < EC_N) return k;
+    if (k > N0_ && k < EC_N) return k;
     K = hmac_(K, V.concat([0]));
     V = hmac_(K, V);
   }
@@ -749,7 +761,7 @@ function vapidKeys_() {
   if (dHex && pub) return { d: BigInt('0x' + dHex), pub: pub };
   let seed = String(Date.now());
   for (let i = 0; i < 6; i++) seed += Utilities.getUuid();
-  const d = ecMod_(bytesToBig_(u8_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, seed, Utilities.Charset.UTF_8))), EC_N - 1n) + 1n;
+  const d = ecMod_(bytesToBig_(u8_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, seed, Utilities.Charset.UTF_8))), EC_N - N1_) + N1_;
   const Q = ecAffine_(ecMul_(d, EC_G));
   const publicKey = b64uBytes_([4].concat(bigToBytes_(Q[0], 32), bigToBytes_(Q[1], 32)));
   props.setProperty('VAPID_D', d.toString(16).padStart(64, '0'));
@@ -839,4 +851,104 @@ function remind_(subject, body) {
 function testerNotification() {
   const r = sendPushAll_();
   Logger.log('Notification envoyée à ' + r.sent + ' appareil(s) sur ' + r.devices + (r.failed ? ' (' + r.failed + ' échec(s))' : '') + '.');
+}
+
+// ---------------------------------------------------------------------------
+// Agenda médical (Google Agenda, agenda séparé « 🩺 RDV médicaux »)
+// ---------------------------------------------------------------------------
+
+const AGENDA_NAME = '🩺 RDV médicaux';
+const AGENDA_PAST_DAYS = 400;
+const AGENDA_FUTURE_DAYS = 400;
+
+/** À exécuter une fois depuis l'éditeur : autorise l'accès à Google Agenda et crée l'agenda médical. */
+function installerAgenda() {
+  const cal = agendaCal_();
+  Logger.log('Agenda prêt : « ' + cal.getName() + ' ». Il apparaît dans Google Agenda / Gmail. Redéployez maintenant (nouvelle version).');
+}
+
+function agendaCal_() {
+  const props = PropertiesService.getScriptProperties();
+  const id = props.getProperty('AGENDA_ID');
+  let cal = id ? CalendarApp.getCalendarById(id) : null;
+  if (!cal) {
+    const same = CalendarApp.getCalendarsByName(AGENDA_NAME);
+    cal = same.length ? same[0] : CalendarApp.createCalendar(AGENDA_NAME, { summary: 'Rendez-vous médicaux — Suivi Hydrique Pro' });
+    try { cal.setColor('#0F766E'); } catch (err) { /* couleur facultative */ }
+    props.setProperty('AGENDA_ID', cal.getId());
+  }
+  return cal;
+}
+
+function agendaCall_(fn) {
+  try {
+    return fn();
+  } catch (err) {
+    console.error(err);
+    const msg = String(err && err.message || err);
+    if (/permission|autoris|authoriz|scope/i.test(msg)) return { ok: false, error: 'agenda_auth' };
+    return { ok: false, error: 'agenda' };
+  }
+}
+
+function agendaEvent_(e, cal) {
+  const allDay = e.isAllDayEvent();
+  const tz = cal.getTimeZone() || TIMEZONE;
+  return {
+    id: e.getId(),
+    title: e.getTitle() || '(sans titre)',
+    start: e.getStartTime().getTime(),
+    end: e.getEndTime().getTime(),
+    allDay: allDay,
+    day: Utilities.formatDate(e.getStartTime(), allDay ? tz : TIMEZONE, 'yyyy-MM-dd'),
+    location: e.getLocation() || '',
+    notes: String(e.getDescription() || '').slice(0, 3000),
+    recurring: e.isRecurringEvent(),
+    updated: e.getLastUpdated().getTime()
+  };
+}
+
+function agendaList_() {
+  const cal = agendaCal_();
+  const now = Date.now();
+  const events = cal.getEvents(new Date(now - AGENDA_PAST_DAYS * 86400000), new Date(now + AGENDA_FUTURE_DAYS * 86400000));
+  return { ok: true, calendar: cal.getName(), serverTime: now, events: events.slice(0, 800).map(e => agendaEvent_(e, cal)) };
+}
+
+function agendaSave_(body) {
+  const ev = body.event || {};
+  const title = String(ev.title || '').trim().slice(0, 200);
+  const start = Number(ev.start), end = Number(ev.end);
+  if (!title || !isFinite(start) || !isFinite(end) || end <= start || end - start > 2 * 86400000) return { ok: false, error: 'bad_event' };
+  const location = String(ev.location || '').slice(0, 300);
+  const notes = String(ev.notes || '').slice(0, 3000);
+  const cal = agendaCal_();
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    let e;
+    if (ev.id) {
+      e = cal.getEventById(String(ev.id));
+      if (!e) return { ok: false, error: 'not_found' };
+      if (e.isRecurringEvent()) return { ok: false, error: 'recurring' };
+      e.setTitle(title);
+      e.setTime(new Date(start), new Date(end));
+      e.setLocation(location);
+      e.setDescription(notes);
+    } else {
+      e = cal.createEvent(title, new Date(start), new Date(end), { location: location, description: notes });
+    }
+    return { ok: true, event: agendaEvent_(e, cal) };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function agendaDelete_(body) {
+  const cal = agendaCal_();
+  const e = cal.getEventById(String(body.id || ''));
+  if (!e) return { ok: true };
+  if (e.isRecurringEvent()) return { ok: false, error: 'recurring' };
+  e.deleteEvent();
+  return { ok: true };
 }

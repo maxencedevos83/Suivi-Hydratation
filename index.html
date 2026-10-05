@@ -30,8 +30,9 @@
     }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; max-width: 450px; margin: auto; background: var(--bg); color: #1e293b; touch-action: pan-y; }
     
-    .tabs { display: flex; gap: 8px; margin-bottom: 15px; background: #e2e8f0; padding: 4px; border-radius: 12px; }
-    .tab-btn { flex: 1; padding: 10px 2px; border: none; border-radius: 8px; font-weight: 600; font-size: 0.8rem; white-space: nowrap; cursor: pointer; background: transparent; color: #64748b; transition: 0.2s; font-family: inherit; }
+    .tabs { display: flex; gap: 3px; margin-bottom: 15px; background: #e2e8f0; padding: 4px; border-radius: 12px; }
+    .tab-btn { flex: 1; min-width: 0; padding: 6px 1px 7px; border: none; border-radius: 8px; font-weight: 600; font-size: 0.68rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; background: transparent; color: #64748b; transition: 0.2s; font-family: inherit; }
+    .tab-btn span { display: block; font-size: 1.05rem; line-height: 1.3; }
     .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     
     .tab-content { display: none; }
@@ -132,6 +133,50 @@
 
     .item-time { color: #94a3b8; font-size: 0.75rem; }
 
+    /* Barre du haut */
+    .topbar { display: flex; align-items: center; gap: 4px; margin: -4px 0 10px; }
+    .tb-brand { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; font-weight: 800; color: #1e3a8a; font-size: 0.95rem; white-space: nowrap; }
+    .tb-brand img { width: 26px; height: 26px; border-radius: 7px; }
+    .tb-sync { display: flex; align-items: center; gap: 5px; border: none; background: none; color: #94a3b8; font-size: 0.66rem; padding: 4px 6px; border-radius: 12px; cursor: pointer; font-family: inherit; white-space: nowrap; }
+    .tb-sync:disabled { cursor: default; }
+    .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #cbd5e1; flex: none; }
+    .tb-sync[data-state="ok"] .sync-dot { background: #22c55e; }
+    .tb-sync[data-state="warn"] .sync-dot { background: #f59e0b; }
+    .tb-sync[data-state="err"] .sync-dot { background: #ef4444; }
+    .tb-sync[data-state="err"] { color: #b91c1c; }
+    .tb-sync[data-state="busy"] .sync-dot { background: #3b82f6; animation: syncPulse 0.9s infinite alternate; }
+    @keyframes syncPulse { from { opacity: 1; } to { opacity: 0.25; } }
+    .tb-icon { border: none; background: none; font-size: 0.95rem; opacity: 0.45; padding: 5px; cursor: pointer; border-radius: 50%; line-height: 1; }
+    .tb-icon:active { background: #e2e8f0; }
+    .tb-icon.tb-alert { opacity: 0.8; }
+    /* Réglages */
+    .set-sec { padding: 12px 0; border-top: 1px solid #f1f5f9; }
+    .set-sec:first-of-type { border-top: none; padding-top: 0; }
+    .set-sec h4 { margin: 0 0 8px; font-size: 0.86rem; color: #334155; }
+    .set-line { font-size: 0.8rem; color: #475569; line-height: 1.45; margin-bottom: 8px; }
+    .set-adv { margin-top: 8px; font-size: 0.78rem; color: #64748b; }
+    .set-adv summary { cursor: pointer; }
+    /* Agenda */
+    .rdv-banner { display: none; margin-bottom: 10px; padding: 9px 12px; border-radius: 12px; background: #f0fdfa; border: 1px solid #99f6e4; color: #115e59; font-size: 0.84rem; cursor: pointer; line-height: 1.35; }
+    .rdv-banner.show { display: block; }
+    .rdv-banner b { color: #0f766e; }
+    .rdv-banner small { display: block; color: #0f766e; opacity: 0.8; font-size: 0.74rem; }
+    .rdv-banner.today { background: #ccfbf1; border-color: #2dd4bf; }
+    .ag-refresh { border: none; background: none; font-size: 0.95rem; opacity: 0.5; cursor: pointer; }
+    .ag-status { font-size: 0.72rem; color: #94a3b8; margin-top: 2px; }
+    .ag-status.err { color: #b91c1c; font-weight: 600; }
+    .ag-month { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 700; margin: 14px 0 6px; }
+    .ag-item { display: flex; gap: 10px; width: 100%; padding: 9px 10px; margin-bottom: 6px; border: 1px solid #e2e8f0; border-radius: 12px; background: white; cursor: pointer; font-family: inherit; text-align: left; color: #1e293b; }
+    .ag-item.past { opacity: 0.65; }
+    .ag-date { flex: none; width: 46px; text-align: center; border-radius: 10px; background: #f0fdfa; color: #0f766e; padding: 4px 0; line-height: 1.1; }
+    .ag-date b { display: block; font-size: 1.15rem; }
+    .ag-date small { font-size: 0.64rem; text-transform: uppercase; font-weight: 700; }
+    .ag-main { flex: 1; min-width: 0; }
+    .ag-title { font-weight: 700; font-size: 0.88rem; }
+    .ag-sub { font-size: 0.75rem; color: #64748b; margin-top: 2px; }
+    .ag-when { display: inline-block; margin-top: 4px; padding: 1px 8px; border-radius: 10px; background: #ccfbf1; color: #115e59; font-size: 0.68rem; font-weight: 700; }
+    .ag-empty { font-size: 0.82rem; color: #64748b; padding: 10px 2px; line-height: 1.45; }
+    #rdv-sheet .chip.active { background: #0f766e; border-color: #0f766e; }
     .sync-card { padding: 12px; background: #eff6ff; border: 1px solid #bfdbfe; }
     .sync-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .sync-gear { border: none; background: transparent; font-size: 1.15rem; cursor: pointer; padding: 2px 6px; border-radius: 8px; }
@@ -197,7 +242,7 @@
     .med-edit-foot { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
     .med-del { border: none; background: transparent; color: #b91c1c; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; padding: 6px; }
     #med-card .chip.active { background: #4f46e5; border-color: #4f46e5; }
-    .med-reminders:not(:empty) { margin: 4px 0 10px; padding: 10px 12px; border-radius: 12px; background: #eef2ff; border: 1px solid #c7d2fe; }
+    .med-reminders:not(:empty) { margin: 0; }
     .med-rem-title { font-weight: 700; font-size: 0.85rem; color: #3730a3; margin-bottom: 4px; }
     .med-rem-status { font-size: 0.82rem; color: #334155; line-height: 1.45; }
 
@@ -227,6 +272,79 @@
     .ing-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 14px; background: #f1f5f9; color: #334155; font-size: 0.78rem; }
     .ing-chip button { border: none; background: none; color: #94a3b8; cursor: pointer; font-size: 0.85rem; padding: 0 0 0 2px; }
     .fm-actions { display: flex; justify-content: flex-end; margin-top: 6px; }
+    /* Nourriture v13 */
+    .food-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .food-date { border: 1px solid #e2e8f0; border-radius: 8px; padding: 5px 8px; font-family: inherit; font-size: 0.82rem; color: #475569; background: #f8fafc; }
+    .food-search-wrap { display: flex; gap: 8px; align-items: stretch; }
+    .food-search-wrap input { flex: 1; margin-top: 0; }
+    .food-scan-btn { flex: none; width: 48px; border: 1px solid #fed7aa; border-radius: 10px; background: #fff7ed; font-size: 1.3rem; cursor: pointer; }
+    .food-hint { font-size: 0.8rem; color: #64748b; line-height: 1.45; padding: 6px 2px; }
+    .habit-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .habit-chip { display: inline-flex; flex-direction: column; align-items: flex-start; max-width: 100%; padding: 6px 11px; border: 1px solid #fed7aa; border-radius: 12px; background: #fff7ed; color: #7c2d12; font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; text-align: left; }
+    .habit-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
+    .habit-chip small { font-weight: 500; color: #c2410c; font-size: 0.7rem; }
+    .food-off-btn { width: 100%; padding: 9px; border: 1px dashed #cbd5e1; border-radius: 10px; background: white; color: #475569; font-family: inherit; font-size: 0.8rem; cursor: pointer; }
+    .food-links { display: flex; gap: 8px; margin-top: 12px; }
+    .food-link { flex: 1; padding: 8px; border: none; border-radius: 10px; background: #f1f5f9; color: #475569; font-family: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+    .fs-food-name { font-weight: 700; font-size: 1.02rem; color: #1e293b; line-height: 1.3; }
+    .qty-row { display: flex; align-items: center; gap: 8px; }
+    .qty-row input { margin-top: 0; width: 120px; flex: none; font-size: 1.05rem; font-weight: 700; }
+    .qty-row span { color: #64748b; font-weight: 600; }
+    #fs-gram-chips { margin-top: 6px; }
+    .fs-nutr { margin-top: 10px; padding: 10px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; font-size: 0.8rem; }
+    .fs-nutr-title { font-weight: 700; color: #334155; margin-bottom: 6px; }
+    .nutr-grid { display: grid; grid-template-columns: 1fr auto 1fr auto; gap: 3px 10px; font-size: 0.76rem; color: #475569; }
+    .nutr-grid span:nth-child(4n+3) { padding-left: 8px; border-left: 1px solid #e2e8f0; }
+    .nutr-grid b { text-align: right; color: #1e293b; font-weight: 600; }
+    /* Ma journée */
+    .ds-tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .ds-tile { padding: 7px 9px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; }
+    .ds-tile b { display: block; font-size: 0.98rem; color: #1e293b; }
+    .ds-tile span { font-size: 0.7rem; color: #64748b; }
+    .ds-tile.ds-food { background: #fff7ed; border-color: #fed7aa; }
+    .ds-tile.ds-drink { background: #f0f9ff; border-color: #bae6fd; }
+    .ds-tile.ds-loss { background: #faf5ff; border-color: #e9d5ff; }
+    .ds-note { font-size: 0.7rem; color: #94a3b8; margin-top: 5px; }
+    .day-strip { margin: 12px 0 4px; }
+    .st-track { position: relative; height: 34px; border-radius: 8px; background: linear-gradient(#e2e8f0, #e2e8f0) center 12px / 100% 2px no-repeat; }
+    .st-hour { position: absolute; top: 20px; transform: translateX(-50%); font-size: 0.62rem; color: #94a3b8; }
+    .st-mark { position: absolute; top: 13px; width: 8px; height: 8px; border-radius: 50%; transform: translate(-50%, -50%); }
+    .st-mark.st-meal, .st-legend i.st-meal { background: #ea580c; }
+    .st-mark.st-meal { width: 14px; height: 14px; border: 2px solid white; box-shadow: 0 0 0 1px #ea580c; z-index: 2; }
+    .st-mark.st-drink, .st-legend i.st-drink { background: #0284c7; }
+    .st-mark.st-drink { width: 6px; height: 6px; }
+    .st-legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: 0.66rem; color: #64748b; margin-top: 2px; }
+    .st-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+    #day-filters { margin: 10px 0 6px; }
+    #day-card .chip.active { background: #334155; border-color: #334155; }
+    .timeline { position: relative; }
+    .tl-row { display: grid; grid-template-columns: 44px 16px 1fr; align-items: start; position: relative; }
+    .tl-row::before { content: ''; position: absolute; left: 51px; top: 0; bottom: 0; width: 2px; background: #e2e8f0; }
+    .tl-time { font-size: 0.76rem; font-weight: 700; color: #475569; padding-top: 8px; font-variant-numeric: tabular-nums; }
+    .tl-dot { width: 10px; height: 10px; border-radius: 50%; margin: 11px 0 0 3px; z-index: 1; background: #94a3b8; border: 2px solid white; box-shadow: 0 0 0 1px #cbd5e1; }
+    .tl-meal .tl-dot { background: #ea580c; box-shadow: 0 0 0 1px #ea580c; width: 12px; height: 12px; margin-left: 2px; }
+    .tl-drink .tl-dot { background: #0284c7; box-shadow: none; width: 8px; height: 8px; margin: 12px 0 0 4px; }
+    .tl-loss .tl-dot { background: var(--loss-color, #9333ea); box-shadow: none; }
+    .tl-body { padding: 6px 0 6px 6px; font-size: 0.84rem; color: #334155; min-width: 0; }
+    .tl-drink .tl-body { color: #0369a1; font-size: 0.8rem; }
+    .tl-loss .tl-body { color: #581c87; font-size: 0.82rem; font-weight: 600; }
+    .tl-sub { font-weight: 500; font-size: 0.72rem; color: #94a3b8; }
+    .tl-meal .tl-body { margin: 3px 0; padding: 8px 10px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; }
+    .tl-meal-head { display: flex; align-items: center; gap: 6px; width: 100%; border: none; background: none; padding: 0 0 4px; font-family: inherit; cursor: pointer; text-align: left; }
+    .tl-meal-title { font-weight: 700; color: #9a3412; font-size: 0.86rem; }
+    .tl-meal-tot { flex: 1; text-align: right; font-size: 0.72rem; color: #c2410c; }
+    .tl-chev { color: #c2410c; font-size: 0.8rem; }
+    .tl-item { padding: 3px 0; border-top: 1px dashed #fed7aa; }
+    .tl-item:first-of-type { border-top: none; }
+    .tl-item-line { display: flex; gap: 8px; align-items: baseline; }
+    .tl-item-name { flex: 1; min-width: 0; color: #1e293b; }
+    .tl-item-qty { font-size: 0.74rem; color: #9a3412; white-space: nowrap; }
+    .tl-item-det { margin: 6px 0 4px; padding: 8px; border-radius: 8px; background: white; font-size: 0.78rem; color: #475569; }
+    .tl-item-det .fm-actions { gap: 8px; align-items: center; }
+    .tl-edit { padding: 6px 10px; font-size: 0.78rem; }
+    .tl-gap { position: relative; padding: 3px 0 3px 60px; }
+    .tl-gap::before { content: ''; position: absolute; left: 51px; top: 0; bottom: 0; width: 2px; background: repeating-linear-gradient(#cbd5e1 0 4px, transparent 4px 8px); }
+    .tl-gap span { display: inline-block; padding: 3px 9px; border-radius: 10px; background: #f1f5f9; color: #64748b; font-size: 0.72rem; }
     .fs-meta { font-size: 0.78rem; color: #64748b; margin: 4px 0 8px; line-height: 1.4; }
 
     /* Fenêtres (fiche, scan) */
@@ -267,6 +385,14 @@
     .rp-chart { width: 100%; max-width: 760px; margin: 6px 0 4px; }
 
     /* Dossier médical */
+    .doc-year { border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 8px; background: #f8fafc; overflow: hidden; }
+    .doc-year > summary { display: flex; align-items: baseline; gap: 8px; padding: 10px 12px; cursor: pointer; list-style: none; font-weight: 800; color: #0f766e; font-size: 1rem; }
+    .doc-year > summary::-webkit-details-marker { display: none; }
+    .doc-year > summary::after { content: '▾'; margin-left: auto; color: #64748b; font-size: 0.85rem; transition: transform 0.2s; }
+    .doc-year:not([open]) > summary::after { transform: rotate(-90deg); }
+    .doc-year > summary small { font-weight: 600; color: #64748b; font-size: 0.74rem; }
+    .doc-year .food-row { margin: 0 8px 6px; width: calc(100% - 16px); }
+    .doc-month { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 700; padding: 6px 12px 4px; }
     .docs-lock { text-align: center; padding: 26px 18px; }
     .docs-lock-icon { font-size: 2.4rem; }
     .docs-lock h3 { margin: 8px 0 6px; font-size: 1.1rem; }
@@ -342,44 +468,30 @@
         <input type="password" id="gate-code-input" class="date-picker-input" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX">
         <button class="sync-btn" type="button" style="margin-top: 8px;" onclick="loginWithCode()">Déverrouiller</button>
       </div>
-      <div class="gate-foot">🔒 Tes données ne sont accessibles qu'avec ton compte.<br>Version 2026-10-04 · v12</div>
+      <div class="gate-foot">🔒 Tes données ne sont accessibles qu'avec ton compte.<br><span id="gate-version"></span></div>
     </div>
   </div>
 
-  <!-- Synchronisation sécurisée entre appareils -->
-  <div class="card sync-card">
-    <div class="sync-header">
-      <div class="card-title" style="margin-bottom: 0;">☁️ Synchronisation</div>
-      <button class="sync-gear" onclick="toggleSyncSettings()" title="Réglages de synchronisation" aria-label="Réglages de synchronisation">⚙️</button>
-    </div>
-    <button id="sync-btn" class="sync-btn" onclick="syncNow(false)">🔄 Synchroniser maintenant</button>
-    <div id="sync-status" class="sync-status">Statut : Prêt</div>
-
-    <div id="sync-settings" class="sync-settings" style="display: none;">
-      <div id="sync-account" class="sync-account"></div>
-      <button class="btn-sub" style="width: 100%; margin-bottom: 10px;" onclick="logout()">🚪 Se déconnecter de cet appareil</button>
-
-      <div class="action-label">Adresse du script Google</div>
-      <input type="url" id="sync-url" class="date-picker-input" autocomplete="off" spellcheck="false">
-      <button class="btn-add" style="width: 100%; margin-top: 8px; background: var(--primary); color: white;" onclick="saveSyncSettings()">💾 Enregistrer l'adresse</button>
-      <div id="sync-settings-msg" class="weight-feedback"></div>
-      <div class="sync-note">
-        La synchro se fait automatiquement à l'ouverture, après chaque saisie, toutes les minutes et au retour sur l'appli ;
-        hors ligne, les saisies attendent et partent dès que le réseau revient.
-      </div>
-    </div>
+  <!-- Barre du haut : synchro discrète, rappels, réglages -->
+  <div class="topbar">
+    <div class="tb-brand"><img src="./logo-512x512.png" alt=""><span>Suivi Hydrique</span></div>
+    <button id="sync-btn" class="tb-sync" type="button" onclick="syncNow(false)" title="Synchroniser maintenant" data-state=""><i class="sync-dot"></i><span id="sync-status">Prêt</span></button>
+    <button id="tb-bell" class="tb-icon" type="button" onclick="openSettings('set-rappels')" title="Rappels" aria-label="Rappels">🔔</button>
+    <button class="tb-icon" type="button" onclick="openSettings()" title="Réglages" aria-label="Réglages">⚙️</button>
   </div>
 
   <!-- Navigation -->
   <div class="tabs">
-    <button class="tab-btn active" data-tab="today" onclick="switchTab('today')">Aujourd'hui</button>
-    <button class="tab-btn" data-tab="food" onclick="switchTab('food')">🍽️ Nourriture</button>
-    <button class="tab-btn" data-tab="docs" onclick="switchTab('docs')">📁 Dossier</button>
-    <button class="tab-btn" data-tab="history" onclick="switchTab('history')">Historique</button>
+    <button class="tab-btn active" data-tab="today" onclick="switchTab('today')"><span>☀️</span>Aujourd'hui</button>
+    <button class="tab-btn" data-tab="food" onclick="switchTab('food')"><span>🍽️</span>Repas</button>
+    <button class="tab-btn" data-tab="agenda" onclick="switchTab('agenda')"><span>📅</span>Agenda</button>
+    <button class="tab-btn" data-tab="docs" onclick="switchTab('docs')"><span>📁</span>Dossier</button>
+    <button class="tab-btn" data-tab="history" onclick="switchTab('history')"><span>📈</span>Historique</button>
   </div>
 
   <!-- ONGLET 1 : AUJOURD'HUI -->
   <div id="tab-today" class="tab-content active">
+    <div id="rdv-banner" class="rdv-banner" onclick="switchTab('agenda')"></div>
     <div id="med-banner" class="med-banner" role="alert" onclick="document.getElementById('med-card').scrollIntoView({ behavior: 'smooth' })"></div>
 
     <div class="card">
@@ -498,7 +610,6 @@
     <div class="card" id="med-card">
       <div class="card-title">5. Compléments</div>
       <div id="med-moments"></div>
-      <div id="med-reminders" class="med-reminders"></div>
       <button class="drink-more" id="med-editor-btn" onclick="toggleMedEditor()">⚙️ Gérer mes compléments</button>
 
       <div id="med-editor" class="med-editor" style="display: none;">
@@ -534,31 +645,44 @@
   <!-- ONGLET NOURRITURE -->
   <div id="tab-food" class="tab-content">
     <div class="card" id="food-card">
-      <div class="card-title">🍽️ Ajouter ce que j'ai mangé</div>
-      <input type="date" id="food-date" class="date-picker-input" onchange="renderFood()">
+      <div class="food-head">
+        <div class="card-title" style="margin: 0;">🍽️ J'ai mangé</div>
+        <input type="date" id="food-date" class="food-date" onchange="renderFood()" aria-label="Date">
+      </div>
       <div class="chip-row food-moments" id="food-moments"></div>
-      <input type="search" id="food-search" class="date-picker-input" placeholder="🔎 Chercher dans mes plats…" autocomplete="off" oninput="renderFoodResults()">
-      <div id="food-results" class="food-results"></div>
-      <div class="food-actions">
-        <button class="food-action" type="button" onclick="startScan()">📷 Scanner<br><small>code-barres</small></button>
-        <button class="food-action" type="button" onclick="searchOFF()">🌍 Chercher<br><small>produit du commerce</small></button>
-        <button class="food-action" type="button" onclick="openMealSheet({ source: 'maison' })">➕ Nouveau<br><small>plat maison</small></button>
+      <div class="food-search-wrap">
+        <input type="search" id="food-search" class="date-picker-input" placeholder="🔎 Riz, pomme, yaourt, mon plat…" autocomplete="off" oninput="alimentsMore = false; renderFoodResults()">
+        <button class="food-scan-btn" type="button" onclick="startScan()" aria-label="Scanner un code-barres">📷</button>
       </div>
       <div id="food-msg" class="weight-feedback"></div>
-      <div id="food-off-results" class="food-results"></div>
+      <div id="food-results" class="food-results"></div>
+      <div class="food-links">
+        <button type="button" class="food-link" onclick="openMealSheet({ source: 'maison' })">➕ Plat maison</button>
+        <button type="button" class="food-link" onclick="openFoodLibrary()">📚 Mes plats <span id="food-lib-count"></span></button>
+      </div>
     </div>
 
-    <div class="card">
-      <div class="card-title" id="food-day-title">Repas du jour</div>
-      <div id="food-day-list"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">📚 Mes plats</div>
-      <div id="food-library"></div>
-      <div class="sync-note">Touchez un plat pour modifier ses ingrédients. Les repas déjà saisis gardent les ingrédients du moment où ils ont été mangés.</div>
+    <div class="card" id="day-card">
+      <div class="card-title" id="food-day-title">🕒 Ma journée</div>
+      <div id="day-summary"></div>
+      <div id="day-strip" class="day-strip"></div>
+      <div class="chip-row" id="day-filters"></div>
+      <div id="day-timeline" class="timeline"></div>
     </div>
     <datalist id="ingredient-suggestions"></datalist>
+  </div>
+
+  <!-- ONGLET AGENDA MÉDICAL -->
+  <div id="tab-agenda" class="tab-content">
+    <div class="card" id="agenda-card">
+      <div class="food-head">
+        <div class="card-title" style="margin: 0;">📅 Mes rendez-vous</div>
+        <button class="ag-refresh" type="button" onclick="refreshAgenda(true)" title="Actualiser depuis Google Agenda" aria-label="Actualiser">🔄</button>
+      </div>
+      <div id="agenda-status" class="ag-status"></div>
+      <button class="sync-btn" type="button" style="background: #0f766e; margin: 8px 0 4px;" onclick="openRdvSheet(null)">➕ Nouveau rendez-vous</button>
+      <div id="agenda-list"></div>
+    </div>
   </div>
 
   <!-- ONGLET DOSSIER MÉDICAL -->
@@ -591,6 +715,7 @@
       <div class="card">
         <div class="card-title">🗂️ Mes documents</div>
         <div id="docs-legacy"></div>
+        <input type="search" id="docs-search" class="date-picker-input" placeholder="🔎 Chercher un document…" autocomplete="off" oninput="renderDocsList()" style="margin: 0 0 8px; display: none;">
         <div class="chip-row" id="docs-filters" style="margin-bottom: 8px;"></div>
         <div id="docs-list" class="food-results"></div>
         <div class="sync-note">🔒 Chaque document est chiffré sur ton appareil avant l'envoi, puis horodaté. Dans Google Drive, il n'existe que sous forme de fichier illisible : on ne peut le lire que dans cette appli, avec ta phrase secrète et ton empreinte. Le dossier se reverrouille dès que tu quittes l'appli ou après 5 minutes sans activité.</div>
@@ -686,6 +811,64 @@
 
   </div>
 
+  <!-- Réglages -->
+  <div id="settings" class="sheet" onclick="if (event.target === this) closeSettings()">
+    <div class="sheet-box">
+      <div class="sheet-head"><span>⚙️ Réglages</span><button type="button" onclick="closeSettings()" aria-label="Fermer">✕</button></div>
+      <section class="set-sec" id="set-account">
+        <h4>👤 Compte</h4>
+        <div id="sync-account" class="sync-account"></div>
+        <button class="btn-sub" type="button" style="width: 100%;" onclick="logout()">🚪 Se déconnecter de cet appareil</button>
+      </section>
+      <section class="set-sec" id="set-sync">
+        <h4>☁️ Synchronisation</h4>
+        <div id="set-sync-status" class="set-line"></div>
+        <button class="btn-add" type="button" style="width: 100%; background: #e0e7ff; color: #3730a3;" onclick="syncNow(false)">🔄 Synchroniser maintenant</button>
+        <div class="sync-note">
+          Automatique à l'ouverture, après chaque saisie, toutes les minutes et au retour sur l'appli ;
+          hors ligne, les saisies attendent et partent dès que le réseau revient.
+        </div>
+        <details class="set-adv">
+          <summary>Adresse du script Google (avancé)</summary>
+          <input type="url" id="sync-url" class="date-picker-input" autocomplete="off" spellcheck="false">
+          <button class="btn-add" type="button" style="width: 100%; margin-top: 8px; background: var(--primary); color: white;" onclick="saveSyncSettings()">💾 Enregistrer l'adresse</button>
+          <div id="sync-settings-msg" class="weight-feedback"></div>
+        </details>
+      </section>
+      <section class="set-sec" id="set-rappels">
+        <h4>🔔 Rappels des compléments</h4>
+        <div id="med-reminders" class="med-reminders"></div>
+      </section>
+      <section class="set-sec" id="set-agenda">
+        <h4>📅 Agenda médical</h4>
+        <div id="set-agenda-status" class="set-line"></div>
+      </section>
+      <section class="set-sec">
+        <h4>ℹ️ Application</h4>
+        <div class="set-line" id="set-version"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Rendez-vous médical -->
+  <div id="rdv-sheet" class="sheet" onclick="if (event.target === this) closeRdvSheet()">
+    <div class="sheet-box">
+      <div class="sheet-head"><span id="rdv-sheet-title">Rendez-vous</span><button type="button" onclick="closeRdvSheet()" aria-label="Fermer">✕</button></div>
+      <div id="rdv-sheet-body"></div>
+    </div>
+  </div>
+
+  <!-- Mes plats (rangés à part) -->
+  <div id="food-lib" class="sheet" onclick="if (event.target === this) closeFoodLibrary()">
+    <div class="sheet-box">
+      <div class="sheet-head"><span>📚 Mes plats</span><button type="button" onclick="closeFoodLibrary()" aria-label="Fermer">✕</button></div>
+      <input type="search" id="lib-search" class="date-picker-input" placeholder="🔎 Chercher un plat…" autocomplete="off" oninput="renderFoodLibrary()" style="margin-top: 0;">
+      <div id="food-library" class="food-results"></div>
+      <button class="sync-btn" type="button" style="margin-top: 12px; background: #ea580c;" onclick="openDishSheet(null)">➕ Nouveau plat</button>
+      <div class="sync-note">Touche un plat pour modifier ses ingrédients. Tes plats apparaissent aussi en premier quand tu cherches dans l'onglet Nourriture. Les repas déjà saisis gardent les ingrédients du moment où ils ont été mangés.</div>
+    </div>
+  </div>
+
   <!-- Fiche : ajout d'un repas / modification d'un plat -->
   <div id="food-sheet" class="sheet" onclick="if (event.target === this) closeFoodSheet()">
     <div class="sheet-box">
@@ -765,7 +948,7 @@
 
   <script>
     // ================== SERVICE WORKER ==================
-    const APP_VERSION = '2026-10-04 · v12';
+    const APP_VERSION = '2026-10-05 · v13';
     if ('serviceWorker' in navigator) {
       // Quand une nouvelle version de l'appli est installée, on recharge une fois pour l'afficher
       const hadController = !!navigator.serviceWorker.controller;
@@ -958,6 +1141,7 @@
 
     function renderAll() {
       renderToday();
+      renderAgendaBanner();
       renderFood();
       refreshIngredientSuggestions();
       renderDrinkPanel();
@@ -1846,21 +2030,63 @@
 
     // ================== NOURRITURE ==================
     const FOOD_MOMENTS = [
-      { key: 'petit_dej', name: 'Petit-déjeuner', icon: '🌅', to: 'au petit-déjeuner' },
-      { key: 'dejeuner', name: 'Déjeuner', icon: '☀️', to: 'au déjeuner' },
-      { key: 'collation', name: 'Collation', icon: '🍪', to: 'à la collation' },
-      { key: 'diner', name: 'Dîner', icon: '🌙', to: 'au dîner' }
+      { key: 'petit_dej', name: 'Petit-déjeuner', icon: '🌅', to: 'au petit-déjeuner', time: '08:00' },
+      { key: 'dejeuner', name: 'Déjeuner', icon: '☀️', to: 'au déjeuner', time: '12:30' },
+      { key: 'collation', name: 'Collation', icon: '🍪', to: 'à la collation', time: '16:30' },
+      { key: 'diner', name: 'Dîner', icon: '🌙', to: 'au dîner', time: '20:00' }
     ];
     const PORTIONS = [
       { key: 'petite', name: 'Petite' },
       { key: 'normale', name: 'Normale' },
       { key: 'grande', name: 'Grande' }
     ];
-    const OFF_FIELDS = 'code,product_name,product_name_fr,generic_name_fr,brands,quantity,ingredients_text_fr,ingredients_text,ingredients,nutriscore_grade';
+    const GRAM_CHOICES = [30, 50, 100, 150, 200, 250, 300];
+    // Valeurs nutritionnelles suivies (pour 100 g dans la table, puis pour la quantité mangée)
+    const NUTRIENTS = [
+      { k: 'eau', name: 'Eau', unit: 'ml' },
+      { k: 'kcal', name: 'Énergie', unit: 'kcal' },
+      { k: 'prot', name: 'Protéines', unit: 'g' },
+      { k: 'gluc', name: 'Glucides', unit: 'g' },
+      { k: 'sucres', name: 'dont sucres', unit: 'g' },
+      { k: 'lip', name: 'Lipides', unit: 'g' },
+      { k: 'fibres', name: 'Fibres', unit: 'g' },
+      { k: 'sel', name: 'Sel', unit: 'g' },
+      { k: 'na', name: 'Sodium', unit: 'mg' },
+      { k: 'k', name: 'Potassium', unit: 'mg' },
+      { k: 'mg', name: 'Magnésium', unit: 'mg' }
+    ];
+    // Poids habituels d'une unité (aide à la saisie, modifiable)
+    const UNIT_HINTS = [
+      [/^pomme\b(?! de terre)/, '1 pomme', 150], [/^poire\b/, '1 poire', 160], [/^banane\b/, '1 banane', 120],
+      [/^orange\b/, '1 orange', 150], [/^(clementine|mandarine)/, '1 clémentine', 60], [/^kiwi/, '1 kiwi', 75],
+      [/^(peche|nectarine)/, '1 pêche', 150], [/^abricot/, '1 abricot', 45], [/^prune\b/, '1 prune', 35],
+      [/^tomate\b/, '1 tomate', 120], [/^carotte\b/, '1 carotte', 100], [/^pomme de terre/, '1 pomme de terre', 150],
+      [/^(oeuf|œuf)/, '1 œuf', 50], [/^yaourt/, '1 pot', 125], [/^fromage blanc/, '1 pot', 100], [/^petit-suisse/, '1 pot', 60],
+      [/^compote/, '1 pot', 100], [/^creme dessert/, '1 pot', 125],
+      [/^pain\b/, '1 tranche', 30], [/^baguette/, '¼ de baguette', 60], [/^biscotte/, '1 biscotte', 8],
+      [/^croissant/, '1 croissant', 60], [/^pain au chocolat/, '1 pain au chocolat', 70],
+      [/^jambon/, '1 tranche', 40], [/^(steak|bifteck|boeuf)/, '1 steak', 120], [/^(poulet|dinde)/, '1 portion', 120],
+      [/^(saumon|cabillaud|colin|merlu|thon)/, '1 pavé', 120],
+      [/^(riz|pates|semoule|quinoa|lentille|haricot|pois chiche|boulgour).*cuit/, '1 assiette', 200],
+      [/^(soupe|potage|veloute|bouillon)/, '1 bol', 250], [/^chocolat/, '1 carré', 5], [/^beurre/, '1 noisette', 10],
+      [/^(confiture|miel|pate a tartiner)/, '1 c. à soupe', 15], [/^huile/, '1 c. à soupe', 10], [/^sucre\b/, '1 morceau', 5],
+      [/^(fromage|camembert|comte|emmental|brie|chevre)/, '1 portion', 30], [/^biscuit/, '1 biscuit', 10]
+    ];
+    const OFF_FIELDS = 'code,product_name,product_name_fr,generic_name_fr,brands,quantity,ingredients_text_fr,ingredients_text,ingredients,nutriscore_grade,nutriments';
+    const DAY_FILTERS = [
+      { key: 'all', name: 'Tout' },
+      { key: 'food', name: '🍽️ Repas' },
+      { key: 'drink', name: '💧 Boissons' },
+      { key: 'loss', name: '🚻 Pertes' }
+    ];
     let foodMoment = null;        // moment choisi à la main (sinon : selon l'heure)
     let foodSheet = null;         // fiche ouverte (ajout d'un repas ou modification d'un plat)
-    let foodLibraryExpanded = false;
-    const openMeals = new Set();
+    let dayFilter = 'all';
+    let alimentsDb = null;        // table CIQUAL, chargée à la première recherche
+    let alimentsLoading = null;
+    let alimentsMore = false;
+    let offState = { q: '', status: '', items: [] };
+    const openGroups = new Set();
     let scanStream = null;
     let scanTimer = null;
 
@@ -1875,11 +2101,12 @@
     }
 
     function normalizeText(s) {
-      return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+      return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/œ/g, 'oe');
     }
 
     function foodMomentByKey(k) { return FOOD_MOMENTS.find(m => m.key === k) || FOOD_MOMENTS[1]; }
     function portionByKey(k) { return PORTIONS.find(p => p.key === k) || PORTIONS[1]; }
+    function mealMomentKey(ml, rec) { return ml.moment || String((rec && rec.detail) || '').split('|')[0]; }
 
     function defaultFoodMoment() {
       const now = new Date();
@@ -1899,12 +2126,146 @@
     }
 
     function updateModalState() {
-      const open = ['food-sheet', 'scan-view', 'doc-viewer', 'email-sheet'].some(id => byId(id) && byId(id).style.display === 'flex') ||
+      const open = ['food-sheet', 'food-lib', 'settings', 'rdv-sheet', 'scan-view', 'doc-viewer', 'email-sheet'].some(id => byId(id) && byId(id).style.display === 'flex') ||
         ['report-view', 'pdf-viewer'].some(id => byId(id) && byId(id).style.display === 'block');
       document.body.classList.toggle('modal-open', open);
     }
 
-    // Plats enregistrés, les plus utilisés d'abord
+    // ----- Temps -----
+    function timeToMin(t) {
+      const m = /^(\d{1,2})[:h](\d{2})/.exec(String(t || ''));
+      return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+    }
+    function minToTime(m) {
+      return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+    }
+    function fmtDuration(min) {
+      const h = Math.floor(min / 60), m = min % 60;
+      return h ? `${h} h${m ? ' ' + String(m).padStart(2, '0') : ''}` : `${m} min`;
+    }
+
+    // ----- Valeurs nutritionnelles -----
+    function fmtNum(v, digits) {
+      return Number(v).toLocaleString('fr-FR', { maximumFractionDigits: digits || 0 });
+    }
+    function nutrFor(per100, grams) {
+      if (!per100 || !grams) return null;
+      const out = {};
+      NUTRIENTS.forEach(n => {
+        const v = per100[n.k];
+        if (v === null || v === undefined || v === '' || !isFinite(Number(v))) return;
+        const x = Number(v) * grams / 100;
+        out[n.k] = (n.unit === 'g' || n.k === 'sel') ? Math.round(x * 10) / 10 : Math.round(x);
+      });
+      return Object.keys(out).length ? out : null;
+    }
+    function nutrLine(nutr) {
+      if (!nutr) return '';
+      const parts = [];
+      if (nutr.eau != null) parts.push(`💧 ${fmtNum(nutr.eau)} ml d'eau`);
+      if (nutr.kcal != null) parts.push(`${fmtNum(nutr.kcal)} kcal`);
+      if (nutr.sel != null) parts.push(`sel ${fmtNum(nutr.sel, 1)} g`);
+      if (nutr.k != null) parts.push(`K ${fmtNum(nutr.k)} mg`);
+      return parts.join(' · ');
+    }
+    function nutrTable(nutr) {
+      if (!nutr) return '';
+      return '<div class="nutr-grid">' + NUTRIENTS.filter(n => nutr[n.k] != null)
+        .map(n => `<span>${n.name}</span><b>${fmtNum(nutr[n.k], n.unit === 'g' ? 1 : 0)} ${n.unit}</b>`).join('') + '</div>';
+    }
+    function qtyText(ml) {
+      if (ml.grams) return `${fmtNum(ml.grams)} g`;
+      return `portion ${portionByKey(ml.portion).name.toLowerCase()}`;
+    }
+    function unitHints(name) {
+      const n = normalizeText(name);
+      return UNIT_HINTS.filter(h => h[0].test(n)).slice(0, 1).map(h => ({ label: h[1], g: h[2] }));
+    }
+    function sumNutr(list) {
+      const tot = { count: 0, known: 0 };
+      list.forEach(ml => {
+        tot.count++;
+        const n = ml.nutr;
+        if (!n) return;
+        tot.known++;
+        NUTRIENTS.forEach(x => { if (n[x.k] != null) tot[x.k] = (tot[x.k] || 0) + Number(n[x.k]); });
+      });
+      return tot;
+    }
+
+    // ----- Table des aliments (CIQUAL, ANSES) -----
+    function loadAliments() {
+      if (alimentsDb) return Promise.resolve(alimentsDb);
+      if (!alimentsLoading) {
+        alimentsLoading = fetch('./aliments.json')
+          .then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+          .then(j => {
+            const cols = j.c || [];
+            const items = (j.a || []).map(a => {
+              const per100 = {};
+              cols.forEach((c, i) => { if (a[3 + i] !== null && a[3 + i] !== undefined) per100[c] = a[3 + i]; });
+              return { code: String(a[0]), name: a[1], group: (j.g || [])[a[2]] || '', per100: per100, norm: normalizeText(a[1]) };
+            });
+            alimentsDb = { source: j.src || 'Table CIQUAL (ANSES)', items: items, byCode: new Map(items.map(x => [x.code, x])) };
+            return alimentsDb;
+          })
+          .catch(e => { alimentsLoading = null; throw e; });
+      }
+      return alimentsLoading;
+    }
+
+    function searchWords(q) {
+      return normalizeText(q).split(/[^a-z0-9]+/).filter(w => w.length >= 2)
+        .map(w => (w.length > 3 && /[sx]$/.test(w) && !/(ss|us|is)$/.test(w)) ? w.slice(0, -1) : w);
+    }
+
+    const RARE_FORMS = /(seche|seche|deshydrat|en poudre|appertis|surgel|reconstitu|lyophilis|concentre|preemball|preleve)/;
+    function searchAliments(q, limit) {
+      if (!alimentsDb) return [];
+      const full = normalizeText(q).split(/[^a-z0-9]+/).filter(w => w.length >= 2);
+      const words = searchWords(q);
+      if (!words.length) return [];
+      const rx = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const starts = words.map(w => new RegExp('(^|[^a-z0-9])' + rx(w)));
+      const wholes = full.map(w => new RegExp('(^|[^a-z0-9])' + rx(w) + '($|[^a-z0-9])'));
+      const wholesSing = words.map(w => new RegExp('(^|[^a-z0-9])' + rx(w) + 's?($|[^a-z0-9])'));
+      const scored = [];
+      alimentsDb.items.forEach(it => {
+        const n = it.norm;
+        let score = 0;
+        for (let i = 0; i < words.length; i++) {
+          if (!n.includes(words[i])) return;
+          score += starts[i].test(n) ? 10 : 2;
+          if (wholesSing[i].test(n)) score += 6;           // mot entier (« lait » plutôt que « laitue »)
+          if (full[i] && wholes[i].test(n)) score += 10;    // même orthographe (« pâtes » plutôt que « pâté »)
+        }
+        if (n.startsWith(words[0])) score += 20;
+        const head = n.split(',')[0];
+        if (words.every(w => head.includes(w))) score += 8;     // le mot est dans le nom principal, pas dans la précision
+        if (head.replace(/\s*\(aliment moyen\)/, '').trim() === full.join(' ')) score += 8;   // « Pomme, … » avant « Pomme de terre »
+        if (RARE_FORMS.test(n)) score -= 5;                     // formes moins courantes (séché, en poudre…)
+        if (/aliment moyen/.test(n)) score += 3;
+        score -= n.length / 10;
+        scored.push({ it: it, score: score });
+      });
+      return scored.sort((a, b) => b.score - a.score).slice(0, limit).map(x => x.it);
+    }
+
+    function alimentToItem(it) {
+      const hint = unitHints(it.name)[0];
+      return { source: 'ciqual', ciqual: it.code, name: it.name, group: it.group, per100: it.per100, grams: hint ? hint.g : 100 };
+    }
+
+    function alimentSub(it) {
+      const p = it.per100 || {};
+      const parts = [];
+      if (p.eau != null) parts.push(`eau ${fmtNum(p.eau)} %`);
+      if (p.kcal != null) parts.push(`${fmtNum(p.kcal)} kcal`);
+      if (p.sel != null) parts.push(`sel ${fmtNum(p.sel, 2)} g`);
+      return (parts.length ? parts.join(' · ') + ' /100 g' : '') + (it.group ? ` · ${it.group}` : '');
+    }
+
+    // ----- Mes plats et habitudes -----
     function getDishes() {
       const usage = {};
       logs.forEach(l => {
@@ -1925,6 +2286,42 @@
         .sort((a, b) => Number(a.rec.id) - Number(b.rec.id));
     }
 
+    function mealKey(ml) {
+      if (ml.source === 'ciqual' && ml.ciqual) return 'c:' + ml.ciqual;
+      if (ml.dishId) return 'd:' + ml.dishId;
+      if (ml.barcode) return 'b:' + ml.barcode;
+      return 'n:' + normalizeText(ml.name) + '|' + normalizeText(ml.brand);
+    }
+
+    // Ce que tu manges le plus souvent à ce moment de la journée (d'après l'historique)
+    function getHabits(momentKey, limit) {
+      const map = new Map();
+      logs.forEach(l => {
+        if (l.type !== 'repas') return;
+        const ml = parseData(l);
+        if (!ml.name) return;
+        const key = mealKey(ml);
+        let h = map.get(key);
+        if (!h) { h = { key: key, count: 0, here: 0, last: 0, ml: ml }; map.set(key, h); }
+        h.count++;
+        if (mealMomentKey(ml, l) === momentKey) h.here++;
+        if (Number(l.id) > h.last) { h.last = Number(l.id); h.ml = ml; }
+      });
+      return [...map.values()].filter(h => h.here > 0)
+        .sort((a, b) => b.here - a.here || b.last - a.last).slice(0, limit);
+    }
+
+    function habitToItem(ml) {
+      if (ml.dishId) {
+        const d = getDishes().find(x => x.id === String(ml.dishId));
+        if (d) return Object.assign({}, d, { grams: ml.grams || d.grams, portion: ml.portion });
+      }
+      return {
+        name: ml.name, brand: ml.brand, source: ml.source || 'maison', barcode: ml.barcode, ciqual: ml.ciqual, group: ml.group,
+        per100: ml.per100, grams: ml.grams, quantity: ml.quantity, nutriscore: ml.nutriscore, ingredients: ml.ingredients, portion: ml.portion
+      };
+    }
+
     function refreshIngredientSuggestions() {
       const set = new Map();
       const add = list => (list || []).forEach(i => { const k = normalizeText(i); if (k && !set.has(k)) set.set(k, i); });
@@ -1939,6 +2336,7 @@
       });
     }
 
+    // ----- Écran Nourriture -----
     function renderFood() {
       const dateEl = byId('food-date');
       if (!dateEl.value) dateEl.value = getLocalIsoDate();
@@ -1953,9 +2351,11 @@
         chip.onclick = () => { foodMoment = m.key; renderFood(); };
         box.appendChild(chip);
       });
+      const n = getDishes().length;
+      byId('food-lib-count').textContent = n ? `(${n})` : '';
       renderFoodResults();
-      renderFoodDay();
-      renderFoodLibrary();
+      renderDay();
+      if (byId('food-lib').style.display === 'flex') renderFoodLibrary();
     }
 
     function foodRow(name, sub, badge, onClick) {
@@ -1977,154 +2377,382 @@
       return parts.join(' · ');
     }
 
-    function renderFoodResults() {
-      const q = normalizeText(byId('food-search').value.trim());
-      const box = byId('food-results');
-      box.innerHTML = '';
-      const dishes = getDishes();
-      let list, title;
-      if (!q) {
-        if (!dishes.length) {
-          box.innerHTML = '<div class="drink-empty">Pas encore de plat enregistré : commence avec « ➕ Nouveau » ou « 📷 Scanner ».</div>';
-          return;
-        }
-        list = dishes.slice(0, 8);
-        title = dishes.some(d => d.uses) ? 'Plats fréquents' : 'Mes plats';
-      } else {
-        list = dishes.filter(d => normalizeText([d.name, d.brand, (d.ingredients || []).join(' ')].join(' ')).includes(q)).slice(0, 12);
-        title = 'Dans mes plats';
-        if (!list.length) {
-          box.innerHTML = '<div class="drink-empty">Rien dans « Mes plats ». Touchez « 🌍 Chercher » pour un produit du commerce, ou « ➕ Nouveau » pour un plat maison.</div>';
-          return;
-        }
-      }
+    function sourceBadge(src) {
+      return src === 'ciqual' ? '🥕' : src === 'off' ? '🛒' : '🏠';
+    }
+
+    function resultsTitle(box, text) {
       const t = document.createElement('div');
       t.className = 'food-results-title';
-      t.textContent = title;
+      t.textContent = text;
       box.appendChild(t);
-      list.forEach(d => box.appendChild(foodRow(d.name, dishSub(d), d.source === 'off' ? '🛒' : '🏠', () => openMealSheet(d))));
     }
 
-    function renderFoodDay() {
-      const iso = foodDate();
-      const [y, m, d] = iso.split('-');
-      byId('food-day-title').textContent = iso === getLocalIsoDate() ? 'Repas du jour' : `Repas du ${d}/${m}/${y}`;
-      const box = byId('food-day-list');
+    function renderFoodResults() {
+      const raw = byId('food-search').value.trim();
+      const q = normalizeText(raw);
+      const box = byId('food-results');
       box.innerHTML = '';
-      const meals = getMeals(iso);
-      if (!meals.length) {
-        box.innerHTML = '<div class="drink-empty">Rien de saisi pour ce jour.</div>';
+      const moment = foodMomentByKey(currentFoodMoment());
+
+      if (q.length < 2) {
+        alimentsMore = false;
+        const habits = getHabits(moment.key, 6);
+        if (!habits.length) {
+          box.innerHTML = `<div class="food-hint">Tape ce que tu as mangé : <b>riz</b>, <b>pomme</b>, <b>yaourt</b>, un de tes plats…<br>
+            Plus de 3 000 aliments de la table officielle CIQUAL, avec l'eau, le sel et le potassium qu'ils apportent.</div>`;
+          return;
+        }
+        resultsTitle(box, `Habituels · ${moment.name.toLowerCase()}`);
+        const wrap = document.createElement('div');
+        wrap.className = 'habit-chips';
+        habits.forEach(h => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'habit-chip';
+          b.innerHTML = '<span></span><small></small>';
+          b.querySelector('span').textContent = `${sourceBadge(h.ml.source)} ${h.ml.name}`;
+          b.querySelector('small').textContent = h.ml.grams ? `${fmtNum(h.ml.grams)} g` : portionByKey(h.ml.portion).name.toLowerCase();
+          b.onclick = () => openMealSheet(habitToItem(h.ml));
+          wrap.appendChild(b);
+        });
+        box.appendChild(wrap);
         return;
       }
-      FOOD_MOMENTS.forEach(moment => {
-        const list = meals.filter(ml => (ml.moment || String(ml.rec.detail || '').split('|')[0]) === moment.key);
-        if (!list.length) return;
-        const block = document.createElement('div');
-        block.className = 'food-moment-block';
-        const title = document.createElement('div');
-        title.className = 'food-moment-title';
-        title.textContent = `${moment.icon} ${moment.name}`;
-        block.appendChild(title);
-        list.forEach(ml => block.appendChild(mealCard(ml)));
-        box.appendChild(block);
+
+      // 1. Mes plats
+      const words = searchWords(raw);
+      const dishes = getDishes().filter(d => {
+        const t = normalizeText([d.name, d.brand, (d.ingredients || []).join(' ')].join(' '));
+        return words.every(w => t.includes(w));
+      }).slice(0, 3);
+      if (dishes.length) {
+        resultsTitle(box, 'Mes plats');
+        dishes.forEach(d => box.appendChild(foodRow(d.name, dishSub(d), sourceBadge(d.source), () => openMealSheet(d))));
+      }
+
+      // 2. Table des aliments
+      const sec = document.createElement('div');
+      sec.className = 'food-results';
+      box.appendChild(sec);
+      if (!alimentsDb) {
+        sec.innerHTML = '<div class="food-hint">Chargement de la table des aliments…</div>';
+        loadAliments().then(() => renderFoodResults()).catch(() => {
+          sec.innerHTML = `<div class="food-hint">${navigator.onLine ? 'Table des aliments indisponible pour le moment.' : 'Table des aliments pas encore téléchargée : connecte-toi une fois à Internet.'}</div>`;
+        });
+      } else {
+        const found = searchAliments(raw, alimentsMore ? 40 : 8);
+        if (found.length) {
+          resultsTitle(sec, 'Aliments (table CIQUAL)');
+          found.forEach(it => sec.appendChild(foodRow(it.name, alimentSub(it), '🥕', () => openMealSheet(alimentToItem(it)))));
+          if (!alimentsMore && found.length === 8) {
+            const more = document.createElement('button');
+            more.type = 'button';
+            more.className = 'drink-more';
+            more.textContent = 'Plus d\'aliments';
+            more.onclick = () => { alimentsMore = true; renderFoodResults(); };
+            sec.appendChild(more);
+          }
+        } else if (!dishes.length) {
+          sec.innerHTML = '<div class="food-hint">Aucun aliment de base ne correspond. Essaie un autre mot, ou cherche dans les produits du commerce.</div>';
+        }
+      }
+
+      // 3. Produits du commerce (à la demande)
+      const off = document.createElement('div');
+      off.className = 'food-results';
+      box.appendChild(off);
+      if (offState.q === q && offState.status) {
+        if (offState.status === 'loading') off.innerHTML = '<div class="food-hint">Recherche dans les produits du commerce…</div>';
+        else if (offState.status === 'error') off.innerHTML = `<div class="food-hint">${offErrorMessage()}</div>`;
+        else if (!offState.items.length) off.innerHTML = '<div class="food-hint">Aucun produit du commerce trouvé. Essaie le scan du code-barres 📷.</div>';
+        else {
+          resultsTitle(off, 'Produits du commerce (Open Food Facts)');
+          offState.items.forEach(dish => {
+            const known = getDishes().find(d => d.barcode && d.barcode === dish.barcode);
+            const sub = [dish.brand, dish.quantity, dish.per100 && dish.per100.kcal != null ? `${fmtNum(dish.per100.kcal)} kcal/100 g` : ''].filter(Boolean).join(' · ');
+            off.appendChild(foodRow(dish.name, sub || 'Produit du commerce', '🛒', () => openMealSheet(known ? Object.assign({}, dish, known) : dish)));
+          });
+        }
+      } else {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'food-off-btn';
+        b.textContent = `🛒 Chercher « ${raw.slice(0, 30)} » dans les produits du commerce`;
+        b.onclick = searchOFF;
+        off.appendChild(b);
+      }
+    }
+
+    // ----- Ma journée : frise repas + boissons + pertes -----
+    function collectDayEvents(iso) {
+      const events = [];
+      logs.filter(l => l.isoDate === iso).forEach(l => {
+        if (l.type === 'repas') {
+          const ml = Object.assign({ rec: l }, parseData(l));
+          const moment = foodMomentByKey(mealMomentKey(ml, l));
+          let t = timeToMin(l.timeStr), approx = false;
+          if (t === null) { t = timeToMin(moment.time); approx = true; }
+          events.push({ kind: 'food', t: t, approx: approx, rec: l, ml: ml, moment: moment });
+        } else if (FLUID_TYPES.includes(l.type) && Number(l.volume) > 0) {
+          const t = timeToMin(l.timeStr);
+          if (t !== null) events.push({ kind: 'drink', t: t, rec: l });
+        } else if (['perte_urine', 'perte_selle', 'urine', 'selle'].includes(l.type)) {
+          const t = timeToMin(l.timeStr);
+          if (t !== null) events.push({ kind: 'loss', t: t, rec: l, cfg: l.type.includes('urine') ? LOSS_CONFIG.urine : LOSS_CONFIG.selle });
+        }
+      });
+      events.sort((a, b) => a.t - b.t || Number(a.rec.id) - Number(b.rec.id));
+      // Les aliments d'un même repas (même moment, à moins de 45 min) sont regroupés
+      const out = [];
+      let group = null;
+      events.forEach(ev => {
+        if (ev.kind !== 'food') { out.push(ev); return; }
+        if (group && group.moment.key === ev.moment.key && ev.t - group.end <= 45) {
+          group.items.push(ev.ml);
+          group.end = ev.t;
+          group.approx = group.approx && ev.approx;
+          return;
+        }
+        group = { kind: 'meal', t: ev.t, end: ev.t, approx: ev.approx, moment: ev.moment, items: [ev.ml], id: String(ev.rec.id) };
+        out.push(group);
+      });
+      return out.sort((a, b) => a.t - b.t);
+    }
+
+    function renderDay() {
+      const iso = foodDate();
+      const [y, m, d] = iso.split('-');
+      byId('food-day-title').textContent = iso === getLocalIsoDate() ? '🕒 Ma journée' : `🕒 Journée du ${d}/${m}`;
+      const events = collectDayEvents(iso);
+      const meals = getMeals(iso);
+
+      // Résumé
+      const drinkMl = Math.max(0, logs.filter(l => l.isoDate === iso && FLUID_TYPES.includes(l.type)).reduce((a, l) => a + (Number(l.volume) || 0), 0));
+      const loss = getDayLosses(iso);
+      const nut = sumNutr(meals);
+      const groups = events.filter(e => e.kind === 'meal');
+      const tile = (v, label, cls) => `<div class="ds-tile ${cls || ''}"><b>${v}</b><span>${label}</span></div>`;
+      let sum = tile(groups.length ? `${groups.length}` : '0', `repas · ${meals.length} aliment${meals.length > 1 ? 's' : ''}`, 'ds-food');
+      sum += tile(`${fmtNum(drinkMl)} ml`, 'bu', 'ds-drink');
+      sum += tile(nut.eau != null ? `≈ ${fmtNum(nut.eau)} ml` : '—', 'eau des aliments', 'ds-drink');
+      sum += tile(`${loss.urineCount} · ${loss.stoolCount}`, `urines · selles (≈ ${fmtNum(loss.urineMl + loss.stoolMl)} ml)`, 'ds-loss');
+      if (nut.known) {
+        sum += tile(nut.sel != null ? `${fmtNum(nut.sel, 1)} g` : '—', 'sel', '');
+        sum += tile(nut.k != null ? `${fmtNum(nut.k)} mg` : '—', 'potassium', '');
+      }
+      let note = '';
+      if (nut.count && nut.known < nut.count) note = `<div class="ds-note">Valeurs nutritionnelles calculées sur ${nut.known} aliment${nut.known > 1 ? 's' : ''} sur ${nut.count} (les plats maison sans quantité ne sont pas chiffrés).</div>`;
+      byId('day-summary').innerHTML = `<div class="ds-tiles">${sum}</div>${note}`;
+
+      // Filtres
+      const fBox = byId('day-filters');
+      fBox.innerHTML = '';
+      DAY_FILTERS.forEach(f => {
+        const c = document.createElement('button');
+        c.type = 'button';
+        c.className = 'chip' + (dayFilter === f.key ? ' active' : '');
+        c.textContent = f.name;
+        c.onclick = () => { dayFilter = f.key; renderDay(); };
+        fBox.appendChild(c);
+      });
+
+      renderDayStrip(events);
+
+      const box = byId('day-timeline');
+      box.innerHTML = '';
+      const shown = events.filter(e => dayFilter === 'all' || (dayFilter === 'food' ? e.kind === 'meal' : e.kind === dayFilter));
+      if (!shown.length) {
+        box.innerHTML = `<div class="drink-empty">${events.length ? 'Rien de ce type pour ce jour.' : 'Rien de saisi pour ce jour.'}</div>`;
+        return;
+      }
+      let lastMeal = null;
+      events.forEach(ev => {
+        if (ev.kind === 'meal') {
+          if (lastMeal && (dayFilter === 'all' || dayFilter === 'food')) {
+            const gap = ev.t - lastMeal.end;
+            if (gap >= 90) {
+              const g = document.createElement('div');
+              g.className = 'tl-gap';
+              g.innerHTML = '<span></span>';
+              g.firstChild.textContent = `⏱ ${fmtDuration(gap)} sans manger`;
+              box.appendChild(g);
+            }
+          }
+          if (dayFilter === 'all' || dayFilter === 'food') box.appendChild(mealGroupRow(ev));
+          lastMeal = ev;
+          return;
+        }
+        if (dayFilter !== 'all' && dayFilter !== ev.kind) return;
+        box.appendChild(ev.kind === 'drink' ? drinkRow(ev) : lossRow(ev, lastMeal));
       });
     }
 
-    function mealCard(ml) {
-      const id = String(ml.rec.id);
-      const card = document.createElement('div');
-      card.className = 'food-meal' + (openMeals.has(id) ? ' open' : '');
-      const top = document.createElement('div');
-      top.className = 'food-meal-top';
-      top.innerHTML = '<span class="fm-name"></span><span class="fm-portion"></span><span class="fm-time"></span>';
-      top.querySelector('.fm-name').textContent = (ml.name || ml.rec.label || 'Repas') + (ml.brand ? ` (${ml.brand})` : '');
-      top.querySelector('.fm-portion').textContent = portionByKey(ml.portion).name;
-      top.querySelector('.fm-time').textContent = ml.rec.timeStr || '';
-      card.appendChild(top);
-
-      const det = document.createElement('div');
-      det.className = 'food-meal-details';
-      const ingTitle = document.createElement('div');
-      ingTitle.textContent = (ml.ingredients && ml.ingredients.length) ? 'Ingrédients :' : 'Aucun ingrédient noté.';
-      det.appendChild(ingTitle);
-      const chips = document.createElement('div');
-      chips.className = 'ing-chips';
-      (ml.ingredients || []).forEach(i => {
-        const c = document.createElement('span');
-        c.className = 'ing-chip';
-        c.textContent = i;
-        chips.appendChild(c);
+    function renderDayStrip(events) {
+      const strip = byId('day-strip');
+      if (!events.length) { strip.innerHTML = ''; strip.style.display = 'none'; return; }
+      strip.style.display = '';
+      const first = Math.min(...events.map(e => e.t));
+      const last = Math.max(...events.map(e => e.end || e.t));
+      const start = Math.min(6 * 60, Math.floor(first / 60) * 60);
+      const end = Math.max(23 * 60, Math.ceil((last + 1) / 60) * 60);
+      const pos = t => ((t - start) / (end - start) * 100).toFixed(2) + '%';
+      let html = '<div class="st-track">';
+      for (let h = Math.ceil(start / 180) * 3; h * 60 <= end; h += 3) {
+        html += `<span class="st-hour" style="left:${pos(h * 60)}">${h}h</span>`;
+      }
+      events.forEach(e => {
+        if (e.kind === 'meal') html += `<span class="st-mark st-meal" style="left:${pos(e.t)}" title="${esc(e.moment.name)} ${minToTime(e.t)}"></span>`;
+        else if (e.kind === 'drink') html += `<span class="st-mark st-drink" style="left:${pos(e.t)}"></span>`;
+        else html += `<span class="st-mark st-loss" style="left:${pos(e.t)};background:${e.cfg.color}"></span>`;
       });
-      det.appendChild(chips);
-      if (ml.note) {
-        const n = document.createElement('div');
-        n.textContent = `📝 ${ml.note}`;
-        det.appendChild(n);
-      }
-      if (ml.source === 'off') {
+      html += '</div><div class="st-legend"><span><i class="st-meal"></i>repas</span><span><i class="st-drink"></i>boisson</span><span><i style="background:#ca8a04"></i>urine</span><span><i style="background:#9333ea"></i>selle</span></div>';
+      strip.innerHTML = html;
+    }
+
+    function tlRow(kind, time, approx) {
+      const row = document.createElement('div');
+      row.className = 'tl-row tl-' + kind;
+      row.innerHTML = '<div class="tl-time"></div><div class="tl-dot"></div><div class="tl-body"></div>';
+      row.querySelector('.tl-time').textContent = (approx ? '~' : '') + time;
+      return row;
+    }
+
+    function mealGroupRow(g) {
+      const row = tlRow('meal', minToTime(g.t), g.approx);
+      const body = row.querySelector('.tl-body');
+      const open = openGroups.has(g.id);
+      const tot = sumNutr(g.items);
+      const head = document.createElement('button');
+      head.type = 'button';
+      head.className = 'tl-meal-head';
+      head.innerHTML = '<span class="tl-meal-title"></span><span class="tl-meal-tot"></span><span class="tl-chev"></span>';
+      head.querySelector('.tl-meal-title').textContent = `${g.moment.icon} ${g.moment.name}`;
+      head.querySelector('.tl-meal-tot').textContent = tot.known ? [tot.eau != null ? `💧 ${fmtNum(tot.eau)} ml` : '', tot.kcal != null ? `${fmtNum(tot.kcal)} kcal` : ''].filter(Boolean).join(' · ') : '';
+      head.querySelector('.tl-chev').textContent = open ? '▴' : '▾';
+      head.onclick = () => { if (openGroups.has(g.id)) openGroups.delete(g.id); else openGroups.add(g.id); renderDay(); };
+      body.appendChild(head);
+      g.items.forEach(ml => {
+        const it = document.createElement('div');
+        it.className = 'tl-item';
+        it.innerHTML = '<div class="tl-item-line"><span class="tl-item-name"></span><span class="tl-item-qty"></span></div>';
+        it.querySelector('.tl-item-name').textContent = `${sourceBadge(ml.source)} ${ml.name || ml.rec.label}${ml.brand ? ' (' + ml.brand + ')' : ''}`;
+        it.querySelector('.tl-item-qty').textContent = qtyText(ml) + (g.items.length > 1 && ml.rec.timeStr && timeToMin(ml.rec.timeStr) !== g.t ? ` · ${ml.rec.timeStr}` : '');
+        if (open) {
+          const det = document.createElement('div');
+          det.className = 'tl-item-det';
+          let html = '';
+          if (ml.nutr) html += nutrTable(ml.nutr);
+          if (ml.ingredients && ml.ingredients.length) html += `<div class="rp-muted">Ingrédients : ${esc(ml.ingredients.join(', '))}</div>`;
+          if (ml.note) html += `<div>📝 ${esc(ml.note)}</div>`;
+          if (ml.source === 'ciqual') html += '<div class="rp-muted">Valeurs : table CIQUAL (ANSES), pour la quantité indiquée.</div>';
+          det.innerHTML = html;
+          const actions = document.createElement('div');
+          actions.className = 'fm-actions';
+          const edit = document.createElement('button');
+          edit.type = 'button';
+          edit.className = 'btn-sub tl-edit';
+          edit.textContent = '✏️ Modifier';
+          edit.onclick = () => openMealSheet(Object.assign(habitToItem(ml), { editId: String(ml.rec.id), moment: mealMomentKey(ml, ml.rec), time: ml.rec.timeStr, note: ml.note }));
+          const del = document.createElement('button');
+          del.type = 'button';
+          del.className = 'drink-del';
+          del.textContent = '✕';
+          del.title = 'Supprimer';
+          del.onclick = () => confirmTap(del, () => removeDrinkEntry(ml.rec.id));
+          actions.appendChild(edit);
+          actions.appendChild(del);
+          det.appendChild(actions);
+          it.appendChild(det);
+        }
+        body.appendChild(it);
+      });
+      return row;
+    }
+
+    function drinkRow(ev) {
+      const cat = DRINK_CATEGORIES[ev.rec.type] || { icon: '🥤', name: 'Boisson' };
+      const row = tlRow('drink', ev.rec.timeStr || minToTime(ev.t));
+      row.querySelector('.tl-body').textContent = `${cat.icon} ${ev.rec.label || cat.name}`;
+      return row;
+    }
+
+    function lossRow(ev, lastMeal) {
+      const row = tlRow('loss', ev.rec.timeStr || minToTime(ev.t));
+      row.style.setProperty('--loss-color', ev.cfg.color);
+      const body = row.querySelector('.tl-body');
+      body.textContent = `${ev.cfg.icon} ${ev.rec.label || ev.cfg.name}`;
+      if (lastMeal && ev.t >= lastMeal.t && ev.t - lastMeal.t <= 6 * 60) {
         const s = document.createElement('div');
-        s.className = 'rp-muted';
-        s.textContent = `🛒 Produit du commerce${ml.barcode ? ' · code ' + ml.barcode : ''}`;
-        det.appendChild(s);
+        s.className = 'tl-sub';
+        s.textContent = `${fmtDuration(ev.t - lastMeal.t)} après le ${lastMeal.moment.name.toLowerCase()}`;
+        body.appendChild(s);
       }
-      const actions = document.createElement('div');
-      actions.className = 'fm-actions';
-      const del = document.createElement('button');
-      del.type = 'button';
-      del.className = 'drink-del';
-      del.textContent = '✕';
-      del.title = 'Supprimer ce repas';
-      del.onclick = (e) => { e.stopPropagation(); confirmTap(del, () => removeDrinkEntry(ml.rec.id)); };
-      actions.appendChild(del);
-      det.appendChild(actions);
-      card.appendChild(det);
-      card.onclick = () => {
-        if (openMeals.has(id)) openMeals.delete(id); else openMeals.add(id);
-        card.classList.toggle('open');
-      };
-      return card;
+      return row;
+    }
+
+    // ----- Mes plats (fenêtre séparée) -----
+    function openFoodLibrary() {
+      byId('lib-search').value = '';
+      byId('food-lib').style.display = 'flex';
+      updateModalState();
+      renderFoodLibrary();
+    }
+
+    function closeFoodLibrary() {
+      byId('food-lib').style.display = 'none';
+      updateModalState();
     }
 
     function renderFoodLibrary() {
       const box = byId('food-library');
       box.innerHTML = '';
-      const dishes = getDishes().slice().sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+      const q = searchWords(byId('lib-search').value);
+      const dishes = getDishes().slice().sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+        .filter(d => !q.length || q.every(w => normalizeText([d.name, d.brand, (d.ingredients || []).join(' ')].join(' ')).includes(w)));
       if (!dishes.length) {
-        box.innerHTML = '<div class="drink-empty">Aucun plat enregistré pour l\'instant.</div>';
+        box.innerHTML = `<div class="drink-empty">${q.length ? 'Aucun plat ne correspond.' : 'Aucun plat enregistré pour l\'instant.'}</div>`;
         return;
       }
-      const shown = foodLibraryExpanded ? dishes : dishes.slice(0, 8);
-      const list = document.createElement('div');
-      list.className = 'food-results';
-      shown.forEach(d => list.appendChild(foodRow(d.name, dishSub(d), `${(d.ingredients || []).length} ingr.`, () => openDishSheet(d))));
-      box.appendChild(list);
-      if (dishes.length > 8) {
-        const more = document.createElement('button');
-        more.type = 'button';
-        more.className = 'drink-more';
-        more.textContent = foodLibraryExpanded ? 'Réduire' : `Voir les ${dishes.length} plats`;
-        more.onclick = () => { foodLibraryExpanded = !foodLibraryExpanded; renderFoodLibrary(); };
-        box.appendChild(more);
-      }
+      dishes.forEach(d => box.appendChild(foodRow(d.name, dishSub(d), d.uses ? `${d.uses}×` : sourceBadge(d.source), () => openDishSheet(d))));
     }
 
-    // ----- Fiche : ajout d'un repas / modification d'un plat -----
+    // ----- Fiche : ajout / modification d'un repas, modification d'un plat -----
     function newSheetState(mode, dish) {
       dish = dish || {};
+      const iso = foodDate();
+      const moment = dish.moment || currentFoodMoment();
+      const offGrams = dish.source === 'off' && dish.per100 ? (parseGrams(dish.quantity) || 100) : null;
       return {
         mode: mode,
+        editId: dish.editId || null,
         dishId: dish.id ? String(dish.id) : null,
         name: dish.name || '',
         brand: dish.brand || '',
         source: dish.source || 'maison',
         barcode: dish.barcode || '',
+        ciqual: dish.ciqual || '',
+        group: dish.group || '',
+        per100: dish.per100 || null,
+        grams: dish.grams || offGrams || (dish.source === 'ciqual' ? 100 : null),
         quantity: dish.quantity || '',
         nutriscore: dish.nutriscore || '',
         ingredients: (dish.ingredients || []).slice(),
-        portion: 'normale',
-        moment: currentFoodMoment(),
-        note: ''
+        portion: dish.portion || 'normale',
+        moment: moment,
+        time: dish.time || (iso === getLocalIsoDate() ? nowTimeStr() : foodMomentByKey(moment).time),
+        timeTouched: !!dish.time,
+        note: dish.note || ''
       };
+    }
+
+    function parseGrams(q) {
+      const m = /(\d+(?:[.,]\d+)?)\s*(kg|g|cl|ml|l)\b/i.exec(String(q || ''));
+      if (!m) return null;
+      const v = parseFloat(m[1].replace(',', '.'));
+      const unit = m[2].toLowerCase();
+      const g = unit === 'kg' || unit === 'l' ? v * 1000 : unit === 'cl' ? v * 10 : v;
+      return g > 0 && g <= 400 ? Math.round(g) : null;
     }
 
     function openMealSheet(dish) {
@@ -2146,33 +2774,45 @@
     function renderFoodSheet() {
       const st = foodSheet;
       const isMeal = st.mode === 'meal';
+      const isCiqual = st.source === 'ciqual';
+      const byWeight = isMeal && !!st.per100;
       byId('food-sheet-title').textContent = isMeal
-        ? (st.dishId ? 'Ajouter au repas' : (st.source === 'off' ? '🛒 Produit du commerce' : '➕ Nouveau plat'))
+        ? (st.editId ? '✏️ Modifier' : isCiqual ? '🥕 Aliment' : st.dishId ? 'Ajouter au repas' : (st.source === 'off' ? '🛒 Produit du commerce' : '➕ Plat maison'))
         : (st.dishId ? 'Modifier le plat' : 'Nouveau plat');
       const meta = [];
+      if (isCiqual) meta.push(esc(st.group || 'Table CIQUAL'));
       if (st.brand) meta.push(`Marque : ${esc(st.brand)}`);
       if (st.quantity) meta.push(esc(st.quantity));
       if (st.nutriscore && /^[a-e]$/i.test(st.nutriscore)) meta.push(`Nutri-Score ${esc(st.nutriscore.toUpperCase())}`);
       if (st.barcode) meta.push(`Code ${esc(st.barcode)}`);
       byId('food-sheet-body').innerHTML = `
+        ${isCiqual ? `<div class="fs-food-name">${esc(st.name)}</div>` : `
         <div class="action-label">Nom</div>
-        <input type="text" id="fs-name" class="date-picker-input" maxlength="80" placeholder="Ex : Pâtes bolognaise" value="${esc(st.name)}">
+        <input type="text" id="fs-name" class="date-picker-input" maxlength="80" placeholder="Ex : Pâtes bolognaise" value="${esc(st.name)}">`}
         ${meta.length ? `<div class="fs-meta">${meta.join(' · ')}</div>` : ''}
+        ${isCiqual ? '' : `
         <div class="action-label" style="margin-top: 10px;">Ingrédients</div>
         <div id="fs-ings" class="ing-chips"></div>
         <div class="action-row">
           <input type="text" id="fs-ing-input" class="date-picker-input" list="ingredient-suggestions" autocomplete="off" placeholder="Ajouter (plusieurs : séparer par des virgules)" style="margin-top: 0;">
           <button class="btn-add" type="button" style="flex: none; padding: 12px 16px; background: #ea580c; color: white;" id="fs-ing-add">+</button>
-        </div>
+        </div>`}
         ${isMeal ? `
+          ${byWeight ? `
+            <div class="action-label" style="margin-top: 10px;">Quantité mangée</div>
+            <div class="qty-row"><input type="number" id="fs-grams" class="date-picker-input" inputmode="numeric" min="1" max="3000" value="${st.grams || ''}"><span>g</span></div>
+            <div class="chip-row" id="fs-gram-chips"></div>
+            <div id="fs-nutr" class="fs-nutr"></div>` : `
+            <div class="action-label" style="margin-top: 10px;">Portion</div>
+            <div class="chip-row" id="fs-portions"></div>`}
           <div class="action-label" style="margin-top: 10px;">Moment</div>
           <div class="chip-row" id="fs-moments"></div>
-          <div class="action-label" style="margin-top: 10px;">Portion</div>
-          <div class="chip-row" id="fs-portions"></div>
+          <div class="action-label" style="margin-top: 10px;">Heure</div>
+          <input type="time" id="fs-time" class="date-picker-input" value="${esc(st.time)}" style="margin-top: 0;">
           <div class="action-label" style="margin-top: 10px;">Remarque (facultatif)</div>
-          <input type="text" id="fs-note" class="date-picker-input" maxlength="200" placeholder="Ex : mangé à moitié, mal digéré…" style="margin-top: 0;">
-          <label class="sync-check" style="margin-top: 10px;"><input type="checkbox" id="fs-save" ${st.dishId ? '' : 'checked'}>
-            ${st.dishId ? 'Mettre aussi à jour « Mes plats » avec ces ingrédients' : 'Enregistrer dans « Mes plats » pour la prochaine fois'}</label>
+          <input type="text" id="fs-note" class="date-picker-input" maxlength="200" placeholder="Ex : mangé à moitié, mal digéré…" value="${esc(st.note)}" style="margin-top: 0;">
+          ${isCiqual || st.editId ? '' : `<label class="sync-check" style="margin-top: 10px;"><input type="checkbox" id="fs-save" ${st.dishId || st.source === 'off' ? '' : 'checked'}>
+            ${st.dishId ? 'Mettre aussi à jour « Mes plats » avec ces ingrédients' : 'Garder dans « Mes plats »'}</label>`}
           <button class="sync-btn" type="button" id="fs-submit" style="margin-top: 12px; background: #ea580c;"></button>
         ` : `
           <button class="sync-btn" type="button" id="fs-submit" style="margin-top: 12px; background: #ea580c;">💾 Enregistrer le plat</button>
@@ -2180,12 +2820,16 @@
         `}
         <div id="fs-msg" class="weight-feedback"></div>`;
 
-      byId('fs-name').oninput = e => { st.name = e.target.value; };
-      byId('fs-ing-add').onclick = () => addSheetIngredients();
-      byId('fs-ing-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addSheetIngredients(); } });
-      byId('fs-ing-input').addEventListener('change', e => { if (e.target.value.includes(',')) addSheetIngredients(); });
+      if (byId('fs-name')) byId('fs-name').oninput = e => { st.name = e.target.value; };
+      if (byId('fs-ing-add')) {
+        byId('fs-ing-add').onclick = () => addSheetIngredients();
+        byId('fs-ing-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addSheetIngredients(); } });
+        byId('fs-ing-input').addEventListener('change', e => { if (e.target.value.includes(',')) addSheetIngredients(); });
+      }
       if (isMeal) {
         byId('fs-note').oninput = e => { st.note = e.target.value; };
+        byId('fs-time').oninput = e => { st.time = e.target.value; st.timeTouched = true; };
+        if (byId('fs-grams')) byId('fs-grams').oninput = e => { st.grams = Math.round(Number(e.target.value)) || null; renderSheetChips(); };
         byId('fs-submit').onclick = submitMealSheet;
       } else {
         byId('fs-submit').onclick = submitDishSheet;
@@ -2200,28 +2844,30 @@
       renderSheetChips();
       byId('food-sheet').style.display = 'flex';
       updateModalState();
-      if (!st.name) setTimeout(() => byId('fs-name').focus(), 50);
+      if (!st.name && byId('fs-name')) setTimeout(() => byId('fs-name').focus(), 50);
     }
 
     function renderSheetChips() {
       const st = foodSheet;
       const ings = byId('fs-ings');
-      ings.innerHTML = '';
-      if (!st.ingredients.length) {
-        ings.innerHTML = '<span class="rp-muted" style="font-size: 0.8rem;">Aucun ingrédient pour l\'instant.</span>';
+      if (ings) {
+        ings.innerHTML = '';
+        if (!st.ingredients.length) {
+          ings.innerHTML = '<span class="rp-muted" style="font-size: 0.8rem;">Aucun ingrédient pour l\'instant.</span>';
+        }
+        st.ingredients.forEach((ing, idx) => {
+          const chip = document.createElement('span');
+          chip.className = 'ing-chip';
+          chip.textContent = ing;
+          const x = document.createElement('button');
+          x.type = 'button';
+          x.textContent = '×';
+          x.setAttribute('aria-label', `Retirer ${ing}`);
+          x.onclick = () => { st.ingredients.splice(idx, 1); renderSheetChips(); };
+          chip.appendChild(x);
+          ings.appendChild(chip);
+        });
       }
-      st.ingredients.forEach((ing, idx) => {
-        const chip = document.createElement('span');
-        chip.className = 'ing-chip';
-        chip.textContent = ing;
-        const x = document.createElement('button');
-        x.type = 'button';
-        x.textContent = '×';
-        x.setAttribute('aria-label', `Retirer ${ing}`);
-        x.onclick = () => { st.ingredients.splice(idx, 1); renderSheetChips(); };
-        chip.appendChild(x);
-        ings.appendChild(chip);
-      });
       if (st.mode !== 'meal') return;
       const mBox = byId('fs-moments');
       mBox.innerHTML = '';
@@ -2230,20 +2876,46 @@
         c.type = 'button';
         c.className = 'chip' + (st.moment === m.key ? ' active' : '');
         c.textContent = `${m.icon} ${m.name}`;
-        c.onclick = () => { st.moment = m.key; renderSheetChips(); };
+        c.onclick = () => {
+          st.moment = m.key;
+          if (!st.timeTouched && foodDate() !== getLocalIsoDate()) { st.time = m.time; byId('fs-time').value = m.time; }
+          renderSheetChips();
+        };
         mBox.appendChild(c);
       });
       const pBox = byId('fs-portions');
-      pBox.innerHTML = '';
-      PORTIONS.forEach(p => {
-        const c = document.createElement('button');
-        c.type = 'button';
-        c.className = 'chip' + (st.portion === p.key ? ' active' : '');
-        c.textContent = p.name;
-        c.onclick = () => { st.portion = p.key; renderSheetChips(); };
-        pBox.appendChild(c);
-      });
-      byId('fs-submit').textContent = `✅ Ajouter ${foodMomentByKey(st.moment).to}`;
+      if (pBox) {
+        pBox.innerHTML = '';
+        PORTIONS.forEach(p => {
+          const c = document.createElement('button');
+          c.type = 'button';
+          c.className = 'chip' + (st.portion === p.key ? ' active' : '');
+          c.textContent = p.name;
+          c.onclick = () => { st.portion = p.key; renderSheetChips(); };
+          pBox.appendChild(c);
+        });
+      }
+      const gBox = byId('fs-gram-chips');
+      if (gBox) {
+        gBox.innerHTML = '';
+        const hints = unitHints(st.name).map(h => ({ label: `${h.label} ≈ ${h.g} g`, g: h.g }));
+        const choices = hints.concat(GRAM_CHOICES.filter(g => !hints.some(h => h.g === g)).map(g => ({ label: `${g} g`, g: g })));
+        const pg = parseGrams(st.quantity);
+        if (pg && !choices.some(c => c.g === pg)) choices.unshift({ label: `le paquet · ${pg} g`, g: pg });
+        choices.forEach(ch => {
+          const c = document.createElement('button');
+          c.type = 'button';
+          c.className = 'chip' + (st.grams === ch.g ? ' active' : '');
+          c.textContent = ch.label;
+          c.onclick = () => { st.grams = ch.g; byId('fs-grams').value = ch.g; renderSheetChips(); };
+          gBox.appendChild(c);
+        });
+        const nutr = nutrFor(st.per100, st.grams);
+        byId('fs-nutr').innerHTML = nutr
+          ? `<div class="fs-nutr-title">Pour ${fmtNum(st.grams)} g</div>${nutrTable(nutr)}`
+          : '<div class="rp-muted">Indique la quantité pour calculer l\'eau, le sel et le potassium apportés.</div>';
+      }
+      byId('fs-submit').textContent = st.editId ? '💾 Enregistrer les modifications' : `✅ Ajouter ${foodMomentByKey(st.moment).to}`;
     }
 
     function addSheetIngredients() {
@@ -2271,7 +2943,7 @@
         type: 'food_dish',
         volume: 0,
         label: st.name.slice(0, 200),
-        data: JSON.stringify({ name: st.name, brand: st.brand, source: st.source, barcode: st.barcode, quantity: st.quantity, nutriscore: st.nutriscore, ingredients: st.ingredients }),
+        data: JSON.stringify({ name: st.name, brand: st.brand, source: st.source, barcode: st.barcode, quantity: st.quantity, nutriscore: st.nutriscore, per100: st.per100 || undefined, ingredients: st.ingredients }),
         isoDate: getLocalIsoDate(now),
         dateStr: now.toLocaleDateString('fr-FR'),
         timeStr: nowTimeStr()
@@ -2281,11 +2953,20 @@
 
     function submitMealSheet() {
       const st = foodSheet;
-      if (byId('fs-ing-input').value.trim()) addSheetIngredients();
-      st.name = byId('fs-name').value.trim().slice(0, 80);
+      if (byId('fs-ing-input') && byId('fs-ing-input').value.trim()) addSheetIngredients();
+      if (byId('fs-name')) st.name = byId('fs-name').value.trim().slice(0, 80);
       if (!st.name) return sheetMsg('Indique le nom de ce que tu as mangé.');
+      const byWeight = !!st.per100;
+      if (byWeight && !(st.grams > 0 && st.grams <= 3000)) return sheetMsg('Indique la quantité en grammes.');
+      const time = byId('fs-time').value;
+      if (timeToMin(time) === null) return sheetMsg('Indique l\'heure du repas.');
+      const iso = foodDate();
+      const editRec = st.editId ? records.find(r => String(r.id) === st.editId) : null;
+      const recIso = editRec ? editRec.isoDate : iso;
+      if (recIso === getLocalIsoDate() && timeToMin(time) > timeToMin(nowTimeStr()) + 5) return sheetMsg('Cette heure n\'est pas encore passée.');
+
       let dishId = st.dishId;
-      if (byId('fs-save').checked) {
+      if (byId('fs-save') && byId('fs-save').checked) {
         // Un plat du même nom existe déjà : on le met à jour au lieu de créer un doublon
         if (!st.dishId) {
           const same = getDishes().find(d => normalizeText(d.name) === normalizeText(st.name) && (d.barcode || '') === (st.barcode || ''));
@@ -2294,31 +2975,43 @@
         dishId = saveDish(st);
       }
 
-      const iso = foodDate();
       const moment = foodMomentByKey(st.moment);
       const portion = portionByKey(st.portion);
-      const [y, m, d] = iso.split('-');
-      let label = `${moment.name} : ${st.name}${st.brand ? ' (' + st.brand + ')' : ''} · portion ${portion.name.toLowerCase()}`;
+      const grams = byWeight ? st.grams : null;
+      const nutr = byWeight ? nutrFor(st.per100, grams) : null;
+      const [y, m, d] = recIso.split('-');
+      let label = `${moment.name} : ${st.name}${st.brand ? ' (' + st.brand + ')' : ''} · ${grams ? grams + ' g' : 'portion ' + portion.name.toLowerCase()}`;
       if (st.ingredients.length) label += ` — ${st.ingredients.join(', ')}`;
+      const data = {
+        dishId: dishId || undefined, name: st.name, brand: st.brand || undefined, source: st.source,
+        barcode: st.barcode || undefined, ciqual: st.ciqual || undefined, group: st.group || undefined,
+        ingredients: st.ingredients.length ? st.ingredients : undefined,
+        portion: grams ? undefined : portion.key, grams: grams || undefined,
+        per100: st.per100 || undefined, nutr: nutr || undefined,
+        quantity: st.quantity || undefined, moment: moment.key, note: (st.note || '').trim() || undefined
+      };
       const entry = {
-        id: newId(),
+        id: editRec ? editRec.id : newId(),
         type: 'repas',
         volume: 0,
         label: label.slice(0, 200),
-        detail: `${moment.key}|${portion.key}`,
-        data: JSON.stringify({ dishId: dishId, name: st.name, brand: st.brand, source: st.source, barcode: st.barcode, ingredients: st.ingredients, portion: portion.key, moment: moment.key, note: (st.note || '').trim() }),
-        isoDate: iso,
-        dateStr: `${d}/${m}/${y}`,
-        timeStr: iso === getLocalIsoDate() ? nowTimeStr() : ''
+        detail: `${moment.key}|${grams ? grams + 'g' : portion.key}`,
+        data: JSON.stringify(data),
+        isoDate: recIso,
+        dateStr: editRec ? editRec.dateStr : `${d}/${m}/${y}`,
+        timeStr: time
       };
       upsertLocal(entry);
       foodMoment = moment.key;
-      byId('food-search').value = '';
-      byId('food-off-results').innerHTML = '';
+      if (!st.editId) {
+        byId('food-search').value = '';
+        offState = { q: '', status: '', items: [] };
+      }
       setFoodMsg('');
       closeFoodSheet();
       commitChanges();
-      showToast(`🍽️ ${st.name} · ${moment.name.toLowerCase()}`, () => {
+      if (st.editId) { showToast(`✏️ ${st.name} modifié`); return; }
+      showToast(`🍽️ ${st.name} · ${moment.name.toLowerCase()} ${time}`, () => {
         deleteWhere(r => String(r.id) === String(entry.id));
         commitChanges();
         showToast('Repas retiré');
@@ -2399,6 +3092,25 @@
       }).slice(0, 40);
     }
 
+    // Valeurs pour 100 g d'Open Food Facts (sodium et minéraux sont donnés en grammes)
+    function offPer100(p) {
+      const n = p.nutriments || {};
+      const val = k => { const v = Number(n[k]); return n[k] !== undefined && n[k] !== '' && isFinite(v) ? v : null; };
+      const per100 = {};
+      const set = (k, v, mult) => { if (v !== null) per100[k] = Math.round(v * (mult || 1) * 100) / 100; };
+      set('kcal', val('energy-kcal_100g'));
+      set('prot', val('proteins_100g'));
+      set('gluc', val('carbohydrates_100g'));
+      set('sucres', val('sugars_100g'));
+      set('lip', val('fat_100g'));
+      set('fibres', val('fiber_100g'));
+      set('sel', val('salt_100g'));
+      set('na', val('sodium_100g'), 1000);
+      set('k', val('potassium_100g'), 1000);
+      set('mg', val('magnesium_100g'), 1000);
+      return Object.keys(per100).length ? per100 : null;
+    }
+
     function offToDish(p, code) {
       return {
         name: (p.product_name_fr || p.product_name || p.generic_name_fr || `Produit ${code}`).trim().slice(0, 80),
@@ -2407,6 +3119,7 @@
         nutriscore: String(p.nutriscore_grade || ''),
         barcode: String(code || p.code || ''),
         ingredients: offIngredients(p),
+        per100: offPer100(p),
         source: 'off'
       };
     }
@@ -2423,54 +3136,44 @@
       }
       stopScan();
       const known = getDishes().find(d => d.barcode === code);
-      if (known) { openMealSheet(known); return; }
+      if (known && known.per100) { openMealSheet(known); return; }
       setFoodMsg('Recherche du produit dans Open Food Facts…');
       try {
         const j = await offFetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=${OFF_FIELDS}`);
         if (j.status !== 1 || !j.product) {
-          setFoodMsg(`Produit ${code} absent d'Open Food Facts : complète la fiche à la main.`, 'err');
-          openMealSheet({ source: 'off', barcode: code });
+          setFoodMsg(known ? '' : `Produit ${code} absent d'Open Food Facts : complète la fiche à la main.`, known ? '' : 'err');
+          openMealSheet(known || { source: 'off', barcode: code });
           return;
         }
         setFoodMsg('');
-        openMealSheet(offToDish(j.product, code));
+        const dish = offToDish(j.product, code);
+        openMealSheet(known ? Object.assign({}, dish, { id: known.id, ingredients: known.ingredients && known.ingredients.length ? known.ingredients : dish.ingredients }) : dish);
       } catch (e) {
+        if (known) { setFoodMsg(''); openMealSheet(known); return; }
         setFoodMsg(offErrorMessage(), 'err');
       }
     }
 
     async function searchOFF() {
-      const input = byId('food-search');
-      const q = input.value.trim();
-      const box = byId('food-off-results');
+      const raw = byId('food-search').value.trim();
+      const q = normalizeText(raw);
       if (q.length < 2) {
-        setFoodMsg('Tape d\'abord le nom du produit dans la barre de recherche, puis « 🌍 Chercher ».', 'err');
-        input.focus();
+        setFoodMsg('Tape d\'abord le nom du produit dans la recherche.', 'err');
+        byId('food-search').focus();
         return;
       }
       setFoodMsg('');
-      box.innerHTML = '<div class="drink-empty">Recherche dans Open Food Facts…</div>';
+      offState = { q: q, status: 'loading', items: [] };
+      renderFoodResults();
       try {
-        const j = await offFetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=15&fields=${OFF_FIELDS}`);
-        const products = (j.products || []).filter(p => p.product_name_fr || p.product_name);
-        box.innerHTML = '';
-        if (!products.length) {
-          box.innerHTML = '<div class="drink-empty">Aucun produit trouvé. Essaie un autre nom ou scanne le code-barres.</div>';
-          return;
-        }
-        const t = document.createElement('div');
-        t.className = 'food-results-title';
-        t.textContent = 'Produits du commerce (Open Food Facts)';
-        box.appendChild(t);
-        products.forEach(p => {
-          const dish = offToDish(p, p.code);
-          const known = getDishes().find(d => d.barcode && d.barcode === dish.barcode);
-          box.appendChild(foodRow(dish.name, [dish.brand, dish.quantity].filter(Boolean).join(' · ') || 'Produit du commerce', '🛒', () => openMealSheet(known || dish)));
-        });
+        const j = await offFetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(raw)}&search_simple=1&action=process&json=1&page_size=15&fields=${OFF_FIELDS}`);
+        if (offState.q !== q) return;
+        offState = { q: q, status: 'done', items: (j.products || []).filter(p => p.product_name_fr || p.product_name).map(p => offToDish(p, p.code)) };
       } catch (e) {
-        box.innerHTML = '';
-        setFoodMsg(offErrorMessage(), 'err');
+        if (offState.q !== q) return;
+        offState = { q: q, status: 'error', items: [] };
       }
+      if (normalizeText(byId('food-search').value.trim()) === q) renderFoodResults();
     }
 
     // ----- Scan de code-barres (caméra) -----
@@ -2619,6 +3322,7 @@
       day.medDue = day.meds.reduce((a, s) => a + s.meds.length, 0);
       day.medDone = day.meds.reduce((a, s) => a + s.taken.length, 0);
       day.liquidStools = day.losses.filter(l => l.type === 'perte_selle' && String(l.detail || '').startsWith('liquide')).length;
+      day.food = sumNutr(day.meals);
       day.hasData = !!(day.drinks.length || day.losses.length || day.meals.length || day.weight.matin != null || day.weight.soir != null || day.medDone);
       return day;
     }
@@ -2665,6 +3369,8 @@
           ${kpi(allW.length ? `${fmtKg(Math.min(...allW))} – ${fmtKg(Math.max(...allW))}` : '—', 'Poids min – max')}
           ${kpi(medDue ? `${medDone}/${medDue} (${Math.round(medDone / medDue * 100)} %)` : '—', 'Prises de compléments')}
           ${kpi(`${filled.reduce((a, d) => a + d.meals.length, 0)}`, 'Aliments / plats notés')}
+          ${(() => { const fd = filled.filter(d => d.food.known && d.food.eau != null); return fd.length ? kpi(`≈ ${avg(fd.map(d => d.food.eau))} ml`, `Eau apportée par les aliments chiffrés (${fd.length} j)`) : ''; })()}
+          ${(() => { const fd = filled.filter(d => d.food.known && d.food.sel != null); return fd.length ? kpi(`${avg1(fd.map(d => d.food.sel))} g · ${avg(fd.map(d => d.food.k || 0))} mg`, 'Sel · potassium des aliments chiffrés') : ''; })()}
         </div>
         <canvas id="rp-chart-fluids" class="rp-chart" width="760" height="230" style="width: 100%; height: auto;"></canvas>
         <canvas id="rp-chart-weight" class="rp-chart" width="760" height="200" style="width: 100%; height: auto;"></canvas>
@@ -2693,7 +3399,8 @@
           const list = d.meals.filter(ml => (ml.moment || String(ml.rec.detail || '').split('|')[0]) === m.key);
           if (!list.length) return '';
           return `<li><strong>${m.name}</strong> : ${list.map(ml =>
-            `${esc(ml.name || ml.rec.label)}${ml.brand ? ' (' + esc(ml.brand) + ')' : ''} — portion ${esc(portionByKey(ml.portion).name.toLowerCase())}` +
+            `${ml.rec.timeStr ? esc(ml.rec.timeStr) + ' · ' : ''}${esc(ml.name || ml.rec.label)}${ml.brand ? ' (' + esc(ml.brand) + ')' : ''} — ${esc(qtyText(ml))}` +
+            `${ml.nutr ? ` <span class="rp-muted">(${esc(nutrLine(ml.nutr))})</span>` : ''}` +
             `${ml.ingredients && ml.ingredients.length ? ` <span class="rp-muted">[${esc(ml.ingredients.join(', '))}]</span>` : ''}` +
             `${ml.note ? ` <em>📝 ${esc(ml.note)}</em>` : ''}`).join(' ; ')}</li>`;
         }).join('');
@@ -2709,6 +3416,7 @@
               <div><h4>Urines et selles</h4>${losses ? `<ul>${losses}</ul>` : '<div class="rp-muted">—</div>'}</div>
             </div>
             <h4>Alimentation</h4>${meals ? `<ul>${meals}</ul>` : '<div class="rp-muted">—</div>'}
+            ${d.food.known ? `<div class="rp-muted">Apports estimés (${d.food.known} aliment(s) chiffré(s) sur ${d.food.count}) : ${esc(nutrLine(d.food))}${d.food.na != null ? ` · sodium ${fmtNum(d.food.na)} mg` : ''}</div>` : ''}
             ${meds ? `<h4>Compléments</h4><ul>${meds}</ul>` : ''}
             <h4>Poids</h4><div>Matin : ${d.weight.matin != null ? fmtKg(d.weight.matin) : '—'} · Soir : ${d.weight.soir != null ? fmtKg(d.weight.soir) : '—'}</div>
           </section>`;
@@ -2718,7 +3426,9 @@
         Méthode : données saisies par le patient. Les volumes d'urines et de selles sont estimés d'après la taille et la consistance déclarées
         (urine petite ≈ 150 ml, moyenne ≈ 300 ml, grande ≈ 500 ml ou quantité mesurée ; selle de 50 à 500 ml selon consistance et quantité).
         Les pertes invisibles (respiration, peau) sont comptées forfaitairement à ${BASE_LOSS_ML} ml par jour.
-        Bilan = liquides bus − pertes estimées. L'eau contenue dans les aliments n'est pas comptée.
+        Bilan = liquides bus − pertes estimées. L'eau contenue dans les aliments n'est pas comptée dans le bilan ; elle est indiquée à part.
+        Valeurs nutritionnelles : table de composition CIQUAL (ANSES) pour les aliments de base, Open Food Facts pour les produits du commerce,
+        calculées selon la quantité déclarée ; les plats maison sans quantité ne sont pas chiffrés.
       </div>`;
 
       reportCharts.forEach(c => c.destroy());
@@ -3273,6 +3983,8 @@
       renderDocsList();
     }
 
+    const docsOpenYears = new Set();   // années dépliées dans « Mes documents »
+
     function renderDocsList() {
       const box = byId('docs-list');
       const filters = byId('docs-filters');
@@ -3298,15 +4010,51 @@
         });
       }
       box.innerHTML = '';
-      const list = docsList.filter(d => docsFilter === 'tous' || d.category === docsFilter);
+      const words = searchWords(byId('docs-search').value);
+      const list = docsList.filter(d => (docsFilter === 'tous' || d.category === docsFilter) &&
+        (!words.length || words.every(w => normalizeText([d.title, d.note, docCat(d.category).name].join(' ')).includes(w))));
+      byId('docs-search').style.display = docsList.length > 4 ? '' : 'none';
       if (!list.length) {
-        box.innerHTML = '<div class="drink-empty">Aucun document pour l\'instant.</div>';
+        box.innerHTML = `<div class="drink-empty">${docsList.length ? 'Aucun document ne correspond.' : 'Aucun document pour l\'instant.'}</div>`;
         return;
       }
-      list.forEach(d => {
-        const cat = docCat(d.category);
-        const sub = [d.docDate ? `du ${fmtIsoFr(d.docDate)}` : '', `importé le ${fmtStamp(d.importedAt)}`, d.pages ? `${d.pages} p.` : ''].filter(Boolean).join(' · ');
-        box.appendChild(foodRow(`${cat.icon} ${d.title}`, sub, d.legacy ? '⚠️ non chiffré' : (d.broken ? '❌' : '🔒'), () => openDocViewer(d)));
+      // Classement par date DU DOCUMENT (pas d'import) : années → mois, le plus récent en haut
+      const dateOf = d => d.docDate || getLocalIsoDate(new Date(Number(d.importedAt) || Date.now()));
+      const sorted = list.slice().sort((a, b) => dateOf(b).localeCompare(dateOf(a)) || String(a.title).localeCompare(String(b.title), 'fr'));
+      const years = new Map();
+      sorted.forEach(d => {
+        const iso = dateOf(d);
+        const y = iso.slice(0, 4), ym = iso.slice(0, 7);
+        if (!years.has(y)) years.set(y, new Map());
+        const months = years.get(y);
+        if (!months.has(ym)) months.set(ym, []);
+        months.get(ym).push(d);
+      });
+      const yearKeys = [...years.keys()];
+      const filtering = words.length || docsFilter !== 'tous';
+      yearKeys.forEach((y, yi) => {
+        const months = years.get(y);
+        const count = [...months.values()].reduce((a, l) => a + l.length, 0);
+        const open = filtering || docsOpenYears.has(y) || (!docsOpenYears.size && yi === 0);
+        const det = document.createElement('details');
+        det.className = 'doc-year';
+        det.open = open;
+        det.innerHTML = `<summary><span>${esc(y)}</span><small>${count} document${count > 1 ? 's' : ''}</small></summary>`;
+        det.addEventListener('toggle', () => { if (det.open) docsOpenYears.add(y); else docsOpenYears.delete(y); });
+        months.forEach((docs, ym) => {
+          const [yy, mm] = ym.split('-').map(Number);
+          const label = new Date(yy, mm - 1, 1).toLocaleDateString('fr-FR', { month: 'long' });
+          const head = document.createElement('div');
+          head.className = 'doc-month';
+          head.textContent = `${label.charAt(0).toUpperCase() + label.slice(1)} · ${docs.length}`;
+          det.appendChild(head);
+          docs.forEach(d => {
+            const cat = docCat(d.category);
+            const sub = [d.docDate ? `du ${fmtIsoFr(d.docDate)}` : 'date du document non renseignée', cat.name, d.pages ? `${d.pages} p.` : ''].filter(Boolean).join(' · ');
+            det.appendChild(foodRow(`${cat.icon} ${d.title}`, sub, d.legacy ? '⚠️ non chiffré' : (d.broken ? '❌' : '🔒'), () => openDocViewer(d)));
+          });
+        });
+        box.appendChild(det);
       });
     }
 
@@ -4092,11 +4840,26 @@
       return messages[code] || (navigator.onLine ? 'Erreur de communication. Réessaie.' : 'Pas de connexion Internet.');
     }
 
+    // Cloche de la barre du haut : 🔔 notifications actives sur ce téléphone, 🔕 sinon
+    function setBell(state) {
+      const bell = byId('tb-bell');
+      if (!bell) return;
+      bell.textContent = state === 'on' || state === 'none' ? '🔔' : '🔕';
+      bell.title = state === 'on' ? 'Rappels : notifications actives sur ce téléphone'
+        : state === 'none' ? 'Rappels' : 'Rappels : notifications non activées sur ce téléphone';
+      bell.classList.toggle('tb-alert', state === 'off' || state === 'blocked');
+    }
+
     async function renderReminders() {
       const box = byId('med-reminders');
       if (!box) return;
       const plan = getMedPlan();
-      if (!plan.meds.length || !hasSession()) { box.innerHTML = ''; return; }
+      if (!hasSession()) { box.innerHTML = ''; return; }
+      if (!plan.meds.length) {
+        setBell('none');
+        box.innerHTML = '<div class="set-line">Ajoute d\'abord tes compléments (onglet Aujourd\'hui › « ⚙️ Gérer mes compléments ») pour recevoir des rappels.</div>';
+        return;
+      }
       if (!reminderInfo && !reminderLoading && navigator.onLine) {
         reminderLoading = true;
         sessionCall({ action: 'push_key' })
@@ -4115,6 +4878,7 @@
           .then(r => { if (reminderInfo && reminderInfo.devices !== r.devices) { reminderInfo.devices = r.devices; renderReminders(); } })
           .catch(() => { pushResynced = false; });
       }
+      setBell(sub ? 'on' : perm === 'denied' ? 'blocked' : 'off');
       let status, buttons = '';
       if (!supported) {
         status = 'Ce navigateur ne peut pas recevoir de notifications : les rappels arrivent par e-mail.';
@@ -4131,7 +4895,6 @@
         buttons = '<button class="sync-btn" type="button" id="rem-on" style="background: #4f46e5; margin-top: 8px;">🔔 Activer les notifications sur ce téléphone</button>';
       }
       box.innerHTML = `
-        <div class="med-rem-title">🔔 Rappels</div>
         <div class="med-rem-status">${status}</div>
         ${buttons}
         ${reminderInfo && reminderInfo.channel ? `<div class="action-label" style="margin-top: 10px;">Recevoir les rappels par</div><div class="chip-row" id="rem-channels"></div>
@@ -4229,8 +4992,323 @@
       }
     }
 
+    // ================== AGENDA MÉDICAL (Google Agenda « 🩺 RDV médicaux ») ==================
+    const LS_AGENDA = 'hydra_agenda';
+    const RDV_QUICK = ['Médecin traitant', 'Gastro-entérologue', 'Néphrologue', 'Prise de sang', 'Examen', 'Hôpital'];
+    const RDV_DURATIONS = [15, 30, 45, 60, 90, 120];
+    const AGENDA_REFRESH_MS = 3 * 60 * 1000;
+    let agenda = Object.assign({ events: [], lastOk: 0 }, lsGet(LS_AGENDA, {}));
+    let agendaLoading = false;
+    let agendaError = '';
+    let agendaShowPast = false;
+    let rdvSheet = null;
+
+    function rdvIcon(title) {
+      const t = normalizeText(title);
+      if (/prise de sang|analyse|labo|bilan sanguin/.test(t)) return '🩸';
+      if (/scanner|irm|echo|radio|coloscopie|endoscopie|fibroscopie|examen|imagerie/.test(t)) return '🔬';
+      if (/hopital|chu|clinique|urgence|hospitali/.test(t)) return '🏥';
+      if (/kine|dentiste|pharmacie|infirm/.test(t)) return '🩹';
+      return '🩺';
+    }
+
+    function agendaErrorText(code) {
+      return {
+        agenda_auth: 'Le script Google n\'a pas encore accès à Google Agenda : dans l\'éditeur Apps Script, exécute une fois « installerAgenda », puis redéploie.',
+        unknown_action: 'Le script Google n\'est pas encore à jour (version 7 nécessaire).',
+        bad_event: 'Rendez-vous incomplet : vérifie la date et l\'heure.',
+        not_found: 'Ce rendez-vous n\'existe plus dans Google Agenda.',
+        recurring: 'RDV répété : modifie-le directement dans Google Agenda.'
+      }[code] || (navigator.onLine ? 'Google Agenda ne répond pas, réessaie plus tard.' : 'Pas de connexion Internet.');
+    }
+
+    async function refreshAgenda(force) {
+      if (!hasSession() || !navigator.onLine || agendaLoading) { renderAgenda(); return; }
+      if (!force && agenda.lastOk && Date.now() - agenda.lastOk < AGENDA_REFRESH_MS) return;
+      agendaLoading = true;
+      renderAgendaStatus();
+      try {
+        const data = await sessionCall({ action: 'agenda_list' });
+        agenda = { events: Array.isArray(data.events) ? data.events : [], lastOk: Date.now(), calendar: data.calendar || '' };
+        lsSet(LS_AGENDA, agenda);
+        agendaError = '';
+      } catch (e) {
+        if (e.message !== 'unauthorized') agendaError = e.message || 'server';
+      } finally {
+        agendaLoading = false;
+        renderAgenda();
+        renderAgendaBanner();
+      }
+    }
+
+    function fmtRdvDay(ev, opts) {
+      return new Date(ev.allDay ? ev.day + 'T12:00:00' : ev.start).toLocaleDateString('fr-FR', opts);
+    }
+    function fmtRdvTime(ev) {
+      if (ev.allDay) return 'toute la journée';
+      const t = d => new Date(d).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      return `${t(ev.start)} – ${t(ev.end)}`;
+    }
+    function rdvDayIso(ev) { return ev.allDay ? ev.day : getLocalIsoDate(new Date(ev.start)); }
+    function daysUntil(ev) {
+      const a = new Date(getLocalIsoDate() + 'T12:00:00'), b = new Date(rdvDayIso(ev) + 'T12:00:00');
+      return Math.round((b - a) / 86400000);
+    }
+    function whenLabel(ev) {
+      const now = Date.now();
+      if (!ev.allDay && ev.start <= now && ev.end > now) return 'en cours';
+      const n = daysUntil(ev);
+      if (n === 0) return ev.allDay ? 'aujourd\'hui' : `aujourd'hui à ${new Date(ev.start).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+      if (n === 1) return 'demain';
+      if (n > 1 && n < 7) return `dans ${n} jours`;
+      if (n >= 7 && n < 14) return 'dans 1 semaine';
+      if (n >= 14 && n < 60) return `dans ${Math.round(n / 7)} semaines`;
+      return '';
+    }
+    function upcomingEvents() {
+      const now = Date.now();
+      return agenda.events.filter(ev => ev.allDay ? rdvDayIso(ev) >= getLocalIsoDate() : ev.end > now)
+        .sort((a, b) => a.start - b.start);
+    }
+
+    function renderAgendaStatus() {
+      const el = byId('agenda-status');
+      if (!el) return;
+      if (agendaLoading) { el.className = 'ag-status'; el.textContent = 'Mise à jour depuis Google Agenda…'; return; }
+      if (agendaError) { el.className = 'ag-status err'; el.textContent = agendaErrorText(agendaError); return; }
+      el.className = 'ag-status';
+      el.textContent = agenda.lastOk
+        ? `Synchronisé avec Google Agenda (« 🩺 RDV médicaux ») · ${new Date(agenda.lastOk).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
+        : 'Relié à ton Google Agenda, agenda « 🩺 RDV médicaux ».';
+    }
+
+    function agendaItem(ev, past) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ag-item' + (past ? ' past' : '');
+      const wd = fmtRdvDay(ev, { weekday: 'short' }).replace('.', '');
+      b.innerHTML = `<div class="ag-date"><small>${esc(wd)}</small><b>${esc(fmtRdvDay(ev, { day: 'numeric' }))}</b><small>${esc(fmtRdvDay(ev, { month: 'short' }).replace('.', ''))}</small></div>
+        <div class="ag-main"><div class="ag-title"></div><div class="ag-sub"></div></div>`;
+      b.querySelector('.ag-title').textContent = `${rdvIcon(ev.title)} ${ev.title}`;
+      b.querySelector('.ag-sub').textContent = [fmtRdvTime(ev), ev.location].filter(Boolean).join(' · ');
+      const when = past ? '' : whenLabel(ev);
+      if (when) {
+        const w = document.createElement('span');
+        w.className = 'ag-when';
+        w.textContent = when;
+        b.querySelector('.ag-main').appendChild(w);
+      }
+      b.onclick = () => openRdvSheet(ev);
+      return b;
+    }
+
+    function renderAgenda() {
+      renderAgendaStatus();
+      const box = byId('agenda-list');
+      if (!box) return;
+      box.innerHTML = '';
+      const up = upcomingEvents();
+      const upIds = new Set(up.map(e => e.id + '|' + e.start));
+      const past = agenda.events.filter(e => !upIds.has(e.id + '|' + e.start)).sort((a, b) => b.start - a.start);
+      if (!up.length) {
+        box.innerHTML = `<div class="ag-empty">${agenda.lastOk || agenda.events.length ? 'Aucun rendez-vous à venir.' : 'Tes rendez-vous apparaîtront ici et dans ton Google Agenda.'}</div>`;
+      }
+      let month = '';
+      up.forEach(ev => {
+        const m = fmtRdvDay(ev, { month: 'long', year: 'numeric' });
+        if (m !== month) {
+          month = m;
+          const h = document.createElement('div');
+          h.className = 'ag-month';
+          h.textContent = m;
+          box.appendChild(h);
+        }
+        box.appendChild(agendaItem(ev, false));
+      });
+      if (past.length) {
+        const t = document.createElement('button');
+        t.type = 'button';
+        t.className = 'drink-more';
+        t.textContent = agendaShowPast ? 'Masquer les rendez-vous passés' : `Voir les rendez-vous passés (${past.length})`;
+        t.onclick = () => { agendaShowPast = !agendaShowPast; renderAgenda(); };
+        box.appendChild(t);
+        if (agendaShowPast) past.forEach(ev => box.appendChild(agendaItem(ev, true)));
+      }
+    }
+
+    // Bandeau discret dans « Aujourd'hui » : prochain RDV dans les 7 jours
+    function renderAgendaBanner() {
+      const el = byId('rdv-banner');
+      if (!el) return;
+      const next = upcomingEvents().filter(ev => daysUntil(ev) <= 7);
+      if (!next.length) { el.className = 'rdv-banner'; el.innerHTML = ''; return; }
+      const ev = next[0];
+      const n = daysUntil(ev);
+      const day = n === 0 ? 'Aujourd\'hui' : n === 1 ? 'Demain' : fmtRdvDay(ev, { weekday: 'long', day: 'numeric', month: 'long' });
+      const time = ev.allDay ? '' : ` à ${new Date(ev.start).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+      el.className = 'rdv-banner show' + (n === 0 ? ' today' : '');
+      el.innerHTML = '<b></b> <span></span><small></small>';
+      el.querySelector('b').textContent = `📅 ${day.charAt(0).toUpperCase() + day.slice(1)}${time}`;
+      el.querySelector('span').textContent = `· ${ev.title}`;
+      el.querySelector('small').textContent = [ev.location, next.length > 1 ? `+ ${next.length - 1} autre${next.length > 2 ? 's' : ''} RDV cette semaine` : ''].filter(Boolean).join(' · ');
+    }
+
+    function renderAgendaSettings() {
+      const el = byId('set-agenda-status');
+      if (!el) return;
+      el.textContent = agendaError
+        ? agendaErrorText(agendaError)
+        : `Tes rendez-vous sont dans l'agenda « 🩺 RDV médicaux » de ton Google Agenda (visible dans Gmail et sur tous tes appareils).${agenda.lastOk ? ` ${agenda.events.length} RDV sur ±13 mois · mis à jour à ${new Date(agenda.lastOk).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}.` : ''}`;
+    }
+
+    // ----- Fiche RDV -----
+    function openRdvSheet(ev) {
+      const now = new Date();
+      const start = ev ? new Date(ev.allDay ? ev.day + 'T09:00:00' : ev.start) : null;
+      const pad = n => String(n).padStart(2, '0');
+      const tomorrow = new Date(now.getTime() + 86400000);
+      rdvSheet = {
+        id: ev ? ev.id : null,
+        recurring: ev ? !!ev.recurring : false,
+        allDay: ev ? !!ev.allDay : false,
+        title: ev ? ev.title : '',
+        date: ev ? rdvDayIso(ev) : getLocalIsoDate(tomorrow),
+        time: start && !ev.allDay ? `${pad(start.getHours())}:${pad(start.getMinutes())}` : '09:00',
+        duration: ev && !ev.allDay ? Math.max(5, Math.round((ev.end - ev.start) / 60000)) : 30,
+        location: ev ? ev.location || '' : '',
+        notes: ev ? ev.notes || '' : ''
+      };
+      renderRdvSheet();
+    }
+
+    function closeRdvSheet() {
+      const el = byId('rdv-sheet');
+      if (!el || el.style.display !== 'flex') return;
+      el.style.display = 'none';
+      rdvSheet = null;
+      updateModalState();
+    }
+
+    function renderRdvSheet() {
+      const st = rdvSheet;
+      const ro = st.recurring;
+      byId('rdv-sheet-title').textContent = st.id ? (ro ? '📅 Rendez-vous répété' : '✏️ Modifier le rendez-vous') : '📅 Nouveau rendez-vous';
+      const durs = RDV_DURATIONS.includes(st.duration) ? RDV_DURATIONS : RDV_DURATIONS.concat([st.duration]).sort((a, b) => a - b);
+      byId('rdv-sheet-body').innerHTML = `
+        ${ro ? '<div class="sync-note" style="margin-top: 0;">Ce rendez-vous se répète : il se modifie dans Google Agenda.</div>' : ''}
+        <div class="action-label">Avec qui / pour quoi</div>
+        <input type="text" id="rdv-title" class="date-picker-input" maxlength="120" placeholder="Ex : Gastro-entérologue — Dr Martin" value="${esc(st.title)}" style="margin-top: 0;" ${ro ? 'disabled' : ''}>
+        ${st.id ? '' : '<div class="chip-row" id="rdv-quick" style="margin-top: 6px;"></div>'}
+        <div class="action-row" style="margin-top: 10px;">
+          <div style="flex: 1;"><div class="action-label">Date</div><input type="date" id="rdv-date" class="date-picker-input" value="${esc(st.date)}" style="margin-top: 0;" ${ro ? 'disabled' : ''}></div>
+          ${st.allDay ? '' : `<div style="flex: 1;"><div class="action-label">Heure</div><input type="time" id="rdv-time" class="date-picker-input" value="${esc(st.time)}" style="margin-top: 0;" ${ro ? 'disabled' : ''}></div>`}
+        </div>
+        ${st.allDay ? '<div class="sync-note">Rendez-vous sur toute la journée (créé dans Google Agenda).</div>' : `
+        <div class="action-label" style="margin-top: 10px;">Durée</div>
+        <div class="chip-row" id="rdv-durations">${durs.map(d => `<button type="button" class="chip${d === st.duration ? ' active' : ''}" data-d="${d}" ${ro ? 'disabled' : ''}>${d < 60 ? d + ' min' : (d / 60).toString().replace('.', ',') + ' h'}</button>`).join('')}</div>`}
+        <div class="action-label" style="margin-top: 10px;">Lieu (facultatif)</div>
+        <input type="text" id="rdv-location" class="date-picker-input" maxlength="200" placeholder="Ex : Hôpital Sainte-Musse, Toulon" value="${esc(st.location)}" style="margin-top: 0;" ${ro ? 'disabled' : ''}>
+        <div class="action-label" style="margin-top: 10px;">Notes (facultatif)</div>
+        <textarea id="rdv-notes" class="date-picker-input" rows="3" maxlength="2000" placeholder="À apporter, questions à poser…" style="margin-top: 0; resize: vertical; font-family: inherit;" ${ro ? 'disabled' : ''}>${esc(st.notes)}</textarea>
+        ${ro ? '' : `<button class="sync-btn" type="button" id="rdv-save" style="margin-top: 12px; background: #0f766e;">${st.id ? '💾 Enregistrer' : '📅 Ajouter à mon agenda'}</button>`}
+        ${st.id && !ro ? '<button class="btn-sub" type="button" id="rdv-delete" style="width: 100%; margin-top: 8px;">🗑 Supprimer ce rendez-vous</button>' : ''}
+        <div id="rdv-msg" class="weight-feedback"></div>`;
+      const quick = byId('rdv-quick');
+      if (quick) {
+        RDV_QUICK.forEach(q => {
+          const c = document.createElement('button');
+          c.type = 'button';
+          c.className = 'chip';
+          c.textContent = `${rdvIcon(q)} ${q}`;
+          c.onclick = () => {
+            const input = byId('rdv-title');
+            const rest = input.value.replace(new RegExp('^(' + RDV_QUICK.join('|') + ')( — )?'), '').trim();
+            input.value = q + (rest ? ' — ' + rest : ' — ');
+            input.focus();
+          };
+          quick.appendChild(c);
+        });
+      }
+      document.querySelectorAll('#rdv-durations .chip').forEach(c => {
+        c.onclick = () => {
+          st.duration = Number(c.dataset.d);
+          document.querySelectorAll('#rdv-durations .chip').forEach(x => x.classList.toggle('active', x === c));
+        };
+      });
+      if (byId('rdv-save')) byId('rdv-save').onclick = saveRdv;
+      const del = byId('rdv-delete');
+      if (del) {
+        del.onclick = () => confirmTap(del, deleteRdv, {
+          arm: () => { del.textContent = '🗑 Confirmer la suppression ?'; del.style.background = '#dc2626'; del.style.color = 'white'; },
+          disarm: () => { del.textContent = '🗑 Supprimer ce rendez-vous'; del.style.background = ''; del.style.color = ''; }
+        });
+      }
+      byId('rdv-sheet').style.display = 'flex';
+      updateModalState();
+    }
+
+    function rdvMsg(text, kind) {
+      const el = byId('rdv-msg');
+      el.className = 'weight-feedback' + (kind ? ' ' + kind : '');
+      el.textContent = text;
+    }
+
+    async function saveRdv() {
+      const st = rdvSheet;
+      const title = byId('rdv-title').value.trim().replace(/\s+—\s*$/, '');
+      const date = byId('rdv-date').value;
+      if (!title) return rdvMsg('Indique avec qui ou pour quoi.', 'err');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return rdvMsg('Indique la date.', 'err');
+      let start, end;
+      if (st.allDay) {
+        start = new Date(date + 'T00:00:00').getTime();
+        end = start + 86400000;
+      } else {
+        const time = byId('rdv-time').value;
+        if (!/^\d{2}:\d{2}/.test(time)) return rdvMsg('Indique l\'heure.', 'err');
+        start = new Date(`${date}T${time}:00`).getTime();
+        end = start + st.duration * 60000;
+      }
+      if (!navigator.onLine) return rdvMsg('Pas de connexion Internet : le rendez-vous doit être enregistré dans Google Agenda.', 'err');
+      const btn = byId('rdv-save');
+      btn.disabled = true;
+      rdvMsg('Enregistrement dans Google Agenda…');
+      try {
+        const data = await sessionCall({ action: 'agenda_save', event: { id: st.id || undefined, title: title, start: start, end: end, allDay: st.allDay, location: byId('rdv-location').value.trim(), notes: byId('rdv-notes').value.trim() } });
+        const ev = data.event;
+        agenda.events = agenda.events.filter(e => e.id !== ev.id).concat([ev]);
+        lsSet(LS_AGENDA, agenda);
+        closeRdvSheet();
+        renderAgenda();
+        renderAgendaBanner();
+        showToast(st.id ? '📅 Rendez-vous modifié' : '📅 Ajouté à ton Google Agenda');
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        btn.disabled = false;
+        rdvMsg(agendaErrorText(e.message), 'err');
+      }
+    }
+
+    async function deleteRdv() {
+      const st = rdvSheet;
+      if (!navigator.onLine) return rdvMsg('Pas de connexion Internet.', 'err');
+      rdvMsg('Suppression…');
+      try {
+        await sessionCall({ action: 'agenda_delete', id: st.id });
+        agenda.events = agenda.events.filter(e => e.id !== st.id);
+        lsSet(LS_AGENDA, agenda);
+        closeRdvSheet();
+        renderAgenda();
+        renderAgendaBanner();
+        showToast('🗑 Rendez-vous supprimé de Google Agenda');
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        rdvMsg(agendaErrorText(e.message), 'err');
+      }
+    }
+
     // ================== NAVIGATION ==================
-    const TABS = ['today', 'food', 'docs', 'history'];
+    const TABS = ['today', 'food', 'agenda', 'docs', 'history'];
     function switchTab(tabName) {
       if (tabName !== 'docs') lockDocs();
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
@@ -4240,6 +5318,9 @@
         renderMeds();
       } else if (tabName === 'food') {
         renderFood();
+      } else if (tabName === 'agenda') {
+        renderAgenda();
+        refreshAgenda(false);
       } else if (tabName === 'docs') {
         renderDocs();
       } else {
@@ -4370,7 +5451,7 @@
             const md = parseData(item);
             const ingLine = document.createElement('div');
             ingLine.className = 'item-time';
-            ingLine.textContent = (md.ingredients && md.ingredients.length ? 'Ingrédients : ' + md.ingredients.join(', ') : '') + (md.note ? `  📝 ${md.note}` : '');
+            ingLine.textContent = [md.ingredients && md.ingredients.length ? 'Ingrédients : ' + md.ingredients.join(', ') : '', md.nutr ? nutrLine(md.nutr) : '', md.note ? `📝 ${md.note}` : ''].filter(Boolean).join('  ·  ');
             if (ingLine.textContent) inner.appendChild(ingLine);
           }
           div.appendChild(inner);
@@ -4746,6 +5827,7 @@
       renderAll();
       updateSyncStatusIdle();
       syncNow(true);
+      refreshAgenda(true);
     }
 
     function loadGis() {
@@ -4852,7 +5934,8 @@
       saveReminderState();
       saveSyncConf();
       if (window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
-      document.getElementById('sync-settings').style.display = 'none';
+      closeSettings();
+      closeRdvSheet();
       lockApp(message);
     }
 
@@ -4868,6 +5951,8 @@
       const token = syncConf.session && syncConf.session.token;
       if (token) apiCall({ action: 'logout', session: token }).catch(() => {});
       if (wipe) {
+        agenda = { events: [], lastOk: 0 };
+        lsSet(LS_AGENDA, agenda);
         records = [];
         pending = new Set();
         syncConf.lastSrv = 0;
@@ -4881,9 +5966,17 @@
 
     // ----- Statut de synchro -----
     function setSyncStatus(text, kind) {
-      const el = document.getElementById('sync-status');
-      el.textContent = text;
-      el.className = 'sync-status' + (kind ? ' ' + kind : '');
+      // Barre du haut : un point de couleur et un mot ; le détail est dans les Réglages
+      const btn = document.getElementById('sync-btn');
+      btn.dataset.state = kind || 'busy';
+      btn.title = text;
+      const short = kind === 'ok' ? 'à jour'
+        : kind === 'err' ? 'erreur'
+        : kind === 'warn' ? (/hors ligne/i.test(text) ? 'hors ligne' : /non connecté/i.test(text) ? 'déconnecté' : 'en attente')
+        : 'synchro…';
+      document.getElementById('sync-status').textContent = short;
+      const full = document.getElementById('set-sync-status');
+      if (full) full.textContent = text;
     }
 
     function formatLastSync() {
@@ -4934,7 +6027,6 @@
       syncing = true;
       const btn = document.getElementById('sync-btn');
       btn.disabled = true;
-      btn.textContent = '🔄 Synchronisation…';
       setSyncStatus('Synchronisation en cours…');
 
       const sent = records.filter(r => pending.has(String(r.id))).map(r => Object.assign({}, r));
@@ -4993,7 +6085,6 @@
         }
       } finally {
         btn.disabled = false;
-        btn.textContent = '🔄 Synchroniser maintenant';
         if (syncAgain) {
           syncAgain = false;
           scheduleSync(300);
@@ -5003,7 +6094,6 @@
 
     // ----- Réglages (propres à chaque appareil) -----
     function openSyncSettings() {
-      document.getElementById('sync-settings').style.display = 'block';
       const s = syncConf.session;
       const account = document.getElementById('sync-account');
       if (s) {
@@ -5022,10 +6112,22 @@
       document.getElementById('sync-settings-msg').textContent = '';
     }
 
-    function toggleSyncSettings() {
-      const el = document.getElementById('sync-settings');
-      if (el.style.display === 'block') el.style.display = 'none';
-      else openSyncSettings();
+    function openSettings(sectionId) {
+      openSyncSettings();
+      updateSyncStatusIdle();
+      byId('set-version').textContent = `Version ${APP_VERSION} · tes données restent sur ton compte Google (feuille « Sync », dossier médical chiffré, agenda « 🩺 RDV médicaux »).`;
+      renderAgendaSettings();
+      byId('settings').style.display = 'flex';
+      updateModalState();
+      renderReminders();
+      if (sectionId && byId(sectionId)) setTimeout(() => byId(sectionId).scrollIntoView({ block: 'start' }), 60);
+    }
+
+    function closeSettings() {
+      const el = byId('settings');
+      if (!el || el.style.display !== 'flex') return;
+      el.style.display = 'none';
+      updateModalState();
     }
 
     function saveSyncSettings() {
@@ -5054,6 +6156,7 @@
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         scheduleSync(300);              // retour sur l'appli : on récupère les nouveautés
+        refreshAgenda(false);
       } else if (pending.size) {
         syncNow(true);                  // l'appli passe en arrière-plan : on envoie ce qui reste
       }
@@ -5079,8 +6182,10 @@
       if (e.key === 'Enter') lookupBarcode(e.target.value);
     });
     document.getElementById('food-search').addEventListener('keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); searchOFF(); }
+      if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
     });
+
+    byId('gate-version').textContent = `Version ${APP_VERSION}`;
 
     // ================== DÉMARRAGE ==================
     // L'ancien code secret n'est plus gardé par l'appli : la connexion passe par le portail
