@@ -149,6 +149,25 @@
     .tb-icon { border: none; background: none; font-size: 0.95rem; opacity: 0.45; padding: 5px; cursor: pointer; border-radius: 50%; line-height: 1; }
     .tb-icon:active { background: #e2e8f0; }
     .tb-icon.tb-alert { opacity: 0.8; }
+    /* Résumé d'ouverture */
+    .welcome { align-items: center; padding: 16px; box-sizing: border-box; }
+    .wl-box { border-radius: 20px; max-height: 88vh; }
+    .wl-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .wl-hello { font-size: 1.3rem; font-weight: 800; color: #1e293b; }
+    .wl-date { font-size: 0.82rem; color: #64748b; margin-top: 2px; }
+    .wl-close { border: none; background: #f1f5f9; border-radius: 50%; width: 32px; height: 32px; font-size: 1rem; cursor: pointer; }
+    .wl-rows { display: flex; flex-direction: column; gap: 8px; }
+    .wl-row { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 11px 12px; border-radius: 14px; border: 1px solid #e2e8f0; border-left: 4px solid #94a3b8; background: white; text-align: left; font-family: inherit; cursor: pointer; color: #1e293b; }
+    .wl-ok { border-left-color: #22c55e; }
+    .wl-warn { border-left-color: #f59e0b; background: #fffbeb; }
+    .wl-alert { border-left-color: #ef4444; background: #fef2f2; }
+    .wl-info { border-left-color: #0f766e; }
+    .wl-info-strong { border-left-color: #0f766e; background: #f0fdfa; }
+    .wl-icon { font-size: 1.3rem; line-height: 1.2; }
+    .wl-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .wl-title { font-weight: 700; font-size: 0.92rem; }
+    .wl-line { font-size: 0.78rem; color: #475569; line-height: 1.35; }
+    .wl-go { color: #94a3b8; font-size: 1.2rem; align-self: center; }
     /* Réglages */
     .set-sec { padding: 12px 0; border-top: 1px solid #f1f5f9; }
     .set-sec:first-of-type { border-top: none; padding-top: 0; }
@@ -811,6 +830,18 @@
 
   </div>
 
+  <!-- Résumé à l'ouverture -->
+  <div id="welcome" class="sheet welcome" onclick="if (event.target === this) closeWelcome()">
+    <div class="sheet-box wl-box">
+      <div class="wl-head">
+        <div><div id="wl-hello" class="wl-hello">Bonjour 👋</div><div id="wl-date" class="wl-date"></div></div>
+        <button type="button" class="wl-close" onclick="closeWelcome()" aria-label="Fermer">✕</button>
+      </div>
+      <div id="wl-rows" class="wl-rows"></div>
+      <button class="sync-btn" type="button" style="margin-top: 14px;" onclick="closeWelcome(); switchTab('today')">Commencer ma journée</button>
+    </div>
+  </div>
+
   <!-- Réglages -->
   <div id="settings" class="sheet" onclick="if (event.target === this) closeSettings()">
     <div class="sheet-box">
@@ -845,6 +876,8 @@
       </section>
       <section class="set-sec">
         <h4>ℹ️ Application</h4>
+        <label class="sync-check" style="margin: 0 0 8px;"><input type="checkbox" id="set-welcome" onchange="prefSet('hydra_welcome', this.checked ? '1' : '0')"> Afficher le résumé du jour à l'ouverture</label>
+        <button class="btn-sub" type="button" style="width: 100%; margin-bottom: 8px;" onclick="closeSettings(); openWelcome()">👋 Voir le résumé maintenant</button>
         <div class="set-line" id="set-version"></div>
       </section>
     </div>
@@ -948,7 +981,7 @@
 
   <script>
     // ================== SERVICE WORKER ==================
-    const APP_VERSION = '2026-10-05 · v13';
+    const APP_VERSION = '2026-10-06 · v14';
     if ('serviceWorker' in navigator) {
       // Quand une nouvelle version de l'appli est installée, on recharge une fois pour l'afficher
       const hadController = !!navigator.serviceWorker.controller;
@@ -1142,6 +1175,7 @@
     function renderAll() {
       renderToday();
       renderAgendaBanner();
+      if (welcomeIsOpen()) renderWelcome();
       renderFood();
       refreshIngredientSuggestions();
       renderDrinkPanel();
@@ -2126,7 +2160,7 @@
     }
 
     function updateModalState() {
-      const open = ['food-sheet', 'food-lib', 'settings', 'rdv-sheet', 'scan-view', 'doc-viewer', 'email-sheet'].some(id => byId(id) && byId(id).style.display === 'flex') ||
+      const open = ['welcome', 'food-sheet', 'food-lib', 'settings', 'rdv-sheet', 'scan-view', 'doc-viewer', 'email-sheet'].some(id => byId(id) && byId(id).style.display === 'flex') ||
         ['report-view', 'pdf-viewer'].some(id => byId(id) && byId(id).style.display === 'block');
       document.body.classList.toggle('modal-open', open);
     }
@@ -5038,6 +5072,7 @@
         agendaLoading = false;
         renderAgenda();
         renderAgendaBanner();
+        if (welcomeIsOpen()) renderWelcome();
       }
     }
 
@@ -5307,6 +5342,161 @@
       }
     }
 
+    // ================== RÉSUMÉ D'OUVERTURE ==================
+    const WELCOME_AGAIN_MS = 4 * 60 * 60 * 1000;   // ré-affiché si l'appli revient après 4 h en arrière-plan
+    let welcomeShown = false;
+    let hiddenSince = 0;
+
+    function welcomeEnabled() { return prefGet('hydra_welcome', '1') !== '0'; }
+
+    function dayFluids(iso) {
+      let total = 0, sro = 0, last = '';
+      logs.forEach(l => {
+        if (l.isoDate !== iso || !FLUID_TYPES.includes(l.type)) return;
+        const v = Number(l.volume) || 0;
+        total += v;
+        if (l.type === 'eau_sro') sro += v;
+        if (v > 0 && l.timeStr && l.timeStr > last) last = l.timeStr;
+      });
+      return { total: Math.max(0, total), sro: Math.max(0, sro), last: last };
+    }
+
+    function welcomeRow(kind, icon, title, lines, tab) {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'wl-row wl-' + kind;
+      row.innerHTML = '<span class="wl-icon"></span><span class="wl-main"><span class="wl-title"></span></span><span class="wl-go">›</span>';
+      row.querySelector('.wl-icon').textContent = icon;
+      row.querySelector('.wl-title').textContent = title;
+      lines.filter(Boolean).forEach(t => {
+        const d = document.createElement('span');
+        d.className = 'wl-line';
+        d.textContent = t;
+        row.querySelector('.wl-main').appendChild(d);
+      });
+      row.onclick = () => { closeWelcome(); switchTab(tab); };
+      return row;
+    }
+
+    function renderWelcome() {
+      const now = new Date();
+      const today = getLocalIsoDate(now);
+      const yesterday = shiftIsoDate(today, -1);
+      const h = now.getHours();
+      byId('wl-hello').textContent = h >= 18 ? 'Bonsoir 👋' : 'Bonjour 👋';
+      const d = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+      byId('wl-date').textContent = d.charAt(0).toUpperCase() + d.slice(1);
+      const box = byId('wl-rows');
+      box.innerHTML = '';
+      const fmt = n => Number(n).toLocaleString('fr-FR');
+      const sgn = n => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n));
+
+      // 1. Hydratation
+      const yF = dayFluids(yesterday), yL = getDayLosses(yesterday);
+      const tF = dayFluids(today);
+      const yHas = yF.total > 0 || yL.urineCount || yL.stoolCount;
+      const lines = [];
+      let kind = 'ok';
+      if (yHas) {
+        const bal = yF.total - yL.total;
+        if (bal < 0) kind = 'warn';
+        const liquid = logs.filter(l => l.isoDate === yesterday && l.type === 'perte_selle' && String(l.detail || '').startsWith('liquide')).length;
+        lines.push(`Hier : bu ${fmt(yF.total)} ml${yF.sro ? ` (dont ${fmt(yF.sro)} SRO)` : ''} · pertes ≈ ${fmt(yL.total)} ml`);
+        if (liquid) { lines.push(`⚠️ ${liquid} selle${liquid > 1 ? 's' : ''} liquide${liquid > 1 ? 's' : ''} hier`); kind = 'warn'; }
+      } else {
+        lines.push('Hier : rien de noté.');
+      }
+      if (tF.total) {
+        const lastMin = timeToMin(tF.last);
+        const gap = lastMin !== null ? h * 60 + now.getMinutes() - lastMin : 0;
+        lines.push(`Aujourd'hui : ${fmt(tF.total)} ml bu${tF.last ? ` · dernière boisson à ${tF.last}` : ''}`);
+        if (gap >= 180 && h >= 8 && h < 23) { lines.push(`💧 Rien bu depuis ${fmtDuration(gap)}`); if (kind === 'ok') kind = 'warn'; }
+      } else {
+        lines.push(h >= 10 ? '💧 Rien bu aujourd\'hui pour l\'instant.' : 'Aujourd\'hui : pense à boire dès le matin.');
+        if (h >= 10 && kind === 'ok') kind = 'warn';
+      }
+      const bal = yF.total - yL.total;
+      box.appendChild(welcomeRow(kind, '💧', yHas ? `Bilan d'hier : ${sgn(bal)} ml` : 'Hydratation', lines, 'today'));
+
+      // 2. Poids du matin
+      const weights = getWeightsByDate();
+      const mornings = Object.keys(weights).filter(k => weights[k].matin !== null && k <= today).sort();
+      if (mornings.length) {
+        const lastIso = mornings[mornings.length - 1];
+        const last = weights[lastIso].matin;
+        const prevIso = mornings[mornings.length - 2];
+        const delta = prevIso ? last - weights[prevIso].matin : null;
+        const weekIso = mornings.filter(k => k <= shiftIsoDate(lastIso, -6)).pop();
+        const wl = [];
+        if (delta !== null) wl.push(`${fmtDelta(delta)} par rapport ${prevIso === shiftIsoDate(lastIso, -1) ? 'à la veille' : 'au ' + fmtIsoFr(prevIso)}`);
+        if (weekIso) wl.push(`Sur 7 jours : ${fmtDelta(last - weights[weekIso].matin)}`);
+        if (lastIso !== today) wl.push('Pas encore pesé ce matin.');
+        const wk = delta !== null && delta <= -WEIGHT_ALERT_KG ? 'alert' : (lastIso !== today ? 'info' : 'ok');
+        box.appendChild(welcomeRow(wk, '⚖️', `${lastIso === today ? 'Ce matin' : 'Dernier poids du matin'} : ${fmtKg(last)}${lastIso === today ? '' : ` (${fmtIsoFr(lastIso)})`}`, wl, 'today'));
+      }
+
+      // 3. Compléments
+      const plan = getMedPlan();
+      if (plan.meds.length) {
+        const late = [], missedY = [];
+        let next = null;
+        MOMENTS.forEach(m => {
+          const st = getMomentStatus(plan, today, m);
+          if (st.state === 'late') late.push(`${st.meds.filter(x => !st.taken.includes(x)).map(x => x.name).join(', ')} (${m.name.toLowerCase()}, ${plan.times[m.key]})`);
+          if (st.state === 'upcoming' && !next) next = `${m.name} à ${plan.times[m.key]}`;
+          const sy = getMomentStatus(plan, yesterday, m);
+          if (sy.state === 'missed') missedY.push(`${sy.meds.filter(x => !sy.taken.includes(x)).map(x => x.name).join(', ')} (${m.name.toLowerCase()})`);
+        });
+        const ml = [];
+        if (late.length) ml.push(`⏰ À prendre : ${late.join(' ; ')}`);
+        if (missedY.length) ml.push(`Oublié hier : ${missedY.join(' ; ')}`);
+        if (!late.length && next) ml.push(`Prochaine prise : ${next}`);
+        const mk = late.length ? 'alert' : missedY.length ? 'warn' : 'ok';
+        const title = late.length ? 'Compléments à prendre' : missedY.length ? 'Compléments oubliés hier' : 'Compléments : tout est à jour';
+        box.appendChild(welcomeRow(mk, '💊', title, ml, 'today'));
+      }
+
+      // 4. Prochain rendez-vous
+      const up = upcomingEvents();
+      if (up.length) {
+        const ev = up[0];
+        const n = daysUntil(ev);
+        const day = n === 0 ? 'Aujourd\'hui' : n === 1 ? 'Demain' : fmtRdvDay(ev, { weekday: 'long', day: 'numeric', month: 'long' });
+        const time = ev.allDay ? '' : ` à ${new Date(ev.start).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+        const when = whenLabel(ev);
+        box.appendChild(welcomeRow(n <= 1 ? 'info-strong' : 'info', '📅', ev.title,
+          [`${day.charAt(0).toUpperCase() + day.slice(1)}${time}${when && n > 1 ? ` (${when})` : ''}`, ev.location], 'agenda'));
+      } else if (agenda.lastOk) {
+        box.appendChild(welcomeRow('info', '📅', 'Aucun rendez-vous prévu', ['Ajoute tes RDV dans l\'onglet Agenda.'], 'agenda'));
+      }
+    }
+
+    function openWelcome(auto) {
+      if ((auto && !welcomeEnabled()) || !hasSession()) return;
+      welcomeShown = true;
+      renderWelcome();
+      byId('welcome').style.display = 'flex';
+      updateModalState();
+    }
+
+    function closeWelcome() {
+      const el = byId('welcome');
+      if (!el || el.style.display !== 'flex') return;
+      el.style.display = 'none';
+      updateModalState();
+    }
+
+    function welcomeIsOpen() { const el = byId('welcome'); return !!el && el.style.display === 'flex'; }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') { hiddenSince = Date.now(); return; }
+      if (hiddenSince && Date.now() - hiddenSince >= WELCOME_AGAIN_MS && !document.body.classList.contains('locked')) {
+        closeSettings();
+        openWelcome(true);
+      }
+      hiddenSince = 0;
+    });
+
     // ================== NAVIGATION ==================
     const TABS = ['today', 'food', 'agenda', 'docs', 'history'];
     function switchTab(tabName) {
@@ -5328,31 +5518,6 @@
         renderChart();
         renderWeightChart();
       }
-    }
-
-    // Gestion des balayages tactiles (Swipe)
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    document.addEventListener('touchstart', e => {
-      touchStartX = e.changedTouches[0].screenX;
-    }, false);
-
-    document.addEventListener('touchend', e => {
-      touchEndX = e.changedTouches[0].screenX;
-      handleSwipe();
-    }, false);
-
-    function handleSwipe() {
-      // Pas de changement d'onglet quand on balaie dans un champ ou sur une courbe
-      const tag = (document.activeElement && document.activeElement.tagName) || '';
-      if (tag === 'INPUT') return;
-      if (document.body.classList.contains('modal-open')) return;
-      const threshold = 50;
-      const active = document.querySelector('.tab-content.active');
-      const idx = Math.max(0, TABS.indexOf(active ? active.id.replace('tab-', '') : 'today'));
-      if (touchEndX < touchStartX - threshold && idx < TABS.length - 1) switchTab(TABS[idx + 1]);
-      if (touchEndX > touchStartX + threshold && idx > 0) switchTab(TABS[idx - 1]);
     }
 
     // ================== AFFICHAGE : AUJOURD'HUI ==================
@@ -5828,6 +5993,7 @@
       updateSyncStatusIdle();
       syncNow(true);
       refreshAgenda(true);
+      if (!welcomeShown) openWelcome(true);
     }
 
     function loadGis() {
@@ -5936,6 +6102,7 @@
       if (window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
       closeSettings();
       closeRdvSheet();
+      closeWelcome();
       lockApp(message);
     }
 
@@ -6117,6 +6284,7 @@
       updateSyncStatusIdle();
       byId('set-version').textContent = `Version ${APP_VERSION} · tes données restent sur ton compte Google (feuille « Sync », dossier médical chiffré, agenda « 🩺 RDV médicaux »).`;
       renderAgendaSettings();
+      byId('set-welcome').checked = welcomeEnabled();
       byId('settings').style.display = 'flex';
       updateModalState();
       renderReminders();
