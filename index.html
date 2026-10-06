@@ -477,8 +477,60 @@
     .pdf-pages canvas { display: block; background: white; margin: 0 auto 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
     #tab-docs .food-row .fr-badge:empty { display: none; }
 
+    /* ===== Mise en page bureau (PC, écran large) — le mobile reste inchangé ===== */
+    @media screen and (min-width: 1000px) {
+      body { max-width: 1320px; padding: 20px 28px 28px; }
+      body:not(.locked) { display: grid; grid-template-columns: 220px minmax(0, 1fr); column-gap: 28px; align-items: start; }
+      body:not(.locked) > * { grid-column: 1 / -1; }
+      body:not(.locked) > .tabs { grid-column: 1; grid-row: 2; }
+      body:not(.locked) > .tab-content { grid-column: 2; grid-row: 2; }
+
+      /* Barre du haut sur toute la largeur */
+      .topbar { margin: 0 0 18px; padding: 10px 16px; background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); gap: 8px; }
+      .tb-brand { font-size: 1.15rem; gap: 10px; }
+      .tb-brand img { width: 34px; height: 34px; border-radius: 9px; }
+      .tb-sync { font-size: 0.8rem; padding: 6px 10px; }
+      .tb-sync:hover:not(:disabled) { background: #f1f5f9; }
+      .tb-icon { font-size: 1.15rem; padding: 7px; }
+      .tb-icon:hover { background: #f1f5f9; opacity: 0.8; }
+
+      /* Onglets en colonne à gauche */
+      .tabs { position: sticky; top: 20px; flex-direction: column; gap: 4px; padding: 8px; margin: 0; border-radius: 16px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+      .tab-btn { flex: none; display: flex; align-items: center; gap: 12px; padding: 11px 14px; font-size: 0.95rem; text-align: left; border-radius: 10px; }
+      .tab-btn span { display: inline; font-size: 1.25rem; line-height: 1; }
+      .tab-btn:hover:not(.active) { background: #f1f5f9; color: #334155; }
+      .tab-btn.active { background: #eff6ff; box-shadow: none; }
+
+      /* Aujourd'hui et Historique : cartes sur deux colonnes */
+      #tab-today.active, #tab-history.active { columns: 2; column-gap: 18px; }
+      #tab-today .card, #tab-history .card { break-inside: avoid; display: inline-block; width: 100%; box-sizing: border-box; }
+      #tab-today .rdv-banner, #tab-today .med-banner { column-span: all; }
+
+      /* Repas : recherche à gauche, journée à droite */
+      #tab-food.active { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 18px; align-items: start; }
+      #tab-food #food-card { position: sticky; top: 20px; max-height: calc(100vh - 40px); overflow-y: auto; box-sizing: border-box; }
+      #tab-food .card { margin-bottom: 0; }
+
+      /* Agenda : liste centrée et lisible */
+      #tab-agenda .card { max-width: 820px; }
+
+      /* Dossier : ajout à gauche, documents à droite */
+      #tab-docs .docs-lock { max-width: 560px; margin-left: auto; margin-right: auto; }
+      #docs-unlocked:not([style*="none"]) { display: grid !important; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 18px; align-items: start; }
+      #docs-unlocked .card { margin-bottom: 0; }
+
+      /* Fenêtres : centrées au lieu de remonter du bas */
+      .sheet { align-items: center; padding: 24px; box-sizing: border-box; }
+      .sheet-box { max-width: 560px; border-radius: 20px; max-height: 88vh; }
+      .toast { bottom: 28px; }
+
+      button, .chip, .food-row, .ag-item, .med-row, .wl-row { transition: background-color 0.15s, border-color 0.15s; }
+      .food-row:hover, .ag-item:hover, .wl-row:hover { border-color: #cbd5e1; background: #f8fafc; }
+      .drink-tile:hover { filter: brightness(0.97); }
+    }
+
     @media print {
-      body { background: white !important; padding: 0 !important; max-width: none !important; margin: 0 !important; }
+      body { background: white !important; padding: 0 !important; max-width: none !important; margin: 0 !important; display: block !important; }
       body:not(.print-doc) > *:not(#report-view) { display: none !important; }
       body:not(.print-doc) #report-view { position: static !important; display: block !important; overflow: visible !important; background: white !important; }
       body.print-doc > *:not(#pdf-viewer) { display: none !important; }
@@ -1004,7 +1056,7 @@
 
   <script>
     // ================== SERVICE WORKER ==================
-    const APP_VERSION = '2026-10-06 · v16';
+    const APP_VERSION = '2026-10-06 · v17';
     if ('serviceWorker' in navigator) {
       // Quand une nouvelle version de l'appli est installée, on recharge une fois pour l'afficher
       const hadController = !!navigator.serviceWorker.controller;
