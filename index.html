@@ -196,6 +196,22 @@
     .ag-when { display: inline-block; margin-top: 4px; padding: 1px 8px; border-radius: 10px; background: #ccfbf1; color: #115e59; font-size: 0.68rem; font-weight: 700; }
     .ag-empty { font-size: 0.82rem; color: #64748b; padding: 10px 2px; line-height: 1.45; }
     #rdv-sheet .chip.active { background: #0f766e; border-color: #0f766e; }
+    .rv-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .rv-icon { font-size: 1.8rem; width: 48px; height: 48px; border-radius: 14px; background: #f0fdfa; display: flex; align-items: center; justify-content: center; flex: none; }
+    .rv-title { font-weight: 800; font-size: 1.08rem; color: #1e293b; line-height: 1.3; }
+    .rv-block { border: 1px solid #e2e8f0; border-radius: 14px; padding: 4px 12px; }
+    .rv-line { display: flex; gap: 10px; padding: 9px 0; border-top: 1px solid #f1f5f9; font-size: 0.88rem; color: #334155; line-height: 1.4; }
+    .rv-line:first-child { border-top: none; }
+    .rv-line > span { flex: none; width: 22px; text-align: center; }
+    .rv-notes { white-space: pre-wrap; }
+    .rv-muted { color: #94a3b8; }
+    .rv-past { margin-left: 6px; padding: 1px 8px; border-radius: 10px; background: #f1f5f9; color: #64748b; font-size: 0.7rem; font-weight: 700; }
+    .rv-map { color: #0f766e; font-size: 0.8rem; font-weight: 600; }
+    .rv-src { font-size: 0.72rem; color: #94a3b8; margin: 8px 2px 0; }
+    .rv-unlock { position: relative; overflow: hidden; width: 100%; margin-top: 14px; padding: 11px; border: 1px dashed #cbd5e1; border-radius: 10px; background: #f8fafc; color: #64748b; font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; user-select: none; -webkit-user-select: none; touch-action: none; -webkit-touch-callout: none; }
+    .rv-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: #ccfbf1; }
+    .rv-unlock.holding .rv-fill { width: 100%; transition: width 1.5s linear; }
+    .rv-label { position: relative; }
     .sync-card { padding: 12px; background: #eff6ff; border: 1px solid #bfdbfe; }
     .sync-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .sync-gear { border: none; background: transparent; font-size: 1.15rem; cursor: pointer; padding: 2px 6px; border-radius: 8px; }
@@ -298,10 +314,17 @@
     .food-search-wrap input { flex: 1; margin-top: 0; }
     .food-scan-btn { flex: none; width: 48px; border: 1px solid #fed7aa; border-radius: 10px; background: #fff7ed; font-size: 1.3rem; cursor: pointer; }
     .food-hint { font-size: 0.8rem; color: #64748b; line-height: 1.45; padding: 6px 2px; }
-    .habit-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-    .habit-chip { display: inline-flex; flex-direction: column; align-items: flex-start; max-width: 100%; padding: 6px 11px; border: 1px solid #fed7aa; border-radius: 12px; background: #fff7ed; color: #7c2d12; font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; text-align: left; }
-    .habit-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
-    .habit-chip small { font-weight: 500; color: #c2410c; font-size: 0.7rem; }
+    #food-msg:empty { display: none; }
+    #food-results:empty { display: none; }
+    .repeat-line { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 2px; padding: 7px 10px; border: none; border-radius: 10px; background: #fff7ed; color: #9a3412; font-family: inherit; font-size: 0.78rem; text-align: left; cursor: pointer; }
+    .rl-icon { font-weight: 800; }
+    .rl-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #7c2d12; }
+    .rl-go { font-weight: 700; color: #ea580c; white-space: nowrap; }
+    .rp-items { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    .rp-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.86rem; cursor: pointer; }
+    .rp-item input { width: 18px; height: 18px; accent-color: #ea580c; flex: none; }
+    .rp-name { flex: 1; min-width: 0; color: #1e293b; }
+    .rp-qty { font-size: 0.76rem; color: #9a3412; white-space: nowrap; }
     .food-off-btn { width: 100%; padding: 9px; border: 1px dashed #cbd5e1; border-radius: 10px; background: white; color: #475569; font-family: inherit; font-size: 0.8rem; cursor: pointer; }
     .food-links { display: flex; gap: 8px; margin-top: 12px; }
     .food-link { flex: 1; padding: 8px; border: none; border-radius: 10px; background: #f1f5f9; color: #475569; font-family: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
@@ -981,7 +1004,7 @@
 
   <script>
     // ================== SERVICE WORKER ==================
-    const APP_VERSION = '2026-10-06 · v14';
+    const APP_VERSION = '2026-10-06 · v16';
     if ('serviceWorker' in navigator) {
       // Quand une nouvelle version de l'appli est installée, on recharge une fois pour l'afficher
       const hadController = !!navigator.serviceWorker.controller;
@@ -2327,24 +2350,6 @@
       return 'n:' + normalizeText(ml.name) + '|' + normalizeText(ml.brand);
     }
 
-    // Ce que tu manges le plus souvent à ce moment de la journée (d'après l'historique)
-    function getHabits(momentKey, limit) {
-      const map = new Map();
-      logs.forEach(l => {
-        if (l.type !== 'repas') return;
-        const ml = parseData(l);
-        if (!ml.name) return;
-        const key = mealKey(ml);
-        let h = map.get(key);
-        if (!h) { h = { key: key, count: 0, here: 0, last: 0, ml: ml }; map.set(key, h); }
-        h.count++;
-        if (mealMomentKey(ml, l) === momentKey) h.here++;
-        if (Number(l.id) > h.last) { h.last = Number(l.id); h.ml = ml; }
-      });
-      return [...map.values()].filter(h => h.here > 0)
-        .sort((a, b) => b.here - a.here || b.last - a.last).slice(0, limit);
-    }
-
     function habitToItem(ml) {
       if (ml.dishId) {
         const d = getDishes().find(x => x.id === String(ml.dishId));
@@ -2354,6 +2359,100 @@
         name: ml.name, brand: ml.brand, source: ml.source || 'maison', barcode: ml.barcode, ciqual: ml.ciqual, group: ml.group,
         per100: ml.per100, grams: ml.grams, quantity: ml.quantity, nutriscore: ml.nutriscore, ingredients: ml.ingredients, portion: ml.portion
       };
+    }
+
+    // Dernier repas complet d'un moment (avant la date affichée), pour le reprendre en un geste
+    function getLastMeal(momentKey, beforeIso) {
+      const days = new Map();
+      logs.forEach(l => {
+        if (l.type !== 'repas' || !l.isoDate || l.isoDate >= beforeIso) return;
+        const ml = Object.assign({ rec: l }, parseData(l));
+        if (!ml.name || mealMomentKey(ml, l) !== momentKey) return;
+        if (!days.has(l.isoDate)) days.set(l.isoDate, []);
+        days.get(l.isoDate).push(ml);
+      });
+      if (!days.size) return null;
+      if (getMeals(beforeIso).some(ml => mealMomentKey(ml, ml.rec) === momentKey)) return null;   // déjà noté ce jour-là
+      const iso = [...days.keys()].sort().pop();
+      const items = days.get(iso).sort((a, b) => Number(a.rec.id) - Number(b.rec.id));
+      const label = iso === shiftIsoDate(beforeIso, -1) ? 'd\'hier' : `du ${fmtIsoFr(iso).slice(0, 5)}`;
+      return { iso: iso, items: items, label: label };
+    }
+
+    function shortFoodName(name) {
+      return String(name || '').split(',')[0].replace(/\s*\(aliment moyen\)/, '').trim();
+    }
+
+    function openRepeatSheet(momentKey, last) {
+      const moment = foodMomentByKey(momentKey);
+      const iso = foodDate();
+      const st = { repeat: true, moment: momentKey, items: last.items, keep: last.items.map(() => true),
+        time: iso === getLocalIsoDate() ? nowTimeStr() : moment.time };
+      foodSheet = st;
+      byId('food-sheet-title').textContent = `↺ ${moment.name} ${last.label}`;
+      byId('food-sheet-body').innerHTML = `
+        <div class="fs-meta" style="margin-top: 0;">Décoche ce que tu n'as pas repris, puis valide.</div>
+        <div id="rp-items" class="rp-items"></div>
+        <div class="action-label" style="margin-top: 10px;">Heure</div>
+        <input type="time" id="fs-time" class="date-picker-input" value="${esc(st.time)}" style="margin-top: 0;">
+        <button class="sync-btn" type="button" id="fs-submit" style="margin-top: 12px; background: #ea580c;"></button>
+        <div id="fs-msg" class="weight-feedback"></div>`;
+      const list = byId('rp-items');
+      const refresh = () => {
+        const n = st.keep.filter(Boolean).length;
+        byId('fs-submit').textContent = n ? `✅ Ajouter ${n} aliment${n > 1 ? 's' : ''} ${moment.to}` : 'Rien de coché';
+        byId('fs-submit').disabled = !n;
+      };
+      st.items.forEach((ml, i) => {
+        const row = document.createElement('label');
+        row.className = 'rp-item';
+        row.innerHTML = '<input type="checkbox" checked><span class="rp-name"></span><span class="rp-qty"></span>';
+        row.querySelector('.rp-name').textContent = ml.name + (ml.brand ? ` (${ml.brand})` : '');
+        row.querySelector('.rp-qty').textContent = qtyText(ml);
+        row.querySelector('input').onchange = e => { st.keep[i] = e.target.checked; refresh(); };
+        list.appendChild(row);
+      });
+      byId('fs-submit').onclick = submitRepeat;
+      refresh();
+      byId('food-sheet').style.display = 'flex';
+      updateModalState();
+    }
+
+    function submitRepeat() {
+      const st = foodSheet;
+      const time = byId('fs-time').value;
+      if (timeToMin(time) === null) return sheetMsg('Indique l\'heure du repas.');
+      const iso = foodDate();
+      if (iso === getLocalIsoDate() && timeToMin(time) > timeToMin(nowTimeStr()) + 5) return sheetMsg('Cette heure n\'est pas encore passée.');
+      const moment = foodMomentByKey(st.moment);
+      const [y, m, d] = iso.split('-');
+      const ids = [];
+      const base = newId();
+      st.items.forEach((src, i) => {
+        if (!st.keep[i]) return;
+        const data = Object.assign({}, src);
+        delete data.rec;
+        data.moment = moment.key;
+        delete data.note;
+        if (data.per100 && data.grams) data.nutr = nutrFor(data.per100, data.grams) || undefined;
+        const id = base + i;
+        ids.push(String(id));
+        upsertLocal({
+          id: id, type: 'repas', volume: 0,
+          label: String(src.rec.label || '').replace(/^[^:]+:/, `${moment.name} :`).slice(0, 200),
+          detail: `${moment.key}|${data.grams ? data.grams + 'g' : (data.portion || 'normale')}`,
+          data: JSON.stringify(data),
+          isoDate: iso, dateStr: `${d}/${m}/${y}`, timeStr: time
+        });
+      });
+      foodMoment = moment.key;
+      closeFoodSheet();
+      commitChanges();
+      showToast(`↺ ${ids.length} aliment${ids.length > 1 ? 's' : ''} ajouté${ids.length > 1 ? 's' : ''} · ${moment.name.toLowerCase()} ${time}`, () => {
+        deleteWhere(r => ids.includes(String(r.id)));
+        commitChanges();
+        showToast('Repas retiré');
+      });
     }
 
     function refreshIngredientSuggestions() {
@@ -2431,26 +2530,18 @@
 
       if (q.length < 2) {
         alimentsMore = false;
-        const habits = getHabits(moment.key, 6);
-        if (!habits.length) {
-          box.innerHTML = `<div class="food-hint">Tape ce que tu as mangé : <b>riz</b>, <b>pomme</b>, <b>yaourt</b>, un de tes plats…<br>
-            Plus de 3 000 aliments de la table officielle CIQUAL, avec l'eau, le sel et le potassium qu'ils apportent.</div>`;
-          return;
-        }
-        resultsTitle(box, `Habituels · ${moment.name.toLowerCase()}`);
-        const wrap = document.createElement('div');
-        wrap.className = 'habit-chips';
-        habits.forEach(h => {
+        // Une seule ligne discrète : reprendre le dernier repas de ce moment (ex : le petit-déjeuner d'hier)
+        const last = getLastMeal(moment.key, foodDate());
+        if (last) {
           const b = document.createElement('button');
           b.type = 'button';
-          b.className = 'habit-chip';
-          b.innerHTML = '<span></span><small></small>';
-          b.querySelector('span').textContent = `${sourceBadge(h.ml.source)} ${h.ml.name}`;
-          b.querySelector('small').textContent = h.ml.grams ? `${fmtNum(h.ml.grams)} g` : portionByKey(h.ml.portion).name.toLowerCase();
-          b.onclick = () => openMealSheet(habitToItem(h.ml));
-          wrap.appendChild(b);
-        });
-        box.appendChild(wrap);
+          b.className = 'repeat-line';
+          b.innerHTML = '<span class="rl-icon">↺</span><span class="rl-text"></span><span class="rl-go">Reprendre</span>';
+          const names = last.items.map(ml => shortFoodName(ml.name)).join(', ');
+          b.querySelector('.rl-text').textContent = `${moment.name} ${last.label} : ${names}`;
+          b.onclick = () => openRepeatSheet(moment.key, last);
+          box.appendChild(b);
+        }
         return;
       }
 
@@ -5211,9 +5302,72 @@
         time: start && !ev.allDay ? `${pad(start.getHours())}:${pad(start.getMinutes())}` : '09:00',
         duration: ev && !ev.allDay ? Math.max(5, Math.round((ev.end - ev.start) / 60000)) : 30,
         location: ev ? ev.location || '' : '',
-        notes: ev ? ev.notes || '' : ''
+        notes: ev ? ev.notes || '' : '',
+        ev: ev || null
       };
-      renderRdvSheet();
+      // Un RDV enregistré s'ouvre en lecture seule ; la modification demande un appui long
+      if (ev) renderRdvView(); else renderRdvSheet();
+    }
+
+    const RDV_UNLOCK_MS = 1500;
+    function renderRdvView() {
+      const st = rdvSheet;
+      const ev = st.ev;
+      byId('rdv-sheet-title').textContent = '📅 Rendez-vous';
+      const dayLong = fmtRdvDay(ev, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      const when = whenLabel(ev);
+      const past = ev.allDay ? rdvDayIso(ev) < getLocalIsoDate() : ev.end <= Date.now();
+      const dur = ev.allDay ? '' : Math.round((ev.end - ev.start) / 60000);
+      const durTxt = dur ? (dur < 60 ? `${dur} min` : `${Math.floor(dur / 60)} h${dur % 60 ? ' ' + String(dur % 60).padStart(2, '0') : ''}`) : '';
+      byId('rdv-sheet-body').innerHTML = `
+        <div class="rv-head">
+          <div class="rv-icon">${rdvIcon(ev.title)}</div>
+          <div class="rv-title"></div>
+        </div>
+        <div class="rv-block">
+          <div class="rv-line"><span>📆</span><div><b class="rv-day"></b>${when && !past ? `<span class="ag-when" style="margin-left: 6px;">${esc(when)}</span>` : ''}${past ? '<span class="rv-past">passé</span>' : ''}</div></div>
+          <div class="rv-line"><span>🕒</span><div>${esc(fmtRdvTime(ev))}${durTxt ? ` <span class="rv-muted">(${esc(durTxt)})</span>` : ''}</div></div>
+          ${ev.location ? `<div class="rv-line"><span>📍</span><div><span class="rv-loc"></span><br><a class="rv-map" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location)}">Ouvrir l'itinéraire</a></div></div>` : ''}
+          ${ev.notes ? '<div class="rv-line"><span>📝</span><div class="rv-notes"></div></div>' : ''}
+        </div>
+        <div class="rv-src">Enregistré dans Google Agenda, agenda « 🩺 RDV médicaux ».</div>
+        ${st.recurring ? '<div class="sync-note">Ce rendez-vous se répète : il se modifie dans Google Agenda.</div>' : `
+        <button type="button" class="rv-unlock" id="rv-unlock"><span class="rv-fill"></span><span class="rv-label">🔒 Maintenir appuyé pour modifier</span></button>`}
+        <button class="sync-btn" type="button" style="margin-top: 10px; background: #0f766e;" onclick="closeRdvSheet()">Fermer</button>`;
+      byId('rdv-sheet-body').querySelector('.rv-title').textContent = ev.title;
+      byId('rdv-sheet-body').querySelector('.rv-day').textContent = dayLong.charAt(0).toUpperCase() + dayLong.slice(1);
+      if (ev.location) byId('rdv-sheet-body').querySelector('.rv-loc').textContent = ev.location;
+      if (ev.notes) byId('rdv-sheet-body').querySelector('.rv-notes').textContent = ev.notes;
+      const btn = byId('rv-unlock');
+      if (btn) {
+        let timer = null;
+        const label = btn.querySelector('.rv-label');
+        const start = e => {
+          e.preventDefault();
+          if (timer) return;
+          btn.classList.add('holding');
+          label.textContent = '🔓 Continue d\'appuyer…';
+          timer = setTimeout(() => {
+            timer = null;
+            if (navigator.vibrate) { try { navigator.vibrate(30); } catch (err) {} }
+            st.mode = 'edit';
+            renderRdvSheet();
+          }, RDV_UNLOCK_MS);
+        };
+        const cancel = () => {
+          if (!timer) return;
+          clearTimeout(timer);
+          timer = null;
+          btn.classList.remove('holding');
+          label.textContent = '🔒 Maintenir appuyé pour modifier';
+        };
+        btn.addEventListener('pointerdown', start);
+        ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => btn.addEventListener(t, cancel));
+        btn.addEventListener('contextmenu', e => e.preventDefault());
+        btn.addEventListener('click', e => { e.preventDefault(); if (!btn.classList.contains('holding')) { label.textContent = '🔒 Appui long (1,5 s) pour modifier'; } });
+      }
+      byId('rdv-sheet').style.display = 'flex';
+      updateModalState();
     }
 
     function closeRdvSheet() {
@@ -5247,6 +5401,7 @@
         <textarea id="rdv-notes" class="date-picker-input" rows="3" maxlength="2000" placeholder="À apporter, questions à poser…" style="margin-top: 0; resize: vertical; font-family: inherit;" ${ro ? 'disabled' : ''}>${esc(st.notes)}</textarea>
         ${ro ? '' : `<button class="sync-btn" type="button" id="rdv-save" style="margin-top: 12px; background: #0f766e;">${st.id ? '💾 Enregistrer' : '📅 Ajouter à mon agenda'}</button>`}
         ${st.id && !ro ? '<button class="btn-sub" type="button" id="rdv-delete" style="width: 100%; margin-top: 8px;">🗑 Supprimer ce rendez-vous</button>' : ''}
+        ${st.id ? '<button class="gate-link" type="button" id="rdv-cancel-edit" style="display: block; margin: 10px auto 0;">Annuler la modification</button>' : ''}
         <div id="rdv-msg" class="weight-feedback"></div>`;
       const quick = byId('rdv-quick');
       if (quick) {
@@ -5271,6 +5426,7 @@
         };
       });
       if (byId('rdv-save')) byId('rdv-save').onclick = saveRdv;
+      if (byId('rdv-cancel-edit')) byId('rdv-cancel-edit').onclick = () => { st.mode = 'view'; renderRdvView(); };
       const del = byId('rdv-delete');
       if (del) {
         del.onclick = () => confirmTap(del, deleteRdv, {
