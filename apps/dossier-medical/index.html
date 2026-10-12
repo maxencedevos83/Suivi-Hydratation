@@ -1,0 +1,2479 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dossier médical</title>
+  <link rel="icon" type="image/png" sizes="512x512" href="./logo-512x512.png">
+  <link rel="apple-touch-icon" href="./logo-512x512.png">
+  <link rel="manifest" href="./manifest.json">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --water-plain: #0284c7;
+      --water-sro: #0d9488;
+      --urine: #ca8a04;
+      --stool: #9333ea;
+      --weight-am: #ea580c;
+      --weight-pm: #4f46e5;
+      --drink-other: #db2777;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; max-width: 450px; margin: auto; background: var(--bg); color: #1e293b; touch-action: pan-y; }
+    
+    .tabs { display: flex; gap: 3px; margin-bottom: 15px; background: #e2e8f0; padding: 4px; border-radius: 12px; }
+    .tab-btn { flex: 1; min-width: 0; padding: 6px 1px 7px; border: none; border-radius: 8px; font-weight: 600; font-size: 0.68rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; background: transparent; color: #64748b; transition: 0.2s; font-family: inherit; }
+    .tab-btn span { display: block; font-size: 1.05rem; line-height: 1.3; }
+    .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .card { background: var(--card-bg); padding: 16px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .card-title { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 700; margin-bottom: 8px; }
+    
+    .action-row { display: flex; gap: 6px; margin-bottom: 8px; align-items: center; }
+    .action-label { font-size: 0.8rem; font-weight: 600; margin-top: 6px; margin-bottom: 4px; }
+    
+    button.btn-add { flex: 2; padding: 12px; border: none; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; }
+    button.btn-sub { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: 600; font-size: 0.85rem; cursor: pointer; background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+    button:active { transform: scale(0.97); }
+    .date-picker-input { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 0.9rem; box-sizing: border-box; margin-top: 5px; font-family: inherit; }
+    .drink-more { width: 100%; margin-top: 6px; padding: 7px; border: none; border-radius: 8px; background: #f1f5f9; color: #64748b; font-weight: 600; font-size: 0.8rem; cursor: pointer; font-family: inherit; }
+    .drink-empty { text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 8px; }
+
+    .toast { position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 150%); opacity: 0; background: #1e293b; color: white; padding: 10px 12px 10px 16px; border-radius: 12px; display: flex; gap: 12px; align-items: center; font-size: 0.88rem; transition: transform 0.25s, opacity 0.25s; z-index: 50; max-width: calc(100% - 32px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); pointer-events: none; }
+    .toast.show { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+    .toast button { background: transparent; border: none; color: #93c5fd; font-weight: 700; cursor: pointer; font-size: 0.88rem; padding: 4px 6px; font-family: inherit; }
+    .weight-feedback { font-size: 0.8rem; text-align: center; margin-top: 6px; min-height: 1em; }
+    .weight-feedback.ok { color: #166534; }
+    .weight-feedback.err { color: #b91c1c; }
+    /* Barre du haut */
+    .topbar { display: flex; align-items: center; gap: 4px; margin: -4px 0 10px; }
+    .tb-brand { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; font-weight: 800; color: #1e3a8a; font-size: 0.95rem; white-space: nowrap; }
+    .tb-brand img { width: 26px; height: 26px; border-radius: 7px; }
+    .tb-sync { display: flex; align-items: center; gap: 5px; border: none; background: none; color: #94a3b8; font-size: 0.66rem; padding: 4px 6px; border-radius: 12px; cursor: pointer; font-family: inherit; white-space: nowrap; }
+    .tb-sync:disabled { cursor: default; }
+    .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #cbd5e1; flex: none; }
+    .tb-sync[data-state="ok"] .sync-dot { background: #22c55e; }
+    .tb-sync[data-state="warn"] .sync-dot { background: #f59e0b; }
+    .tb-sync[data-state="err"] .sync-dot { background: #ef4444; }
+    .tb-sync[data-state="err"] { color: #b91c1c; }
+    .tb-sync[data-state="busy"] .sync-dot { background: #3b82f6; animation: syncPulse 0.9s infinite alternate; }
+    @keyframes syncPulse { from { opacity: 1; } to { opacity: 0.25; } }
+    .tb-icon { border: none; background: none; font-size: 0.95rem; opacity: 0.45; padding: 5px; cursor: pointer; border-radius: 50%; line-height: 1; }
+    .tb-icon:active { background: #e2e8f0; }
+    .tb-icon.tb-alert { opacity: 0.8; }
+    /* Réglages */
+    .set-sec { padding: 12px 0; border-top: 1px solid #f1f5f9; }
+    .set-sec:first-of-type { border-top: none; padding-top: 0; }
+    .set-sec h4 { margin: 0 0 8px; font-size: 0.86rem; color: #334155; }
+    .set-line { font-size: 0.8rem; color: #475569; line-height: 1.45; margin-bottom: 8px; }
+    .set-adv { margin-top: 8px; font-size: 0.78rem; color: #64748b; }
+    .set-adv summary { cursor: pointer; }
+    /* Agenda */
+    .rdv-banner { display: none; margin-bottom: 10px; padding: 9px 12px; border-radius: 12px; background: #f0fdfa; border: 1px solid #99f6e4; color: #115e59; font-size: 0.84rem; cursor: pointer; line-height: 1.35; }
+    .rdv-banner.show { display: block; }
+    .rdv-banner b { color: #0f766e; }
+    .rdv-banner small { display: block; color: #0f766e; opacity: 0.8; font-size: 0.74rem; }
+    .rdv-banner.today { background: #ccfbf1; border-color: #2dd4bf; }
+    .ag-refresh { border: none; background: none; font-size: 0.95rem; opacity: 0.5; cursor: pointer; }
+    .ag-status { font-size: 0.72rem; color: #94a3b8; margin-top: 2px; }
+    .ag-status.err { color: #b91c1c; font-weight: 600; }
+    .ag-month { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 700; margin: 14px 0 6px; }
+    .ag-item { display: flex; gap: 10px; width: 100%; padding: 9px 10px; margin-bottom: 6px; border: 1px solid #e2e8f0; border-radius: 12px; background: white; cursor: pointer; font-family: inherit; text-align: left; color: #1e293b; }
+    .ag-item.past { opacity: 0.65; }
+    .ag-date { flex: none; width: 46px; text-align: center; border-radius: 10px; background: #f0fdfa; color: #0f766e; padding: 4px 0; line-height: 1.1; }
+    .ag-date b { display: block; font-size: 1.15rem; }
+    .ag-date small { font-size: 0.64rem; text-transform: uppercase; font-weight: 700; }
+    .ag-main { flex: 1; min-width: 0; }
+    .ag-title { font-weight: 700; font-size: 0.88rem; }
+    .ag-sub { font-size: 0.75rem; color: #64748b; margin-top: 2px; }
+    .ag-when { display: inline-block; margin-top: 4px; padding: 1px 8px; border-radius: 10px; background: #ccfbf1; color: #115e59; font-size: 0.68rem; font-weight: 700; }
+    .ag-empty { font-size: 0.82rem; color: #64748b; padding: 10px 2px; line-height: 1.45; }
+    #rdv-sheet .chip.active { background: #0f766e; border-color: #0f766e; }
+    .rv-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .rv-icon { font-size: 1.8rem; width: 48px; height: 48px; border-radius: 14px; background: #f0fdfa; display: flex; align-items: center; justify-content: center; flex: none; }
+    .rv-title { font-weight: 800; font-size: 1.08rem; color: #1e293b; line-height: 1.3; }
+    .rv-block { border: 1px solid #e2e8f0; border-radius: 14px; padding: 4px 12px; }
+    .rv-line { display: flex; gap: 10px; padding: 9px 0; border-top: 1px solid #f1f5f9; font-size: 0.88rem; color: #334155; line-height: 1.4; }
+    .rv-line:first-child { border-top: none; }
+    .rv-line > span { flex: none; width: 22px; text-align: center; }
+    .rv-notes { white-space: pre-wrap; }
+    .rv-muted { color: #94a3b8; }
+    .rv-past { margin-left: 6px; padding: 1px 8px; border-radius: 10px; background: #f1f5f9; color: #64748b; font-size: 0.7rem; font-weight: 700; }
+    .rv-map { color: #0f766e; font-size: 0.8rem; font-weight: 600; }
+    .rv-src { font-size: 0.72rem; color: #94a3b8; margin: 8px 2px 0; }
+    .rv-unlock { position: relative; overflow: hidden; width: 100%; margin-top: 14px; padding: 11px; border: 1px dashed #cbd5e1; border-radius: 10px; background: #f8fafc; color: #64748b; font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; user-select: none; -webkit-user-select: none; touch-action: none; -webkit-touch-callout: none; }
+    .rv-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: #ccfbf1; }
+    .rv-unlock.holding .rv-fill { width: 100%; transition: width 1.5s linear; }
+    .rv-label { position: relative; }
+    .sync-card { padding: 12px; background: #eff6ff; border: 1px solid #bfdbfe; }
+    .sync-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .sync-gear { border: none; background: transparent; font-size: 1.15rem; cursor: pointer; padding: 2px 6px; border-radius: 8px; }
+    .sync-gear:hover { background: #dbeafe; }
+    .sync-btn { width: 100%; padding: 10px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: 600; font-size: 0.9rem; cursor: pointer; }
+    .sync-btn:disabled { opacity: 0.6; cursor: default; }
+    .sync-status { font-size: 0.75rem; color: #64748b; text-align: center; margin-top: 6px; }
+    .sync-status.ok { color: #166534; }
+    .sync-status.warn { color: #a16207; }
+    .sync-status.err { color: #b91c1c; font-weight: 600; }
+    .sync-settings { margin-top: 10px; padding-top: 10px; border-top: 1px solid #bfdbfe; }
+    .sync-check { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #64748b; margin-top: 6px; }
+    .sync-note { font-size: 0.72rem; color: #64748b; margin-top: 8px; line-height: 1.45; }
+    .item-title { font-weight: 600; }
+
+    /* Portail de connexion */
+    .gate { display: none; position: fixed; inset: 0; z-index: 100; background: linear-gradient(160deg, #eff6ff, #f8fafc 60%); align-items: center; justify-content: center; padding: 16px; overflow-y: auto; }
+    body.locked .gate { display: flex; }
+    body.locked > *:not(.gate) { display: none !important; }
+    .gate-box { width: 100%; max-width: 360px; background: white; border-radius: 20px; padding: 28px 22px; text-align: center; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); }
+    .gate-logo { width: 72px; height: 72px; border-radius: 18px; }
+    .gate h1 { font-size: 1.25rem; margin: 12px 0 4px; }
+    .gate-sub { color: #64748b; font-size: 0.88rem; margin: 0 0 18px; line-height: 1.4; }
+    #gate-google { display: flex; justify-content: center; min-height: 44px; }
+    .gate-msg { font-size: 0.82rem; margin-top: 12px; min-height: 1.2em; color: #64748b; line-height: 1.4; }
+    .gate-msg.err { color: #b91c1c; font-weight: 600; }
+    .gate-link { margin-top: 14px; background: none; border: none; color: #64748b; text-decoration: underline; font-size: 0.8rem; cursor: pointer; font-family: inherit; }
+    .gate-code { margin-top: 10px; text-align: left; }
+    .gate-foot { font-size: 0.72rem; color: #94a3b8; margin-top: 18px; }
+    .sync-account { font-size: 0.85rem; color: #334155; margin-bottom: 8px; line-height: 1.5; }
+
+    /* Pertes */
+    .chip-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip { padding: 7px 12px; border-radius: 20px; border: 1px solid #cbd5e1; background: white; color: #64748b; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .chip.active { background: var(--cat-color, #4f46e5); border-color: var(--cat-color, #4f46e5); color: white; }
+    .food-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+    .food-action { padding: 10px 4px; border: 1px solid #fed7aa; border-radius: 12px; background: #fff7ed; color: #9a3412; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; line-height: 1.25; }
+    .food-action small { font-weight: 500; font-size: 0.7rem; color: #c2410c; }
+    .food-results { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    .food-results-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 700; margin-top: 4px; }
+    .food-row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 1px solid #e2e8f0; border-radius: 10px; background: white; cursor: pointer; font-family: inherit; text-align: left; font-size: 0.88rem; color: #1e293b; }
+    .food-row .fr-main { flex: 1; min-width: 0; }
+    .food-row .fr-name { font-weight: 600; display: block; }
+    .food-row .fr-sub { font-size: 0.74rem; color: #64748b; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .food-row .fr-badge { font-size: 0.7rem; padding: 2px 7px; border-radius: 10px; background: #f1f5f9; color: #64748b; white-space: nowrap; }
+    .food-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    /* Fenêtres (fiche, scan) */
+    body.modal-open { overflow: hidden; }
+    .sheet { position: fixed; inset: 0; z-index: 60; background: rgba(15, 23, 42, 0.45); display: none; align-items: flex-end; justify-content: center; }
+    .sheet-box { width: 100%; max-width: 450px; max-height: 92vh; overflow-y: auto; background: white; border-radius: 20px 20px 0 0; padding: 16px; box-sizing: border-box; }
+    .sheet-head { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 1rem; margin-bottom: 10px; }
+    .sheet-head button { border: none; background: #f1f5f9; border-radius: 50%; width: 32px; height: 32px; font-size: 1rem; cursor: pointer; }
+    /* Dossier médical */
+    .doc-year { border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 8px; background: #f8fafc; overflow: hidden; }
+    .doc-year > summary { display: flex; align-items: baseline; gap: 8px; padding: 10px 12px; cursor: pointer; list-style: none; font-weight: 800; color: #0f766e; font-size: 1rem; }
+    .doc-year > summary::-webkit-details-marker { display: none; }
+    .doc-year > summary::after { content: '▾'; margin-left: auto; color: #64748b; font-size: 0.85rem; transition: transform 0.2s; }
+    .doc-year:not([open]) > summary::after { transform: rotate(-90deg); }
+    .doc-year > summary small { font-weight: 600; color: #64748b; font-size: 0.74rem; }
+    .doc-year .food-row { margin: 0 8px 6px; width: calc(100% - 16px); }
+    .doc-month { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 700; padding: 6px 12px 4px; }
+    .docs-lock { text-align: center; padding: 26px 18px; }
+    .docs-lock-icon { font-size: 2.4rem; }
+    .docs-lock h3 { margin: 8px 0 6px; font-size: 1.1rem; }
+    .docs-lock p { color: #64748b; font-size: 0.86rem; line-height: 1.45; margin: 0 0 16px; }
+    .docs-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .docs-lock-btn { border: 1px solid #cbd5e1; background: white; border-radius: 8px; padding: 6px 10px; font-size: 0.78rem; font-weight: 600; color: #475569; cursor: pointer; font-family: inherit; }
+    .docs-actions { grid-template-columns: 1fr 1fr; margin-top: 0; }
+    .docs-actions .food-action, .doc-page.add { cursor: pointer; }
+    .docs-actions .food-action { border-color: #99f6e4; background: #f0fdfa; color: #115e59; }
+    .docs-actions .food-action small { color: #0f766e; }
+    #tab-docs .chip.active { background: #0f766e; border-color: #0f766e; }
+    .doc-pages { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; }
+    .doc-page { position: relative; height: 104px; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; background: #f8fafc; }
+    .doc-page img { width: 100%; height: 100%; object-fit: cover; }
+    .doc-page span { position: absolute; left: 4px; bottom: 4px; background: rgba(15,23,42,0.7); color: white; font-size: 0.7rem; border-radius: 6px; padding: 1px 6px; }
+    .doc-page button { position: absolute; top: 3px; right: 3px; width: 24px; height: 24px; border-radius: 50%; border: none; background: rgba(15,23,42,0.7); color: white; cursor: pointer; }
+    .doc-page.add { display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px dashed #5eead4; color: #0f766e; font-weight: 600; font-size: 0.8rem; }
+    .doc-page.add b { font-size: 1.4rem; }
+    .doc-pdf { padding: 12px; border-radius: 10px; background: #f0fdfa; border: 1px solid #99f6e4; font-weight: 600; font-size: 0.88rem; word-break: break-all; }
+    .doc-draft { margin-top: 4px; }
+    .doc-note { font-size: 0.85rem; color: #334155; margin-bottom: 10px; }
+    .doc-open { display: block; text-align: center; text-decoration: none; box-sizing: border-box; background: #0f766e; }
+    .vault-input { margin-top: 8px !important; }
+    .vault-strength { font-size: 0.75rem; color: #64748b; text-align: left; margin-top: 4px; }
+    .vault-check { justify-content: flex-start; text-align: left; }
+    .docs-legacy { padding: 10px 12px; border-radius: 12px; background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; font-size: 0.85rem; font-weight: 600; margin-bottom: 10px; }
+    .docs-tools { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px; }
+    .doc-facts { font-size: 0.85rem; color: #334155; line-height: 1.7; margin-bottom: 12px; }
+    .pdf-viewer { position: fixed; inset: 0; z-index: 80; background: #334155; overflow-y: auto; display: none; }
+    .pdf-bar { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #0f172a; color: white; font-weight: 600; font-size: 0.9rem; }
+    .pdf-bar button { border: none; background: #334155; color: white; width: 34px; height: 34px; border-radius: 50%; font-size: 1rem; cursor: pointer; flex-shrink: 0; }
+    .pdf-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+    .pdf-bar .pdf-action { background: #1e293b; }
+    .pdf-bar .pdf-action:disabled { opacity: 0.4; }
+    .email-body { font-family: inherit; line-height: 1.45; resize: vertical; margin-top: 0; }
+    #email-sheet .chip.active { background: #0f766e; border-color: #0f766e; }
+    .pdf-status { color: #bbf7d0; font-size: 0.8rem; text-align: center; padding: 8px 12px 0; }
+    .pdf-status.err { color: #fecaca; font-weight: 600; }
+    .pdf-pages { max-width: 900px; margin: 0 auto; padding: 10px; box-sizing: border-box; }
+    .pdf-pages canvas { display: block; background: white; margin: 0 auto 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+    #tab-docs .food-row .fr-badge:empty { display: none; }
+
+    /* ===== Mise en page bureau (PC, écran large) — le mobile reste inchangé ===== */
+    @media screen and (min-width: 1000px) {
+      body { max-width: 1320px; padding: 20px 28px 28px; }
+      body:not(.locked) { display: grid; grid-template-columns: 220px minmax(0, 1fr); column-gap: 28px; align-items: start; }
+      body:not(.locked) > * { grid-column: 1 / -1; }
+      body:not(.locked) > .tabs { grid-column: 1; grid-row: 2; }
+      body:not(.locked) > .tab-content { grid-column: 2; grid-row: 2; }
+
+      /* Barre du haut sur toute la largeur */
+      .topbar { margin: 0 0 18px; padding: 10px 16px; background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); gap: 8px; }
+      .tb-brand { font-size: 1.15rem; gap: 10px; }
+      .tb-brand img { width: 34px; height: 34px; border-radius: 9px; }
+      .tb-sync { font-size: 0.8rem; padding: 6px 10px; }
+      .tb-sync:hover:not(:disabled) { background: #f1f5f9; }
+      .tb-icon { font-size: 1.15rem; padding: 7px; }
+      .tb-icon:hover { background: #f1f5f9; opacity: 0.8; }
+
+      /* Onglets en colonne à gauche */
+      .tabs { position: sticky; top: 20px; flex-direction: column; gap: 4px; padding: 8px; margin: 0; border-radius: 16px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+      .tab-btn { flex: none; display: flex; align-items: center; gap: 12px; padding: 11px 14px; font-size: 0.95rem; text-align: left; border-radius: 10px; }
+      .tab-btn span { display: inline; font-size: 1.25rem; line-height: 1; }
+      .tab-btn:hover:not(.active) { background: #f1f5f9; color: #334155; }
+      .tab-btn.active { background: #eff6ff; box-shadow: none; }
+      /* Agenda : liste centrée et lisible */
+      #tab-agenda .card { max-width: 820px; }
+
+      /* Dossier : ajout à gauche, documents à droite */
+      #tab-docs .docs-lock { max-width: 560px; margin-left: auto; margin-right: auto; }
+      #docs-unlocked:not([style*="none"]) { display: grid !important; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 18px; align-items: start; }
+      #docs-unlocked .card { margin-bottom: 0; }
+
+      /* Fenêtres : centrées au lieu de remonter du bas */
+      .sheet { align-items: center; padding: 24px; box-sizing: border-box; }
+      .sheet-box { max-width: 560px; border-radius: 20px; max-height: 88vh; }
+      .toast { bottom: 28px; }
+
+      button, .chip, .food-row, .ag-item, .med-row, .wl-row { transition: background-color 0.15s, border-color 0.15s; }
+      .food-row:hover, .ag-item:hover, .wl-row:hover { border-color: #cbd5e1; background: #f8fafc; }
+    }
+
+    @media print {
+      body.print-doc > *:not(#pdf-viewer) { display: none !important; }
+      body.print-doc #pdf-viewer { position: static !important; display: block !important; overflow: visible !important; background: white !important; }
+      body.print-doc .pdf-bar, body.print-doc .pdf-status { display: none !important; }
+      body.print-doc .pdf-pages { padding: 0; max-width: none; }
+      body.print-doc .pdf-pages canvas { width: 100% !important; height: auto !important; margin: 0 !important; box-shadow: none !important; break-after: page; page-break-after: always; }
+      body.print-doc .pdf-pages canvas:last-child { break-after: auto; page-break-after: auto; }
+      .no-print { display: none !important; }
+      @page { margin: 12mm; }
+    }
+  </style>
+</head>
+<body class="locked">
+
+  <!-- Portail de connexion -->
+  <div id="gate" class="gate">
+    <div class="gate-box">
+      <img src="./logo-512x512.png" class="gate-logo" alt="">
+      <h1>Dossier médical</h1>
+      <p class="gate-sub">Accès réservé.<br>Connecte-toi avec ton compte Google pour ouvrir l'appli.</p>
+      <div id="gate-google"></div>
+      <div id="gate-msg" class="gate-msg"></div>
+      <button class="gate-link" type="button" onclick="showGateCode()">Utiliser le code secret à la place</button>
+      <div id="gate-code" class="gate-code" style="display: none;">
+        <input type="password" id="gate-code-input" class="date-picker-input" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX">
+        <button class="sync-btn" type="button" style="margin-top: 8px;" onclick="loginWithCode()">Déverrouiller</button>
+      </div>
+      <div class="gate-foot">🔒 Tes données ne sont accessibles qu'avec ton compte.<br><span id="gate-version"></span></div>
+    </div>
+  </div>
+
+  <!-- Barre du haut : réglages -->
+  <div class="topbar">
+    <div class="tb-brand"><img src="./logo-512x512.png" alt=""><span>Dossier médical</span></div>
+    <button class="tb-icon" type="button" onclick="openSettings()" title="Réglages" aria-label="Réglages">⚙️</button>
+  </div>
+
+  <!-- Navigation -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="agenda" onclick="switchTab('agenda')"><span>📅</span>Agenda</button>
+    <button class="tab-btn" data-tab="docs" onclick="switchTab('docs')"><span>📁</span>Dossier médical</button>
+  </div>
+
+  <!-- ONGLET AGENDA MÉDICAL -->
+  <div id="tab-agenda" class="tab-content active">
+    <div class="card" id="agenda-card">
+      <div class="food-head">
+        <div class="card-title" style="margin: 0;">📅 Mes rendez-vous</div>
+        <button class="ag-refresh" type="button" onclick="refreshAgenda(true)" title="Actualiser depuis Google Agenda" aria-label="Actualiser">🔄</button>
+      </div>
+      <div id="agenda-status" class="ag-status"></div>
+      <button class="sync-btn" type="button" style="background: #0f766e; margin: 8px 0 4px;" onclick="openRdvSheet(null)">➕ Nouveau rendez-vous</button>
+      <div id="agenda-list"></div>
+    </div>
+  </div>
+
+  <!-- ONGLET DOSSIER MÉDICAL -->
+  <div id="tab-docs" class="tab-content">
+    <div id="docs-locked" class="card docs-lock">
+      <div class="docs-lock-icon">🔒</div>
+      <h3>Dossier médical</h3>
+      <p id="docs-lock-text">Tes documents médicaux sont protégés par ton empreinte.</p>
+      <button class="sync-btn" type="button" id="docs-unlock-btn" style="background: #0f766e;" onclick="unlockDocs()">👆 Déverrouiller avec l'empreinte</button>
+      <div id="docs-google" style="display: none; justify-content: center; margin-top: 10px;"></div>
+      <div id="docs-lock-msg" class="weight-feedback"></div>
+      <button class="gate-link" type="button" id="docs-reset-btn" style="display: none;" onclick="resetBiometric()">Réinitialiser l'empreinte sur cet appareil</button>
+    </div>
+
+    <div id="docs-vault" class="card docs-lock" style="display: none;"></div>
+
+    <div id="docs-unlocked" style="display: none;">
+      <div class="card">
+        <div class="docs-head">
+          <div class="card-title" style="margin: 0;">📁 Ajouter un document</div>
+          <button class="docs-lock-btn" type="button" onclick="lockDocs('Dossier verrouillé.')">🔒 Verrouiller</button>
+        </div>
+        <div id="doc-add-buttons" class="food-actions docs-actions">
+          <label class="food-action">📷 Photographier<br><small>une ou plusieurs pages</small><input type="file" id="doc-photo-input" accept="image/*" capture="environment" hidden></label>
+          <label class="food-action">📄 Importer<br><small>PDF ou photos</small><input type="file" id="doc-file-input" accept="application/pdf,image/*" multiple hidden></label>
+        </div>
+        <div id="doc-draft"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🗂️ Mes documents</div>
+        <div id="docs-legacy"></div>
+        <input type="search" id="docs-search" class="date-picker-input" placeholder="🔎 Chercher un document…" autocomplete="off" oninput="renderDocsList()" style="margin: 0 0 8px; display: none;">
+        <div class="chip-row" id="docs-filters" style="margin-bottom: 8px;"></div>
+        <div id="docs-list" class="food-results"></div>
+        <div class="sync-note">🔒 Chaque document est chiffré sur ton appareil avant l'envoi, puis horodaté. Dans Google Drive, il n'existe que sous forme de fichier illisible : on ne peut le lire que dans cette appli, avec ta phrase secrète et ton empreinte. Le dossier se reverrouille dès que tu quittes l'appli ou après 5 minutes sans activité.</div>
+        <div class="docs-tools">
+          <button class="gate-link" type="button" onclick="openPassChange()">🔑 Changer la phrase secrète</button>
+          <button class="gate-link" type="button" onclick="forgetDeviceKey()">Retirer la clé de cet appareil</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Réglages -->
+  <div id="settings" class="sheet" onclick="if (event.target === this) closeSettings()">
+    <div class="sheet-box">
+      <div class="sheet-head"><span>⚙️ Réglages</span><button type="button" onclick="closeSettings()" aria-label="Fermer">✕</button></div>
+      <section class="set-sec" id="set-account">
+        <h4>👤 Compte</h4>
+        <div id="sync-account" class="sync-account"></div>
+        <button class="btn-sub" type="button" style="width: 100%;" onclick="logout()">🚪 Se déconnecter de cet appareil</button>
+        <details class="set-adv">
+          <summary>Adresse du script Google (avancé)</summary>
+          <input type="url" id="sync-url" class="date-picker-input" autocomplete="off" spellcheck="false">
+          <button class="btn-add" type="button" style="width: 100%; margin-top: 8px; background: var(--primary); color: white;" onclick="saveSyncSettings()">💾 Enregistrer l'adresse</button>
+          <div id="sync-settings-msg" class="weight-feedback"></div>
+        </details>
+      </section>
+      <section class="set-sec" id="set-agenda">
+        <h4>📅 Agenda médical</h4>
+        <div id="set-agenda-status" class="set-line"></div>
+      </section>
+      <section class="set-sec">
+        <h4>ℹ️ Application</h4>
+        <div class="set-line" id="set-version"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Rendez-vous médical -->
+  <div id="rdv-sheet" class="sheet" onclick="if (event.target === this) closeRdvSheet()">
+    <div class="sheet-box">
+      <div class="sheet-head"><span id="rdv-sheet-title">Rendez-vous</span><button type="button" onclick="closeRdvSheet()" aria-label="Fermer">✕</button></div>
+      <div id="rdv-sheet-body"></div>
+    </div>
+  </div>
+
+  <!-- Document du dossier médical -->
+  <div id="doc-viewer" class="sheet" onclick="if (event.target === this) closeDocViewer()">
+    <div class="sheet-box">
+      <div class="sheet-head"><span id="doc-viewer-title">Document</span><button type="button" onclick="closeDocViewer()" aria-label="Fermer">✕</button></div>
+      <div id="doc-viewer-body"></div>
+    </div>
+  </div>
+
+  <!-- Envoi d'un document par email -->
+  <div id="email-sheet" class="sheet" onclick="if (event.target === this) closeEmailSheet()">
+    <div class="sheet-box">
+      <div class="sheet-head"><span>✉️ Envoyer par email</span><button type="button" onclick="closeEmailSheet()" aria-label="Fermer">✕</button></div>
+      <div id="email-sheet-body"></div>
+    </div>
+  </div>
+
+  <!-- Visionneuse PDF (document déchiffré en mémoire uniquement) -->
+  <div id="pdf-viewer" class="pdf-viewer">
+    <div class="pdf-bar">
+      <button type="button" onclick="closePdfViewer()" aria-label="Fermer">✕</button>
+      <span id="pdf-title"></span>
+      <button type="button" class="pdf-action" id="pdf-email" aria-label="Envoyer par email" title="Envoyer par email">✉️</button>
+      <button type="button" class="pdf-action" id="pdf-print" onclick="printDoc()" aria-label="Imprimer" title="Imprimer">🖨️</button>
+    </div>
+    <div id="pdf-status" class="pdf-status"></div>
+    <div id="pdf-pages" class="pdf-pages"></div>
+  </div>
+
+  <!-- Message temporaire avec « Annuler » -->
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <span id="toast-text"></span>
+    <button id="toast-undo" type="button">Annuler</button>
+  </div>
+
+  <script>
+    // ================== SERVICE WORKER ==================
+    const APP_VERSION = '2026-10-12 · v1';
+    if ('serviceWorker' in navigator) {
+      // Quand une nouvelle version de l'appli est installée, on recharge une fois pour l'afficher
+      const hadController = !!navigator.serviceWorker.controller;
+      let swRefreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!hadController || swRefreshing) return;
+        swRefreshing = true;
+        location.reload();
+      });
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./ws.js')
+          .then((reg) => {
+            console.log('Service Worker enregistré, scope :', reg.scope);
+            // Vérifie s'il existe une nouvelle version à chaque retour sur l'appli
+            document.addEventListener('visibilitychange', () => {
+              if (document.visibilityState === 'visible') reg.update().catch(() => {});
+            });
+          })
+          .catch((err) => console.log('Échec Service Worker :', err));
+      });
+    }
+
+    // ================== STOCKAGE LOCAL ==================
+    // Même script Google que Suivi Hydrique Pro : même connexion, même agenda, même dossier chiffré.
+    const DEFAULT_SYNC_URL = "https://script.google.com/macros/s/AKfycbzl_Fq5YbC2vGCPkt-Ep5PNO-TnxAdtgVZcd6JlIeonorWzIXE9DoJYzgyCdGAWr0hL9A/exec";
+    const SYNC_URL_PREFIX = 'https://script.google.com/';
+    const LS_SYNC = 'hydra_sync';        // réglages de synchro de CET appareil
+
+    function lsGet(key, fallback) {
+      try {
+        const v = localStorage.getItem(key);
+        return v ? JSON.parse(v) : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    function lsSet(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch (e) {
+        console.warn('Stockage local impossible :', e);
+      }
+    }
+
+    let syncConf = Object.assign({ url: DEFAULT_SYNC_URL }, lsGet(LS_SYNC, {}));
+
+    function prefGet(key, fallback) {
+      try { return localStorage.getItem(key) || fallback; } catch (e) { return fallback; }
+    }
+    function prefSet(key, value) {
+      try { localStorage.setItem(key, value); } catch (e) {}
+    }
+
+    // ================== OUTILS ==================
+    function getLocalIsoDate(date = new Date()) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function byId(id) { return document.getElementById(id); }
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function normalizeText(s) {
+      return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/œ/g, 'oe');
+    }
+
+    function searchWords(q) {
+      return normalizeText(q).split(/[^a-z0-9]+/).filter(w => w.length >= 2)
+        .map(w => (w.length > 3 && /[sx]$/.test(w) && !/(ss|us|is)$/.test(w)) ? w.slice(0, -1) : w);
+    }
+
+    function foodRow(name, sub, badge, onClick) {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'food-row';
+      row.innerHTML = '<span class="fr-main"><span class="fr-name"></span><span class="fr-sub"></span></span>' + (badge ? '<span class="fr-badge"></span>' : '');
+      row.querySelector('.fr-name').textContent = name;
+      row.querySelector('.fr-sub').textContent = sub || '';
+      if (badge) row.querySelector('.fr-badge').textContent = badge;
+      row.onclick = onClick;
+      return row;
+    }
+
+    function updateModalState() {
+      const open = ['settings', 'rdv-sheet', 'doc-viewer', 'email-sheet'].some(id => byId(id) && byId(id).style.display === 'flex') ||
+        byId('pdf-viewer').style.display === 'block';
+      document.body.classList.toggle('modal-open', open);
+    }
+
+    // ----- Confirmation en deux temps (suppressions) -----
+    // 1er appui : le bouton passe en rouge « Supprimer ? » pendant 3 s ; 2e appui : l'action est faite.
+    function confirmTap(el, action, hooks) {
+      hooks = hooks || {};
+      if (el.classList.contains('armed')) {
+        clearTimeout(el._confirmTimer);
+        el.classList.remove('armed');
+        action();
+        return;
+      }
+      el.classList.add('armed');
+      if (hooks.arm) hooks.arm();
+      else { el.dataset.prev = el.textContent; el.textContent = 'Supprimer ?'; }
+      if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
+      el._confirmTimer = setTimeout(() => {
+        el.classList.remove('armed');
+        if (hooks.disarm) hooks.disarm();
+        else el.textContent = el.dataset.prev || '✕';
+      }, 3000);
+    }
+
+    // ----- Message temporaire avec « Annuler » -----
+    let toastTimer = null;
+    function hideToast() {
+      document.getElementById('toast').classList.remove('show');
+    }
+    function showToast(text, undoFn) {
+      const toast = document.getElementById('toast');
+      const undo = document.getElementById('toast-undo');
+      document.getElementById('toast-text').textContent = text;
+      undo.style.display = undoFn ? '' : 'none';
+      undo.onclick = () => { hideToast(); if (undoFn) undoFn(); };
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(hideToast, undoFn ? 5000 : 2500);
+    }
+
+    // ================== DOSSIER MÉDICAL CHIFFRÉ ==================
+    // Les documents sont chiffrés ICI, sur l'appareil (AES-256-GCM), avant d'être envoyés dans Google Drive.
+    // La clé du dossier est protégée par la phrase secrète (PBKDF2) : ni Google ni le script ne peuvent la lire.
+    const DOC_CATEGORIES = [
+      { key: 'ordonnance', name: 'Ordonnance', icon: '💊' },
+      { key: 'analyses', name: 'Analyses', icon: '🧪' },
+      { key: 'compte_rendu', name: 'Compte rendu', icon: '📋' },
+      { key: 'imagerie', name: 'Imagerie', icon: '🩻' },
+      { key: 'courrier', name: 'Courrier', icon: '✉️' },
+      { key: 'autre', name: 'Autre', icon: '📄' }
+    ];
+    const DOCS_LOCK_MS = 5 * 60 * 1000;          // re-verrouillage après 5 min sans activité
+    const MAX_DOC_BYTES = 20 * 1024 * 1024;       // 20 Mo par document
+    const LS_WEBAUTHN = 'hydra_webauthn';         // identifiant de l'empreinte enregistrée sur CET appareil
+    const ENC_MIME = 'application/x-hsp-encrypted';
+    const ENC_MAGIC = new Uint8Array([0x48, 0x53, 0x50, 0x45, 0x4E, 0x43, 0x31, 0x00]);   // « HSPENC1 »
+    const PBKDF2_ITER = 600000;
+    const PDFJS_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/';
+    let docsUnlockedUntil = 0;
+    let docsStage = 'open';       // 'loading' | 'vault-create' | 'vault-enter' | 'passphrase' | 'open'
+    let docsKey = null;           // clé du dossier, en mémoire seulement pendant l'ouverture
+    let docsVault = null;
+    let docsList = null;          // liste déchiffrée, en mémoire seulement
+    let docsFilter = 'tous';
+    let docDraft = null;
+    let docsPickerOpen = false;
+    let docsGoogleFallback = false;
+    let pendingDocsGoogle = false;
+    let docBlobUrls = [];
+    let pdfjsPromise = null;
+    let pdfRenderToken = 0;
+
+    // ----- Outils -----
+    function docCat(key) { return DOC_CATEGORIES.find(c => c.key === key) || DOC_CATEGORIES[DOC_CATEGORIES.length - 1]; }
+    function fmtSize(b) {
+      b = Number(b) || 0;
+      return b < 1024 * 1024 ? `${Math.max(1, Math.round(b / 1024))} Ko` : `${(b / 1048576).toFixed(1).replace('.', ',')} Mo`;
+    }
+    function fmtIsoFr(iso) {
+      const [y, m, d] = String(iso || '').split('-');
+      return d ? `${d}/${m}/${y}` : '';
+    }
+    function fmtStamp(ms) {
+      const d = new Date(Number(ms) || 0);
+      return `${d.toLocaleDateString('fr-FR')} à ${d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+    }
+    function docsUnlocked() { return Date.now() < docsUnlockedUntil; }
+    function touchDocs() { if (docsUnlocked()) docsUnlockedUntil = Date.now() + DOCS_LOCK_MS; }
+    function setDocsLockMsg(text, kind) {
+      const el = byId('docs-lock-msg');
+      el.className = 'weight-feedback' + (kind ? ' ' + kind : '');
+      el.textContent = text || '';
+    }
+    function bufToB64u(buf) {
+      let s = '';
+      new Uint8Array(buf).forEach(b => { s += String.fromCharCode(b); });
+      return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+    function b64uToBuf(str) {
+      const s = atob(str.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((str.length + 3) % 4));
+      return Uint8Array.from(s, c => c.charCodeAt(0));
+    }
+    function toB64(bytes) {
+      let s = '';
+      const u = new Uint8Array(bytes);
+      for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+      return btoa(s);
+    }
+    function fromB64(str) {
+      const s = atob(str);
+      const u = new Uint8Array(s.length);
+      for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
+      return u;
+    }
+    function randomBytes(n) { return crypto.getRandomValues(new Uint8Array(n)); }
+    async function sha256Hex(bytes) {
+      const h = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
+      return Array.from(h, b => b.toString(16).padStart(2, '0')).join('');
+    }
+    function uvFlag(authData) {
+      const a = new Uint8Array(authData);
+      return a.length > 32 && (a[32] & 0x04) !== 0;
+    }
+
+    // ----- Clé locale de l'appareil (IndexedDB, clé non exportable) -----
+    function idbOpen() {
+      return new Promise((resolve, reject) => {
+        const r = indexedDB.open('hydra-secure', 1);
+        r.onupgradeneeded = () => r.result.createObjectStore('keys');
+        r.onsuccess = () => resolve(r.result);
+        r.onerror = () => reject(r.error);
+      });
+    }
+    async function idbReq(mode, fn) {
+      const db = await idbOpen();
+      try {
+        return await new Promise((resolve, reject) => {
+          const tx = db.transaction('keys', mode);
+          const req = fn(tx.objectStore('keys'));
+          tx.oncomplete = () => resolve(req && req.result);
+          tx.onerror = () => reject(tx.error);
+        });
+      } finally {
+        db.close();
+      }
+    }
+    const idbGet = k => idbReq('readonly', s => s.get(k)).catch(() => null);
+    const idbSet = (k, v) => idbReq('readwrite', s => s.put(v, k));
+    const idbDel = k => idbReq('readwrite', s => s.delete(k)).catch(() => null);
+
+    // ----- Chiffrement -----
+    async function deriveKek(pass, salt, iter) {
+      const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass.normalize('NFC')), 'PBKDF2', false, ['deriveKey']);
+      return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: iter, hash: 'SHA-256' }, base,
+        { name: 'AES-GCM', length: 256 }, false, ['wrapKey', 'unwrapKey']);
+    }
+    async function wrapForVault(dataKey, pass) {
+      const salt = randomBytes(16), iv = randomBytes(12);
+      const kek = await deriveKek(pass, salt, PBKDF2_ITER);
+      const wrapped = await crypto.subtle.wrapKey('raw', dataKey, kek, { name: 'AES-GCM', iv: iv });
+      return { salt: toB64(salt), iter: PBKDF2_ITER, iv: toB64(iv), wrapped: toB64(wrapped) };
+    }
+    async function unwrapVault(vault, pass, extractable) {
+      const kek = await deriveKek(pass, fromB64(vault.salt), vault.iter);
+      return crypto.subtle.unwrapKey('raw', fromB64(vault.wrapped), kek, { name: 'AES-GCM', iv: fromB64(vault.iv) },
+        { name: 'AES-GCM' }, !!extractable, ['encrypt', 'decrypt']);
+    }
+    async function encryptBytes(key, bytes) {
+      const iv = randomBytes(12);
+      const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv, additionalData: ENC_MAGIC }, key, bytes));
+      const out = new Uint8Array(ENC_MAGIC.length + iv.length + ct.length);
+      out.set(ENC_MAGIC, 0);
+      out.set(iv, ENC_MAGIC.length);
+      out.set(ct, ENC_MAGIC.length + iv.length);
+      return out;
+    }
+    async function decryptBytes(key, bytes) {
+      for (let i = 0; i < ENC_MAGIC.length; i++) if (bytes[i] !== ENC_MAGIC[i]) throw new Error('bad_file');
+      const iv = bytes.subarray(ENC_MAGIC.length, ENC_MAGIC.length + 12);
+      return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv, additionalData: ENC_MAGIC }, key, bytes.subarray(ENC_MAGIC.length + 12)));
+    }
+    async function encryptMeta(key, obj) {
+      const iv = randomBytes(12);
+      const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, new TextEncoder().encode(JSON.stringify(obj)));
+      return { iv: toB64(iv), data: toB64(ct) };
+    }
+    async function decryptMeta(key, iv, data) {
+      const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromB64(iv) }, key, fromB64(data));
+      return JSON.parse(new TextDecoder().decode(pt));
+    }
+
+    // ----- Empreinte (WebAuthn, capteur du téléphone) -----
+    async function biometricAvailable() {
+      try {
+        return !!(window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable &&
+          await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable());
+      } catch (e) {
+        return false;
+      }
+    }
+    async function registerBiometric() {
+      const email = (syncConf.session && syncConf.session.email) || 'moi';
+      const cred = await navigator.credentials.create({
+        publicKey: {
+          challenge: randomBytes(32),
+          rp: { name: 'Suivi Hydrique Pro', id: location.hostname },
+          user: { id: randomBytes(16), name: email, displayName: 'Dossier médical — Suivi Hydrique Pro' },
+          pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+          authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'discouraged' },
+          timeout: 60000,
+          attestation: 'none'
+        }
+      });
+      if (!cred) throw new Error('cancel');
+      const authData = cred.response.getAuthenticatorData ? cred.response.getAuthenticatorData() : null;
+      if (authData && !uvFlag(authData)) throw new Error('uv');
+      lsSet(LS_WEBAUTHN, { credId: bufToB64u(cred.rawId), created: Date.now() });
+    }
+    async function verifyBiometric(conf) {
+      const assertion = await navigator.credentials.get({
+        publicKey: {
+          challenge: randomBytes(32),
+          rpId: location.hostname,
+          allowCredentials: [{ type: 'public-key', id: b64uToBuf(conf.credId), transports: ['internal'] }],
+          userVerification: 'required',
+          timeout: 60000
+        }
+      });
+      if (!assertion || !uvFlag(assertion.response.authenticatorData)) throw new Error('uv');
+    }
+
+    async function unlockDocs() {
+      if (!navigator.onLine) return setDocsLockMsg('Le dossier médical a besoin d\'une connexion Internet.', 'err');
+      if (!(await biometricAvailable())) {
+        docsGoogleFallback = true;
+        pendingDocsGoogle = true;
+        renderDocs();
+        initGoogleButton();
+        return;
+      }
+      const conf = lsGet(LS_WEBAUTHN, null);
+      const btn = byId('docs-unlock-btn');
+      btn.disabled = true;
+      setDocsLockMsg(conf ? 'Pose ton doigt sur le capteur…' : 'Enregistrement de ton empreinte pour ce dossier…');
+      try {
+        if (conf && conf.credId) await verifyBiometric(conf);
+        else await registerBiometric();
+        grantDocs();
+      } catch (e) {
+        setDocsLockMsg(e && e.name === 'NotAllowedError'
+          ? 'Authentification annulée ou non reconnue. Réessaie.'
+          : 'Empreinte non vérifiée. Réessaie, ou réinitialise l\'empreinte ci-dessous.', 'err');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // Empreinte validée : on récupère la clé de cet appareil, ou on demande la phrase secrète
+    async function grantDocs() {
+      docsUnlockedUntil = Date.now() + DOCS_LOCK_MS;
+      docsGoogleFallback = false;
+      pendingDocsGoogle = false;
+      setDocsLockMsg('');
+      docsStage = 'loading';
+      renderDocs();
+      try {
+        const key = await idbGet('docsKey');
+        if (key) {
+          docsKey = key;
+          docsStage = 'open';
+          renderDocs();
+          loadDocs();
+          return;
+        }
+        const data = await docsCall({ action: 'vault_get' });
+        docsVault = data.vault || null;
+        docsStage = docsVault ? 'vault-enter' : 'vault-create';
+        renderDocs();
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        lockDocs();
+        setDocsLockMsg(docsErrorMessage(e.message), 'err');
+      }
+    }
+
+    function resetBiometric() {
+      if (!confirm('Réinitialiser l\'empreinte du dossier médical sur cet appareil ?\nTu devras la réactiver (avec le capteur du téléphone).')) return;
+      try { localStorage.removeItem(LS_WEBAUTHN); } catch (e) {}
+      setDocsLockMsg('Empreinte réinitialisée : touche le bouton pour la réactiver.');
+      renderDocs();
+    }
+
+    async function forgetDeviceKey() {
+      if (!confirm('Retirer la clé du dossier de cet appareil ?\nTes documents restent dans ton Drive ; il faudra retaper ta phrase secrète pour les rouvrir ici.')) return;
+      await idbDel('docsKey');
+      try { localStorage.removeItem(LS_WEBAUTHN); } catch (e) {}
+      lockDocs('Clé retirée de cet appareil.');
+    }
+
+    function lockDocs(message) {
+      const wasOpen = docsUnlocked() || docsList !== null || docsKey !== null;
+      docsUnlockedUntil = 0;
+      docsKey = null;
+      docsList = null;
+      docDraft = null;
+      docsStage = 'open';
+      docBlobUrls.forEach(u => URL.revokeObjectURL(u));
+      docBlobUrls = [];
+      closeDocViewer();
+      closePdfViewer();
+      if (byId('email-sheet').style.display === 'flex') closeEmailSheet();
+      renderDocs();
+      if (wasOpen && message) setDocsLockMsg(message);
+    }
+
+    // ----- Phrase secrète -----
+    function passStrength(p) {
+      let score = 0;
+      if (p.length >= 10) score++;
+      if (p.length >= 16) score++;
+      if (/[A-Z]/.test(p) && /[a-z]/.test(p)) score++;
+      if (/\d/.test(p)) score++;
+      if (/[^A-Za-z0-9]/.test(p) || /\s/.test(p)) score++;
+      return score <= 2 ? 'faible' : score === 3 ? 'correcte' : 'solide';
+    }
+
+    function renderVaultForm() {
+      const box = byId('docs-vault');
+      if (docsStage === 'loading') {
+        box.innerHTML = '<div class="docs-lock-icon">🔐</div><p>Ouverture du coffre…</p>';
+        return;
+      }
+      const create = docsStage === 'vault-create';
+      const change = docsStage === 'passphrase';
+      box.innerHTML = `
+        <div class="docs-lock-icon">🔐</div>
+        <h3>${create ? 'Crée la phrase secrète de ton dossier' : change ? 'Changer la phrase secrète' : 'Phrase secrète du dossier'}</h3>
+        <p>${create
+          ? 'Elle chiffre tous tes documents. Elle ne quitte jamais ton appareil : <strong>ni Google ni personne ne peut la retrouver</strong>. Note-la dans un endroit sûr : sans elle, tes documents seraient définitivement illisibles.'
+          : change ? 'Tes documents restent les mêmes : seule la phrase qui protège la clé change. Elle s\'appliquera à tous tes appareils.'
+          : 'Première ouverture sur cet appareil : tape ta phrase secrète une seule fois. Ensuite, ton empreinte suffira.'}</p>
+        ${change ? '<input type="password" id="vp-old" class="date-picker-input vault-input" autocomplete="current-password" placeholder="Phrase secrète actuelle">' : ''}
+        <input type="password" id="vp-1" class="date-picker-input vault-input" autocomplete="${create || change ? 'new-password' : 'current-password'}" placeholder="${change ? 'Nouvelle phrase secrète' : 'Phrase secrète'}">
+        ${create || change ? `
+          <div id="vp-strength" class="vault-strength"></div>
+          <input type="password" id="vp-2" class="date-picker-input vault-input" autocomplete="new-password" placeholder="Retape la phrase secrète">
+          <label class="sync-check vault-check"><input type="checkbox" id="vp-noted"> J'ai noté ma phrase secrète dans un endroit sûr</label>` : ''}
+        <label class="sync-check vault-check"><input type="checkbox" id="vp-show"> Afficher</label>
+        <button class="sync-btn" type="button" id="vp-submit" style="background: #0f766e; margin-top: 10px;">${create ? '🔐 Créer le coffre' : change ? '🔑 Changer la phrase' : '🔓 Ouvrir le dossier'}</button>
+        ${change ? '<button class="btn-sub" type="button" id="vp-cancel" style="width: 100%; margin-top: 8px;">Annuler</button>' : ''}
+        <div id="vp-msg" class="weight-feedback"></div>`;
+      const inputs = ['vp-old', 'vp-1', 'vp-2'].map(byId).filter(Boolean);
+      byId('vp-show').onchange = e => inputs.forEach(i => { i.type = e.target.checked ? 'text' : 'password'; });
+      if (byId('vp-strength')) byId('vp-1').oninput = e => {
+        const v = e.target.value;
+        byId('vp-strength').textContent = v ? `Solidité : ${passStrength(v)}${v.length < 10 ? ' (10 caractères minimum)' : ''}` : '';
+      };
+      inputs.forEach(i => i.addEventListener('keydown', e => { if (e.key === 'Enter') byId('vp-submit').click(); }));
+      byId('vp-submit').onclick = create ? submitVaultCreate : change ? submitPassChange : submitVaultEnter;
+      if (byId('vp-cancel')) byId('vp-cancel').onclick = () => { docsStage = 'open'; renderDocs(); };
+      setTimeout(() => (inputs[0] || {}).focus && inputs[0].focus(), 50);
+    }
+
+    function vaultMsg(text, kind) {
+      const el = byId('vp-msg');
+      el.className = 'weight-feedback' + (kind ? ' ' + kind : '');
+      el.textContent = text;
+    }
+
+    function checkNewPass() {
+      const p1 = byId('vp-1').value, p2 = byId('vp-2').value;
+      if (p1.length < 10) return vaultMsg('La phrase secrète doit faire au moins 10 caractères.', 'err'), null;
+      if (p1 !== p2) return vaultMsg('Les deux phrases ne sont pas identiques.', 'err'), null;
+      if (!byId('vp-noted').checked) return vaultMsg('Coche la case pour confirmer que tu l\'as notée.', 'err'), null;
+      return p1;
+    }
+
+    async function storeDeviceKey(key, vault) {
+      await idbSet('docsKey', key);
+      docsKey = key;
+      docsVault = vault;
+      docsStage = 'open';
+      renderDocs();
+      loadDocs();
+    }
+
+    async function submitVaultCreate() {
+      const pass = checkNewPass();
+      if (!pass) return;
+      const btn = byId('vp-submit');
+      btn.disabled = true;
+      vaultMsg('Création du coffre… (quelques secondes)');
+      try {
+        const dataKey = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+        const vault = await wrapForVault(dataKey, pass);
+        let data;
+        try {
+          data = await docsCall({ action: 'vault_set', vault: vault });
+        } catch (e) {
+          if (e.message === 'vault_exists') {
+            docsVault = e.data && e.data.vault;
+            docsStage = 'vault-enter';
+            renderDocs();
+            vaultMsg('Un coffre existe déjà (créé depuis un autre appareil) : tape sa phrase secrète.', 'err');
+            return;
+          }
+          throw e;
+        }
+        await storeDeviceKey(await unwrapVault(data.vault, pass, false), data.vault);
+        showToast('🔐 Coffre créé : tes documents seront chiffrés');
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        vaultMsg(docsErrorMessage(e.message), 'err');
+        btn.disabled = false;
+      }
+    }
+
+    async function submitVaultEnter() {
+      const pass = byId('vp-1').value;
+      if (!pass) return;
+      const btn = byId('vp-submit');
+      btn.disabled = true;
+      vaultMsg('Vérification…');
+      try {
+        const key = await unwrapVault(docsVault, pass, false);
+        await storeDeviceKey(key, docsVault);
+      } catch (e) {
+        vaultMsg(e && e.name === 'OperationError' ? 'Phrase secrète incorrecte.' : docsErrorMessage(e.message), 'err');
+        btn.disabled = false;
+      }
+    }
+
+    function openPassChange() {
+      docsStage = 'passphrase';
+      renderDocs();
+    }
+
+    async function submitPassChange() {
+      const old = byId('vp-old').value;
+      const pass = checkNewPass();
+      if (!old || !pass) { if (!old) vaultMsg('Tape ta phrase secrète actuelle.', 'err'); return; }
+      const btn = byId('vp-submit');
+      btn.disabled = true;
+      vaultMsg('Changement en cours… (quelques secondes)');
+      try {
+        const current = (await docsCall({ action: 'vault_get' })).vault;
+        let dataKey;
+        try {
+          dataKey = await unwrapVault(current, old, true);
+        } catch (e) {
+          vaultMsg('Phrase secrète actuelle incorrecte.', 'err');
+          btn.disabled = false;
+          return;
+        }
+        const vault = await wrapForVault(dataKey, pass);
+        const data = await docsCall({ action: 'vault_set', vault: vault, previousSalt: current.salt });
+        docsVault = data.vault;
+        docsStage = 'open';
+        renderDocs();
+        showToast('🔑 Phrase secrète changée');
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        vaultMsg(docsErrorMessage(e.message), 'err');
+        btn.disabled = false;
+      }
+    }
+
+    // ----- Échanges avec le script Google -----
+    function docsErrorMessage(code) {
+      const messages = {
+        not_found: 'Document introuvable (il a peut-être été supprimé).',
+        too_big: 'Fichier trop lourd : 20 Mo maximum.',
+        bad_type: 'Type de fichier non accepté.',
+        bad_file: 'Le fichier semble abîmé.',
+        not_pdf: 'Ce fichier n\'est pas un PDF valide.',
+        not_encrypted: 'Le script Google n\'accepte que des documents chiffrés : mets l\'appli à jour.',
+        bad_vault: 'Coffre invalide.',
+        integrity: 'Le document ne correspond plus à celui importé (empreinte différente).',
+        server: 'Le script Google n\'a pas pu accéder à Drive. As-tu exécuté « autoriserDossierMedical » ?',
+        unknown_action: 'Le script Google n\'est pas encore à jour (version 5 nécessaire).',
+        format: 'Le script Google ne répond pas comme prévu.',
+        locked: 'Trop de tentatives refusées : accès bloqué 15 minutes.'
+      };
+      return messages[code] || (navigator.onLine ? 'Erreur de communication avec Google Drive. Réessaie.' : 'Pas de connexion Internet.');
+    }
+
+    async function docsCall(payload) {
+      if (!hasSession()) {
+        endSession('Ta session a expiré : reconnecte-toi.');
+        throw new Error('unauthorized');
+      }
+      const data = await apiCall(Object.assign({ session: syncConf.session.token }, payload));
+      if (!data.ok) {
+        if (data.error === 'unauthorized') endSession('Ta session a expiré ou a été fermée : reconnecte-toi.');
+        const err = new Error(data.error || 'server');
+        err.data = data;
+        throw err;
+      }
+      touchDocs();
+      return data;
+    }
+
+    async function loadDocs() {
+      if (!docsUnlocked() || !docsKey) return;
+      byId('docs-list').innerHTML = '<div class="drink-empty">Déchiffrement de tes documents…</div>';
+      try {
+        const data = await docsCall({ action: 'docs_list' });
+        const list = [];
+        for (const d of (Array.isArray(data.docs) ? data.docs : [])) {
+          if (d.enc) {
+            try {
+              const meta = await decryptMeta(docsKey, d.metaIv, d.metaData);
+              list.push(Object.assign({}, meta, { id: d.id, enc: true, importedAt: d.importedAt, encSize: d.size }));
+            } catch (e) {
+              list.push({ id: d.id, enc: true, broken: true, title: 'Document illisible', category: 'autre', importedAt: d.importedAt, encSize: d.size });
+            }
+          } else {
+            list.push(Object.assign({}, d, { legacy: true }));
+          }
+        }
+        if (!docsUnlocked()) return;
+        docsList = list;
+        renderDocsList();
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        byId('docs-list').innerHTML = '';
+        const msg = document.createElement('div');
+        msg.className = 'weight-feedback err';
+        msg.textContent = docsErrorMessage(e.message);
+        byId('docs-list').appendChild(msg);
+      }
+    }
+
+    // ----- Affichage -----
+    function renderDocs() {
+      const unlocked = docsUnlocked();
+      const vaultStage = unlocked && docsStage !== 'open';
+      byId('docs-locked').style.display = unlocked ? 'none' : 'block';
+      byId('docs-vault').style.display = vaultStage ? 'block' : 'none';
+      byId('docs-unlocked').style.display = unlocked && !vaultStage ? 'block' : 'none';
+      if (!unlocked) {
+        const conf = lsGet(LS_WEBAUTHN, null);
+        const btn = byId('docs-unlock-btn');
+        btn.textContent = conf ? '👆 Déverrouiller avec l\'empreinte' : '👆 Activer l\'empreinte et ouvrir';
+        btn.style.display = docsGoogleFallback ? 'none' : 'block';
+        byId('docs-reset-btn').style.display = conf && !docsGoogleFallback ? 'inline-block' : 'none';
+        byId('docs-lock-text').textContent = docsGoogleFallback
+          ? 'Cet appareil n\'a pas de capteur d\'empreinte ni de verrouillage d\'écran : confirme ton identité avec ton compte Google.'
+          : (conf ? 'Tes documents sont chiffrés et protégés par ton empreinte.'
+                  : 'Première ouverture sur cet appareil : ton téléphone va te demander ton empreinte (ou son code) pour protéger ce dossier.');
+        byId('docs-google').style.display = docsGoogleFallback ? 'flex' : 'none';
+        return;
+      }
+      if (vaultStage) return renderVaultForm();
+      renderDocDraft();
+      renderDocsList();
+    }
+
+    const docsOpenYears = new Set();   // années dépliées dans « Mes documents »
+
+    function renderDocsList() {
+      const box = byId('docs-list');
+      const filters = byId('docs-filters');
+      const legacyBox = byId('docs-legacy');
+      filters.innerHTML = '';
+      legacyBox.innerHTML = '';
+      if (docsList === null) return;
+      const legacy = docsList.filter(d => d.legacy);
+      if (legacy.length) {
+        legacyBox.innerHTML = `<div class="docs-legacy">⚠️ ${legacy.length} document(s) importé(s) avant le chiffrement sont encore lisibles dans Drive.
+          <button class="sync-btn" type="button" id="docs-migrate" style="background: #b45309; margin-top: 8px;">🔒 Les chiffrer maintenant</button></div>`;
+        byId('docs-migrate').onclick = migrateLegacyDocs;
+      }
+      const present = DOC_CATEGORIES.filter(c => docsList.some(d => d.category === c.key));
+      if (present.length > 1) {
+        [{ key: 'tous', name: 'Tous', icon: '' }].concat(present).forEach(c => {
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'chip' + (docsFilter === c.key ? ' active' : '');
+          chip.textContent = `${c.icon ? c.icon + ' ' : ''}${c.name}`;
+          chip.onclick = () => { docsFilter = c.key; renderDocsList(); };
+          filters.appendChild(chip);
+        });
+      }
+      box.innerHTML = '';
+      const words = searchWords(byId('docs-search').value);
+      const list = docsList.filter(d => (docsFilter === 'tous' || d.category === docsFilter) &&
+        (!words.length || words.every(w => normalizeText([d.title, d.note, docCat(d.category).name].join(' ')).includes(w))));
+      byId('docs-search').style.display = docsList.length > 4 ? '' : 'none';
+      if (!list.length) {
+        box.innerHTML = `<div class="drink-empty">${docsList.length ? 'Aucun document ne correspond.' : 'Aucun document pour l\'instant.'}</div>`;
+        return;
+      }
+      // Classement par date DU DOCUMENT (pas d'import) : années → mois, le plus récent en haut
+      const dateOf = d => d.docDate || getLocalIsoDate(new Date(Number(d.importedAt) || Date.now()));
+      const sorted = list.slice().sort((a, b) => dateOf(b).localeCompare(dateOf(a)) || String(a.title).localeCompare(String(b.title), 'fr'));
+      const years = new Map();
+      sorted.forEach(d => {
+        const iso = dateOf(d);
+        const y = iso.slice(0, 4), ym = iso.slice(0, 7);
+        if (!years.has(y)) years.set(y, new Map());
+        const months = years.get(y);
+        if (!months.has(ym)) months.set(ym, []);
+        months.get(ym).push(d);
+      });
+      const yearKeys = [...years.keys()];
+      const filtering = words.length || docsFilter !== 'tous';
+      yearKeys.forEach((y, yi) => {
+        const months = years.get(y);
+        const count = [...months.values()].reduce((a, l) => a + l.length, 0);
+        const open = filtering || docsOpenYears.has(y) || (!docsOpenYears.size && yi === 0);
+        const det = document.createElement('details');
+        det.className = 'doc-year';
+        det.open = open;
+        det.innerHTML = `<summary><span>${esc(y)}</span><small>${count} document${count > 1 ? 's' : ''}</small></summary>`;
+        det.addEventListener('toggle', () => { if (det.open) docsOpenYears.add(y); else docsOpenYears.delete(y); });
+        months.forEach((docs, ym) => {
+          const [yy, mm] = ym.split('-').map(Number);
+          const label = new Date(yy, mm - 1, 1).toLocaleDateString('fr-FR', { month: 'long' });
+          const head = document.createElement('div');
+          head.className = 'doc-month';
+          head.textContent = `${label.charAt(0).toUpperCase() + label.slice(1)} · ${docs.length}`;
+          det.appendChild(head);
+          docs.forEach(d => {
+            const cat = docCat(d.category);
+            const sub = [d.docDate ? `du ${fmtIsoFr(d.docDate)}` : 'date du document non renseignée', cat.name, d.pages ? `${d.pages} p.` : ''].filter(Boolean).join(' · ');
+            det.appendChild(foodRow(`${cat.icon} ${d.title}`, sub, d.legacy ? '⚠️ non chiffré' : (d.broken ? '❌' : '🔒'), () => openDocViewer(d)));
+          });
+        });
+        box.appendChild(det);
+      });
+    }
+
+    // ----- Préparation d'un document -----
+    function docTitleFromFile(file) {
+      return String(file.name || '').replace(/\.[a-z0-9]+$/i, '').replace(/[_-]+/g, ' ').trim().slice(0, 120);
+    }
+    function newDocDraft(kind) {
+      return { kind: kind, pages: [], pdf: null, title: '', category: 'autre', docDate: getLocalIsoDate(), note: '' };
+    }
+    function addDocImages(files) {
+      const images = files.filter(f => /^image\//.test(f.type));
+      if (!images.length) return;
+      if (!docDraft || docDraft.kind !== 'photos') docDraft = newDocDraft('photos');
+      images.forEach(f => {
+        const url = URL.createObjectURL(f);
+        docBlobUrls.push(url);
+        docDraft.pages.push({ file: f, url: url });
+      });
+      if (!docDraft.title) docDraft.title = images.length === 1 && !/^(image|img|photo|pxl|dsc)/i.test(images[0].name) ? docTitleFromFile(images[0]) : `Document du ${fmtIsoFr(getLocalIsoDate())}`;
+      renderDocDraft();
+    }
+    function onDocFilesChosen(input) {
+      docsPickerOpen = false;
+      touchDocs();
+      const files = Array.from(input.files || []);
+      input.value = '';
+      if (!files.length || !docsUnlocked() || !docsKey) return;
+      const pdf = files.find(f => f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
+      if (pdf) {
+        if (pdf.size > MAX_DOC_BYTES) { showToast('📄 PDF trop lourd : 20 Mo maximum.'); return; }
+        docDraft = newDocDraft('pdf');
+        docDraft.pdf = pdf;
+        docDraft.title = docTitleFromFile(pdf) || 'Document';
+        if (files.length > 1) showToast('Un seul PDF à la fois : seul le premier a été gardé.');
+        renderDocDraft();
+        return;
+      }
+      addDocImages(files);
+    }
+
+    function renderDocDraft() {
+      const box = byId('doc-draft');
+      byId('doc-add-buttons').style.display = docDraft ? 'none' : 'grid';
+      box.innerHTML = '';
+      if (!docDraft) return;
+      const d = docDraft;
+      box.innerHTML = `
+        <div class="doc-draft">
+          ${d.kind === 'pdf'
+            ? `<div class="doc-pdf">📄 ${esc(d.pdf.name)} · ${fmtSize(d.pdf.size)}</div>`
+            : `<div class="action-label">Pages (${d.pages.length}) — elles seront réunies en un seul PDF</div>
+               <div class="doc-pages" id="dd-pages"></div>`}
+          <div class="action-label" style="margin-top: 10px;">Titre</div>
+          <input type="text" id="dd-title" class="date-picker-input" maxlength="120" value="${esc(d.title)}" style="margin-top: 0;">
+          <div class="action-label" style="margin-top: 10px;">Catégorie</div>
+          <div class="chip-row" id="dd-cats"></div>
+          <div class="action-label" style="margin-top: 10px;">Date du document</div>
+          <input type="date" id="dd-date" class="date-picker-input" value="${esc(d.docDate)}" max="${getLocalIsoDate()}" style="margin-top: 0;">
+          <div class="action-label" style="margin-top: 10px;">Remarque (facultatif)</div>
+          <input type="text" id="dd-note" class="date-picker-input" maxlength="500" value="${esc(d.note)}" placeholder="Ex : bilan sanguin du Dr Martin" style="margin-top: 0;">
+          <div class="action-row" style="margin-top: 12px;">
+            <button class="btn-add" type="button" id="dd-save" style="background: #0f766e; color: white;">🔒 Chiffrer et enregistrer</button>
+            <button class="btn-sub" type="button" id="dd-cancel">Annuler</button>
+          </div>
+          <div id="dd-msg" class="weight-feedback"></div>
+        </div>`;
+      if (d.kind === 'photos') {
+        const pages = byId('dd-pages');
+        d.pages.forEach((p, i) => {
+          const el = document.createElement('div');
+          el.className = 'doc-page';
+          const img = document.createElement('img');
+          img.src = p.url;
+          img.alt = `Page ${i + 1}`;
+          const num = document.createElement('span');
+          num.textContent = i + 1;
+          const del = document.createElement('button');
+          del.type = 'button';
+          del.textContent = '×';
+          del.setAttribute('aria-label', `Retirer la page ${i + 1}`);
+          del.onclick = () => { d.pages.splice(i, 1); if (!d.pages.length) docDraft = null; renderDocDraft(); };
+          el.appendChild(img);
+          el.appendChild(num);
+          el.appendChild(del);
+          pages.appendChild(el);
+        });
+        const add = document.createElement('label');
+        add.className = 'doc-page add';
+        add.innerHTML = '<b>＋</b>Page<input type="file" accept="image/*" capture="environment" hidden>';
+        const input = add.querySelector('input');
+        input.addEventListener('click', () => { docsPickerOpen = true; });
+        input.addEventListener('cancel', () => { docsPickerOpen = false; });
+        input.addEventListener('change', () => onDocFilesChosen(input));
+        pages.appendChild(add);
+      }
+      const cats = byId('dd-cats');
+      DOC_CATEGORIES.forEach(c => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'chip' + (d.category === c.key ? ' active' : '');
+        chip.textContent = `${c.icon} ${c.name}`;
+        chip.onclick = () => { d.category = c.key; cats.querySelectorAll('.chip').forEach(x => x.classList.remove('active')); chip.classList.add('active'); };
+        cats.appendChild(chip);
+      });
+      byId('dd-title').oninput = e => { d.title = e.target.value; };
+      byId('dd-date').oninput = e => { d.docDate = e.target.value; };
+      byId('dd-note').oninput = e => { d.note = e.target.value; };
+      byId('dd-cancel').onclick = () => { docDraft = null; renderDocDraft(); };
+      byId('dd-save').onclick = saveDocDraft;
+    }
+
+    // ----- Photos → un seul PDF (fabriqué sur le téléphone) -----
+    async function pageToJpeg(file) {
+      let src;
+      try {
+        src = await createImageBitmap(file, { imageOrientation: 'from-image' });
+      } catch (e) {
+        const url = URL.createObjectURL(file);
+        src = new Image();
+        src.src = url;
+        await src.decode();
+        URL.revokeObjectURL(url);
+      }
+      const scale = Math.min(1, 2000 / Math.max(src.width, src.height));
+      const w = Math.max(1, Math.round(src.width * scale));
+      const h = Math.max(1, Math.round(src.height * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const g = canvas.getContext('2d');
+      g.fillStyle = '#ffffff';
+      g.fillRect(0, 0, w, h);
+      g.drawImage(src, 0, 0, w, h);
+      if (src.close) src.close();
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.82));
+      return { bytes: new Uint8Array(await blob.arrayBuffer()), w: w, h: h };
+    }
+
+    function buildPdf(images) {
+      const enc = new TextEncoder();
+      const parts = [];
+      const offsets = [];
+      let pos = 0;
+      const push = data => {
+        const u = typeof data === 'string' ? enc.encode(data) : data;
+        parts.push(u);
+        pos += u.length;
+      };
+      const obj = (num, write) => {
+        offsets[num] = pos;
+        push(`${num} 0 obj\n`);
+        write();
+        push('\nendobj\n');
+      };
+      push('%PDF-1.4\n%âãÏÓ\n');
+      const n = images.length;
+      obj(1, () => push('<< /Type /Catalog /Pages 2 0 R >>'));
+      obj(2, () => push(`<< /Type /Pages /Count ${n} /Kids [${images.map((_, i) => `${3 + 3 * i} 0 R`).join(' ')}] >>`));
+      images.forEach((im, i) => {
+        const landscape = im.w > im.h;
+        const pw = landscape ? 841.89 : 595.28;
+        const ph = landscape ? 595.28 : 841.89;
+        const margin = 18;
+        const s = Math.min((pw - 2 * margin) / im.w, (ph - 2 * margin) / im.h);
+        const dw = im.w * s, dh = im.h * s;
+        const x = (pw - dw) / 2, y = (ph - dh) / 2;
+        const p = 3 + 3 * i;
+        obj(p, () => push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pw} ${ph}] /Resources << /XObject << /Im${i} ${p + 1} 0 R >> >> /Contents ${p + 2} 0 R >>`));
+        obj(p + 1, () => {
+          push(`<< /Type /XObject /Subtype /Image /Width ${im.w} /Height ${im.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.bytes.length} >>\nstream\n`);
+          push(im.bytes);
+          push('\nendstream');
+        });
+        const content = `q ${dw.toFixed(2)} 0 0 ${dh.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)} cm /Im${i} Do Q`;
+        obj(p + 2, () => push(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`));
+      });
+      const xrefPos = pos;
+      const total = 3 + 3 * n;
+      let xref = `xref\n0 ${total}\n0000000000 65535 f \n`;
+      for (let k = 1; k < total; k++) xref += String(offsets[k]).padStart(10, '0') + ' 00000 n \n';
+      push(xref);
+      push(`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xrefPos}\n%%EOF\n`);
+      return new Blob(parts, { type: 'application/pdf' });
+    }
+
+    // Chiffre puis envoie un document ; renvoie la fiche déchiffrée
+    async function encryptAndUpload(bytes, meta) {
+      const sha = await sha256Hex(bytes);
+      const fullMeta = Object.assign({ v: 1, mime: 'application/pdf', size: bytes.length, sha256: sha, encryptedAt: Date.now() }, meta);
+      const encBytes = await encryptBytes(docsKey, bytes);
+      if (encBytes.length > MAX_DOC_BYTES) throw new Error('too_big');
+      const encMeta = await encryptMeta(docsKey, fullMeta);
+      const data = await docsCall({ action: 'docs_upload', mime: ENC_MIME, content: toB64(encBytes), meta: encMeta });
+      return Object.assign({}, fullMeta, { id: data.doc.id, enc: true, importedAt: data.doc.importedAt, encSize: data.doc.size });
+    }
+
+    async function saveDocDraft() {
+      const d = docDraft;
+      const msg = byId('dd-msg');
+      const btn = byId('dd-save');
+      d.title = byId('dd-title').value.trim();
+      if (!d.title) { msg.className = 'weight-feedback err'; msg.textContent = 'Donne un titre au document.'; return; }
+      btn.disabled = true;
+      byId('dd-cancel').disabled = true;
+      msg.className = 'weight-feedback';
+      try {
+        let bytes, pages = 0, originalName = '';
+        if (d.kind === 'pdf') {
+          bytes = new Uint8Array(await d.pdf.arrayBuffer());
+          if (!(bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46)) throw new Error('not_pdf');
+          originalName = d.pdf.name;
+        } else {
+          const images = [];
+          for (let i = 0; i < d.pages.length; i++) {
+            btn.textContent = `Préparation de la page ${i + 1}/${d.pages.length}…`;
+            touchDocs();
+            images.push(await pageToJpeg(d.pages[i].file));
+          }
+          bytes = new Uint8Array(await buildPdf(images).arrayBuffer());
+          pages = images.length;
+        }
+        if (bytes.length > MAX_DOC_BYTES) throw new Error('too_big');
+        btn.textContent = '🔒 Chiffrement et envoi…';
+        const doc = await encryptAndUpload(bytes, { title: d.title, category: d.category, docDate: d.docDate, note: d.note.trim(), pages: pages, originalName: originalName });
+        if (docsList) docsList.unshift(doc);
+        docDraft = null;
+        renderDocs();
+        showToast(`🔒 « ${doc.title} » chiffré et enregistré (${fmtStamp(doc.importedAt)})`);
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        if (byId('dd-msg')) {
+          byId('dd-msg').className = 'weight-feedback err';
+          byId('dd-msg').textContent = docsErrorMessage(e.message);
+        }
+        if (byId('dd-save')) {
+          byId('dd-save').disabled = false;
+          byId('dd-save').textContent = '🔒 Réessayer';
+          byId('dd-cancel').disabled = false;
+        }
+      }
+    }
+
+    // Chiffre les documents importés avant la version chiffrée, puis met les originaux à la corbeille
+    async function migrateLegacyDocs() {
+      const btn = byId('docs-migrate');
+      const legacy = (docsList || []).filter(d => d.legacy);
+      btn.disabled = true;
+      let done = 0;
+      try {
+        for (const doc of legacy) {
+          btn.textContent = `Chiffrement ${done + 1}/${legacy.length}…`;
+          const data = await docsCall({ action: 'docs_get', id: doc.id });
+          const bytes = fromB64(data.content);
+          const encDoc = await encryptAndUpload(bytes, { title: doc.title, category: doc.category, docDate: doc.docDate, note: doc.note || '', pages: doc.pages || 0, originalName: '', firstImportedAt: doc.importedAt });
+          await docsCall({ action: 'docs_delete', id: doc.id });
+          docsList = docsList.filter(x => x.id !== doc.id);
+          docsList.unshift(encDoc);
+          done++;
+        }
+        renderDocsList();
+        showToast(`🔒 ${done} document(s) chiffré(s). Pense à vider la corbeille de Google Drive.`);
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        renderDocsList();
+        showToast(`Chiffrement interrompu (${done}/${legacy.length}) : ${docsErrorMessage(e.message)}`);
+      }
+    }
+
+    // ----- Lecture d'un document (déchiffré en mémoire uniquement) -----
+    async function fetchDocPlain(doc) {
+      const data = await docsCall({ action: 'docs_get', id: doc.id });
+      const raw = fromB64(data.content);
+      if (!doc.enc) return { bytes: raw, integrity: null };
+      const bytes = await decryptBytes(docsKey, raw);
+      const integrity = doc.sha256 ? (await sha256Hex(bytes)) === doc.sha256 : null;
+      return { bytes: bytes, integrity: integrity };
+    }
+
+    function closeDocViewer() {
+      const v = byId('doc-viewer');
+      if (v) v.style.display = 'none';
+      updateModalState();
+    }
+
+    function openDocViewer(doc, editing) {
+      touchDocs();
+      const cat = docCat(doc.category);
+      byId('doc-viewer-title').textContent = `${cat.icon} ${doc.title}`;
+      const body = byId('doc-viewer-body');
+      if (editing) {
+        body.innerHTML = `
+          <div class="action-label">Titre</div>
+          <input type="text" id="dv-title" class="date-picker-input" maxlength="120" value="${esc(doc.title)}" style="margin-top: 0;">
+          <div class="action-label" style="margin-top: 10px;">Catégorie</div>
+          <div class="chip-row" id="dv-cats"></div>
+          <div class="action-label" style="margin-top: 10px;">Date du document</div>
+          <input type="date" id="dv-date" class="date-picker-input" value="${esc(doc.docDate)}" max="${getLocalIsoDate()}" style="margin-top: 0;">
+          <div class="action-label" style="margin-top: 10px;">Remarque</div>
+          <input type="text" id="dv-note" class="date-picker-input" maxlength="500" value="${esc(doc.note)}" style="margin-top: 0;">
+          <div class="action-row" style="margin-top: 12px;">
+            <button class="btn-add" type="button" id="dv-save" style="background: #0f766e; color: white;">💾 Enregistrer</button>
+            <button class="btn-sub" type="button" id="dv-cancel">Annuler</button>
+          </div>
+          <div id="dv-msg" class="weight-feedback"></div>`;
+        let category = doc.category;
+        const cats = byId('dv-cats');
+        DOC_CATEGORIES.forEach(c => {
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'chip' + (category === c.key ? ' active' : '');
+          chip.textContent = `${c.icon} ${c.name}`;
+          chip.onclick = () => { category = c.key; cats.querySelectorAll('.chip').forEach(x => x.classList.remove('active')); chip.classList.add('active'); };
+          cats.appendChild(chip);
+        });
+        byId('dv-cancel').onclick = () => openDocViewer(doc);
+        byId('dv-save').onclick = async () => {
+          const title = byId('dv-title').value.trim();
+          if (!title) { byId('dv-msg').className = 'weight-feedback err'; byId('dv-msg').textContent = 'Le titre est obligatoire.'; return; }
+          byId('dv-save').disabled = true;
+          try {
+            const meta = {};
+            ['v', 'mime', 'size', 'sha256', 'encryptedAt', 'pages', 'originalName', 'firstImportedAt'].forEach(k => { if (doc[k] !== undefined) meta[k] = doc[k]; });
+            Object.assign(meta, { title: title, category: category, docDate: byId('dv-date').value, note: byId('dv-note').value.trim() });
+            await docsCall({ action: 'docs_update', id: doc.id, meta: await encryptMeta(docsKey, meta) });
+            const updated = Object.assign({}, doc, meta);
+            const i = docsList ? docsList.findIndex(x => x.id === doc.id) : -1;
+            if (i >= 0) docsList[i] = updated;
+            renderDocsList();
+            openDocViewer(updated);
+            showToast('✏️ Document mis à jour');
+          } catch (e) {
+            if (e.message === 'unauthorized') return;
+            byId('dv-msg').className = 'weight-feedback err';
+            byId('dv-msg').textContent = docsErrorMessage(e.message);
+            byId('dv-save').disabled = false;
+          }
+        };
+      } else {
+        body.innerHTML = `
+          <div class="doc-facts">
+            ${doc.docDate ? `<div>📅 Document du <strong>${esc(fmtIsoFr(doc.docDate))}</strong> · ${esc(cat.name)}</div>` : ''}
+            <div>🕒 Importé le <strong>${esc(fmtStamp(doc.importedAt))}</strong>${doc.firstImportedAt ? ` (premier import le ${esc(fmtStamp(doc.firstImportedAt))})` : ''}</div>
+            <div>${doc.legacy ? '⚠️ <strong>Non chiffré</strong> : lisible dans Drive' : doc.broken ? '❌ Impossible de déchiffrer ce document' : '🔒 Chiffré de bout en bout (AES-256)'}${doc.pages ? ` · ${doc.pages} page(s)` : ''}${doc.size ? ` · ${esc(fmtSize(doc.size))}` : ''}</div>
+            ${doc.note ? `<div>📝 ${esc(doc.note)}</div>` : ''}
+          </div>
+          ${doc.broken ? '' : `<button class="sync-btn" type="button" id="dv-view" style="background: #0f766e;">👁️ Voir le document</button>
+            <div class="action-row" style="margin-top: 8px;">
+              <button class="btn-add" type="button" id="dv-email" style="background: #e0f2fe; color: #075985;">✉️ Envoyer par email</button>
+              <button class="btn-add" type="button" id="dv-print" style="background: #f1f5f9; color: #334155;">🖨️ Imprimer</button>
+            </div>`}
+          <div class="action-row" style="margin-top: 8px;">
+            ${doc.legacy || doc.broken ? '' : '<button class="btn-sub" type="button" id="dv-edit">✏️ Modifier</button>'}
+            <button class="btn-sub" type="button" id="dv-delete">🗑 Corbeille</button>
+          </div>
+          ${doc.broken ? '' : '<button class="gate-link" type="button" id="dv-export">Exporter une copie lisible sur cet appareil</button>'}
+          <div id="dv-msg" class="weight-feedback"></div>`;
+        if (byId('dv-view')) byId('dv-view').onclick = () => viewDocPdf(doc);
+        if (byId('dv-email')) byId('dv-email').onclick = () => openEmailSheet(doc);
+        if (byId('dv-print')) byId('dv-print').onclick = async () => { await viewDocPdf(doc); printDoc(); };
+        if (byId('dv-edit')) byId('dv-edit').onclick = () => openDocViewer(doc, true);
+        if (byId('dv-export')) {
+          const ex = byId('dv-export');
+          ex.onclick = () => confirmTap(ex, () => exportDoc(doc), {
+            arm: () => { ex.textContent = '⚠️ La copie ne sera plus chiffrée : toucher encore pour confirmer'; ex.style.color = '#b91c1c'; },
+            disarm: () => { ex.textContent = 'Exporter une copie lisible sur cet appareil'; ex.style.color = ''; }
+          });
+        }
+        const del = byId('dv-delete');
+        del.onclick = () => confirmTap(del, () => deleteDoc(doc), {
+          arm: () => { del.textContent = 'Confirmer ?'; del.style.background = '#dc2626'; del.style.color = 'white'; },
+          disarm: () => { del.textContent = '🗑 Corbeille'; del.style.background = ''; del.style.color = ''; }
+        });
+      }
+      byId('doc-viewer').style.display = 'flex';
+      updateModalState();
+    }
+
+    function loadPdfJs() {
+      if (!pdfjsPromise) {
+        pdfjsPromise = import(PDFJS_URL + 'pdf.min.mjs').then(lib => {
+          lib.GlobalWorkerOptions.workerSrc = PDFJS_URL + 'pdf.worker.min.mjs';
+          return lib;
+        }).catch(e => { pdfjsPromise = null; throw e; });
+      }
+      return pdfjsPromise;
+    }
+
+    function closePdfViewer() {
+      pdfRenderToken++;
+      pdfReady = false;
+      const v = byId('pdf-viewer');
+      if (!v) return;
+      v.style.display = 'none';
+      byId('pdf-pages').innerHTML = '';
+      byId('pdf-status').textContent = '';
+      updateModalState();
+    }
+
+    async function viewDocPdf(doc) {
+      const token = ++pdfRenderToken;
+      pdfReady = false;
+      byId('pdf-print').disabled = true;
+      byId('pdf-email').onclick = () => openEmailSheet(doc);
+      byId('pdf-title').textContent = doc.title;
+      byId('pdf-pages').innerHTML = '';
+      const status = byId('pdf-status');
+      status.className = 'pdf-status';
+      status.textContent = '🔓 Déchiffrement…';
+      byId('pdf-viewer').style.display = 'block';
+      updateModalState();
+      try {
+        const [{ bytes, integrity }, lib] = await Promise.all([fetchDocPlain(doc), loadPdfJs()]);
+        if (token !== pdfRenderToken) return;
+        status.textContent = integrity === true ? '✅ Intégrité vérifiée : identique au document importé'
+          : integrity === false ? '⚠️ Attention : ce document ne correspond pas à l\'empreinte enregistrée à l\'import'
+          : doc.legacy ? '⚠️ Document non chiffré' : '';
+        if (integrity === false) status.className = 'pdf-status err';
+        const pdf = await lib.getDocument({ data: bytes }).promise;
+        const width = Math.min(byId('pdf-pages').clientWidth || window.innerWidth, 900);
+        const ratio = Math.max(Math.min(window.devicePixelRatio || 1, 2), 1240 / width > 2 ? 2 : 1240 / width);
+        for (let n = 1; n <= Math.min(pdf.numPages, 60); n++) {
+          if (token !== pdfRenderToken) return;
+          const page = await pdf.getPage(n);
+          const base = page.getViewport({ scale: 1 });
+          const viewport = page.getViewport({ scale: (width / base.width) * ratio });
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          canvas.style.width = '100%';
+          byId('pdf-pages').appendChild(canvas);
+          await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
+          touchDocs();
+        }
+        pdf.destroy();
+        if (token === pdfRenderToken) {
+          pdfReady = true;
+          byId('pdf-print').disabled = false;
+        }
+      } catch (e) {
+        if (token !== pdfRenderToken || e.message === 'unauthorized') return;
+        status.className = 'pdf-status err';
+        status.textContent = e && e.name === 'OperationError' ? 'Impossible de déchiffrer ce document.'
+          : (e && /import|fetch|module/i.test(String(e.message || e))) ? 'La visionneuse n\'a pas pu se charger (connexion ?). Tu peux exporter une copie lisible depuis la fiche du document.'
+          : docsErrorMessage(e.message);
+      }
+    }
+
+    async function exportDoc(doc) {
+      const msg = byId('dv-msg');
+      msg.className = 'weight-feedback';
+      msg.textContent = 'Préparation de la copie…';
+      try {
+        const { bytes } = await fetchDocPlain(doc);
+        const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+        docBlobUrls.push(url);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${doc.docDate || 'document'} - ${String(doc.title).replace(/[\\/:*?"<>|]/g, '-')}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        msg.textContent = '✅ Copie lisible téléchargée sur cet appareil.';
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        msg.className = 'weight-feedback err';
+        msg.textContent = docsErrorMessage(e.message);
+      }
+    }
+
+    async function deleteDoc(doc) {
+      try {
+        await docsCall({ action: 'docs_delete', id: doc.id });
+        if (docsList) docsList = docsList.filter(x => x.id !== doc.id);
+        closeDocViewer();
+        renderDocsList();
+        showToast('🗑 Document mis dans la corbeille de Drive (récupérable 30 jours, toujours chiffré)');
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        byId('dv-msg').className = 'weight-feedback err';
+        byId('dv-msg').textContent = docsErrorMessage(e.message);
+      }
+    }
+
+    // ----- Envoi par email (messagerie par défaut, document en pièce jointe) -----
+    const EMAIL_CONTEXT = {
+      ordonnance: 'Il s\'agit de mon ordonnance en cours, que je vous transmets pour information et pour le suivi de mon traitement.',
+      analyses: 'Il s\'agit des résultats de mes analyses, que je vous adresse afin que vous puissiez en prendre connaissance et me faire part de vos éventuelles observations.',
+      compte_rendu: 'Il s\'agit du compte rendu relatif à ma prise en charge, que je vous transmets afin de compléter mon dossier médical.',
+      imagerie: 'Il s\'agit de résultats d\'imagerie, que je vous adresse pour information et pour la suite de ma prise en charge.',
+      courrier: 'Je vous transmets ce courrier pour information et afin de faciliter la coordination de mon suivi.',
+      autre: 'Je vous transmets ce document pour information et pour le suivi de mon dossier médical.'
+    };
+    const EMAIL_TITLES = [
+      { key: 'docteur', name: 'Docteur' },
+      { key: 'madame', name: 'Madame' },
+      { key: 'monsieur', name: 'Monsieur' },
+      { key: 'autre', name: 'Autre / service' }
+    ];
+    let emailState = null;
+
+    function openMailto(url) { window.location.href = url; }
+    function safeFileName(s) { return String(s || 'document').replace(/[\\/:*?"<>|]/g, '-').trim().slice(0, 100); }
+
+    function emailSubject(doc, signature) {
+      return `Transmission de document médical – ${doc.title}${doc.docDate ? ` (${fmtIsoFr(doc.docDate)})` : ''}${signature ? ` – ${signature}` : ''}`;
+    }
+
+    function emailBody(doc, st) {
+      const name = st.name.trim();
+      const greeting = {
+        docteur: name ? `Bonjour Docteur ${name},` : 'Bonjour Docteur,',
+        madame: name ? `Bonjour Madame ${name},` : 'Bonjour Madame,',
+        monsieur: name ? `Bonjour Monsieur ${name},` : 'Bonjour Monsieur,',
+        autre: 'Madame, Monsieur,'
+      }[st.title];
+      const formule = { docteur: 'Docteur', madame: 'Madame', monsieur: 'Monsieur', autre: 'Madame, Monsieur' }[st.title];
+      const lines = [
+        greeting,
+        '',
+        `Je vous prie de trouver ci-joint le document « ${doc.title} »${doc.docDate ? `, daté du ${fmtIsoFr(doc.docDate)}` : ''}.`,
+        '',
+        EMAIL_CONTEXT[doc.category] || EMAIL_CONTEXT.autre,
+        '',
+        'Je reste à votre disposition pour tout renseignement complémentaire.',
+        '',
+        `Je vous remercie par avance de l'attention que vous porterez à ce document et vous prie d'agréer, ${formule}, l'expression de mes salutations distinguées.`
+      ];
+      if (st.signature.trim()) lines.push('', st.signature.trim());
+      return lines.join('\n');
+    }
+
+    function closeEmailSheet() {
+      byId('email-sheet').style.display = 'none';
+      emailState = null;
+      updateModalState();
+    }
+
+    function openEmailSheet(doc) {
+      touchDocs();
+      const last = lsGet('hydra_email_last', {}) || {};
+      emailState = {
+        doc: doc,
+        title: last.title || 'docteur',
+        name: last.name || '',
+        email: last.email || '',
+        signature: prefGet('hydra_signature', prefGet('hydra_report_name', '')),
+        edited: false,
+        file: null,
+        error: null
+      };
+      const st = emailState;
+      byId('email-sheet-body').innerHTML = `
+        <div class="fs-meta">📎 Pièce jointe : <strong>${esc(doc.title)}</strong> (PDF${doc.size ? `, ${esc(fmtSize(doc.size))}` : ''})</div>
+        <div class="action-label">Destinataire</div>
+        <div class="chip-row" id="em-titles"></div>
+        <input type="text" id="em-name" class="date-picker-input" maxlength="80" placeholder="Nom (ex : Martin)" value="${esc(st.name)}">
+        <input type="email" id="em-email" class="date-picker-input" maxlength="120" autocomplete="email" placeholder="Adresse email (facultatif)" value="${esc(st.email)}">
+        <div class="action-label" style="margin-top: 10px;">Ta signature</div>
+        <input type="text" id="em-signature" class="date-picker-input" maxlength="120" placeholder="Prénom Nom" value="${esc(st.signature)}" style="margin-top: 0;">
+        <div class="action-label" style="margin-top: 10px;">Objet</div>
+        <input type="text" id="em-subject" class="date-picker-input" maxlength="200" style="margin-top: 0;">
+        <div class="action-label" style="margin-top: 10px;">Message (tu peux le modifier)</div>
+        <textarea id="em-body" class="date-picker-input email-body" rows="12"></textarea>
+        <button class="sync-btn" type="button" id="em-send" style="background: #0f766e; margin-top: 12px;" disabled>Préparation du document…</button>
+        <div class="sync-note">Le document sera joint en PDF lisible (il n'est plus chiffré une fois envoyé). Tu choisiras ta messagerie, puis le destinataire${st.email ? '' : ''} : son adresse est copiée automatiquement pour que tu n'aies qu'à la coller.</div>
+        <div id="em-msg" class="weight-feedback"></div>`;
+
+      const refresh = () => {
+        if (!emailState) return;
+        byId('em-subject').value = emailSubject(doc, st.signature.trim());
+        if (!st.edited) byId('em-body').value = emailBody(doc, st);
+      };
+      const titles = byId('em-titles');
+      EMAIL_TITLES.forEach(t => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'chip' + (st.title === t.key ? ' active' : '');
+        chip.textContent = t.name;
+        chip.onclick = () => {
+          st.title = t.key;
+          titles.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          byId('em-name').style.display = t.key === 'autre' ? 'none' : 'block';
+          refresh();
+        };
+        titles.appendChild(chip);
+      });
+      byId('em-name').style.display = st.title === 'autre' ? 'none' : 'block';
+      byId('em-name').oninput = e => { st.name = e.target.value; refresh(); };
+      byId('em-email').oninput = e => { st.email = e.target.value.trim(); };
+      byId('em-signature').oninput = e => { st.signature = e.target.value; refresh(); };
+      byId('em-body').oninput = () => { st.edited = true; };
+      byId('em-send').onclick = sendDocEmail;
+      refresh();
+      byId('email-sheet').style.display = 'flex';
+      updateModalState();
+
+      // Le document est déchiffré dès maintenant, pour que l'envoi soit immédiat au moment du clic
+      fetchDocPlain(doc).then(({ bytes }) => {
+        if (emailState !== st) return;
+        st.file = new File([bytes], `${doc.docDate || 'document'} - ${safeFileName(doc.title)}.pdf`, { type: 'application/pdf' });
+        byId('em-send').disabled = false;
+        byId('em-send').textContent = '✉️ Ouvrir ma messagerie avec le document';
+      }).catch(e => {
+        if (emailState !== st || e.message === 'unauthorized') return;
+        byId('em-send').textContent = 'Document indisponible';
+        byId('em-msg').className = 'weight-feedback err';
+        byId('em-msg').textContent = docsErrorMessage(e.message);
+      });
+    }
+
+    async function sendDocEmail() {
+      const st = emailState;
+      if (!st || !st.file) return;
+      const subject = byId('em-subject').value.trim();
+      const body = byId('em-body').value;
+      const msg = byId('em-msg');
+      if (st.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(st.email)) {
+        msg.className = 'weight-feedback err';
+        msg.textContent = 'Adresse email invalide.';
+        return;
+      }
+      lsSet('hydra_email_last', { title: st.title, name: st.name.trim(), email: st.email });
+      prefSet('hydra_signature', st.signature.trim());
+      touchDocs();
+      docsPickerOpen = true;   // l'appli passe au second plan pendant le partage : on ne verrouille pas
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [st.file] })) {
+          if (st.email) { try { await navigator.clipboard.writeText(st.email); } catch (e) {} }
+          await navigator.share({ files: [st.file], title: subject, text: body });
+          msg.className = 'weight-feedback ok';
+          msg.textContent = st.email ? `✅ Messagerie ouverte. L'adresse ${st.email} est copiée : colle-la dans « À ».` : '✅ Messagerie ouverte avec le document en pièce jointe.';
+        } else {
+          // Ordinateur sans partage de fichiers : on télécharge le PDF puis on ouvre la messagerie préremplie
+          const url = URL.createObjectURL(st.file);
+          docBlobUrls.push(url);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = st.file.name;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          const fullBody = `${body}\n\n(Pièce jointe : ${st.file.name})`;
+          openMailto(`mailto:${encodeURIComponent(st.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(fullBody)}`);
+          msg.className = 'weight-feedback ok';
+          msg.textContent = `✅ Le document « ${st.file.name} » vient d'être téléchargé : ajoute-le en pièce jointe dans le message qui s'est ouvert.`;
+        }
+      } catch (e) {
+        if (e && e.name === 'AbortError') {
+          msg.className = 'weight-feedback';
+          msg.textContent = 'Envoi annulé.';
+        } else {
+          msg.className = 'weight-feedback err';
+          msg.textContent = 'Impossible d\'ouvrir la messagerie sur cet appareil.';
+        }
+      } finally {
+        setTimeout(() => { docsPickerOpen = false; }, 2000);
+      }
+    }
+
+    // ----- Impression d'un document (visionneuse) -----
+    let pdfReady = false;
+    function printDoc() {
+      if (!pdfReady) return;
+      touchDocs();
+      docsPickerOpen = true;   // la fenêtre d'impression peut faire passer l'appli au second plan
+      document.body.classList.add('print-doc');
+      window.print();
+    }
+    window.addEventListener('afterprint', () => {
+      document.body.classList.remove('print-doc');
+      setTimeout(() => { docsPickerOpen = false; }, 1500);
+    });
+
+    // ----- Verrouillage automatique -----
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden' && !docsPickerOpen) lockDocs('Dossier verrouillé quand tu as quitté l\'appli.');
+      if (document.visibilityState === 'visible') setTimeout(() => { docsPickerOpen = false; }, 1500);
+    });
+    document.addEventListener('pointerdown', () => touchDocs(), true);
+    setInterval(() => {
+      if (docsUnlockedUntil && !docsUnlocked()) lockDocs('Dossier verrouillé après 5 minutes sans activité.');
+    }, 10000);
+    ['doc-photo-input', 'doc-file-input'].forEach(id => {
+      const input = byId(id);
+      input.addEventListener('click', () => { docsPickerOpen = true; });
+      input.addEventListener('cancel', () => { docsPickerOpen = false; });
+      input.addEventListener('change', () => onDocFilesChosen(input));
+    });
+
+    async function sessionCall(payload) {
+      if (!hasSession()) {
+        endSession('Ta session a expiré : reconnecte-toi.');
+        throw new Error('unauthorized');
+      }
+      const data = await apiCall(Object.assign({ session: syncConf.session.token }, payload));
+      if (!data.ok) {
+        if (data.error === 'unauthorized') endSession('Ta session a expiré ou a été fermée : reconnecte-toi.');
+        throw new Error(data.error || 'server');
+      }
+      return data;
+    }
+
+    // ================== AGENDA MÉDICAL (Google Agenda « 🩺 RDV médicaux ») ==================
+    const LS_AGENDA = 'hydra_agenda';
+    const RDV_QUICK = ['Médecin traitant', 'Gastro-entérologue', 'Néphrologue', 'Prise de sang', 'Examen', 'Hôpital'];
+    const RDV_DURATIONS = [15, 30, 45, 60, 90, 120];
+    const AGENDA_REFRESH_MS = 3 * 60 * 1000;
+    let agenda = Object.assign({ events: [], lastOk: 0 }, lsGet(LS_AGENDA, {}));
+    let agendaLoading = false;
+    let agendaError = '';
+    let agendaShowPast = false;
+    let rdvSheet = null;
+
+    function rdvIcon(title) {
+      const t = normalizeText(title);
+      if (/prise de sang|analyse|labo|bilan sanguin/.test(t)) return '🩸';
+      if (/scanner|irm|echo|radio|coloscopie|endoscopie|fibroscopie|examen|imagerie/.test(t)) return '🔬';
+      if (/hopital|chu|clinique|urgence|hospitali/.test(t)) return '🏥';
+      if (/kine|dentiste|pharmacie|infirm/.test(t)) return '🩹';
+      return '🩺';
+    }
+
+    function agendaErrorText(code) {
+      return {
+        agenda_auth: 'Le script Google n\'a pas encore accès à Google Agenda : dans l\'éditeur Apps Script, exécute une fois « installerAgenda », puis redéploie.',
+        unknown_action: 'Le script Google n\'est pas encore à jour (version 7 nécessaire).',
+        bad_event: 'Rendez-vous incomplet : vérifie la date et l\'heure.',
+        not_found: 'Ce rendez-vous n\'existe plus dans Google Agenda.',
+        recurring: 'RDV répété : modifie-le directement dans Google Agenda.'
+      }[code] || (navigator.onLine ? 'Google Agenda ne répond pas, réessaie plus tard.' : 'Pas de connexion Internet.');
+    }
+
+    async function refreshAgenda(force) {
+      if (!hasSession() || !navigator.onLine || agendaLoading) { renderAgenda(); return; }
+      if (!force && agenda.lastOk && Date.now() - agenda.lastOk < AGENDA_REFRESH_MS) return;
+      agendaLoading = true;
+      renderAgendaStatus();
+      try {
+        const data = await sessionCall({ action: 'agenda_list' });
+        agenda = { events: Array.isArray(data.events) ? data.events : [], lastOk: Date.now(), calendar: data.calendar || '' };
+        lsSet(LS_AGENDA, agenda);
+        agendaError = '';
+      } catch (e) {
+        if (e.message !== 'unauthorized') agendaError = e.message || 'server';
+      } finally {
+        agendaLoading = false;
+        renderAgenda();
+      }
+    }
+
+    function fmtRdvDay(ev, opts) {
+      return new Date(ev.allDay ? ev.day + 'T12:00:00' : ev.start).toLocaleDateString('fr-FR', opts);
+    }
+    function fmtRdvTime(ev) {
+      if (ev.allDay) return 'toute la journée';
+      const t = d => new Date(d).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      return `${t(ev.start)} – ${t(ev.end)}`;
+    }
+    function rdvDayIso(ev) { return ev.allDay ? ev.day : getLocalIsoDate(new Date(ev.start)); }
+    function daysUntil(ev) {
+      const a = new Date(getLocalIsoDate() + 'T12:00:00'), b = new Date(rdvDayIso(ev) + 'T12:00:00');
+      return Math.round((b - a) / 86400000);
+    }
+    function whenLabel(ev) {
+      const now = Date.now();
+      if (!ev.allDay && ev.start <= now && ev.end > now) return 'en cours';
+      const n = daysUntil(ev);
+      if (n === 0) return ev.allDay ? 'aujourd\'hui' : `aujourd'hui à ${new Date(ev.start).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+      if (n === 1) return 'demain';
+      if (n > 1 && n < 7) return `dans ${n} jours`;
+      if (n >= 7 && n < 14) return 'dans 1 semaine';
+      if (n >= 14 && n < 60) return `dans ${Math.round(n / 7)} semaines`;
+      return '';
+    }
+    function upcomingEvents() {
+      const now = Date.now();
+      return agenda.events.filter(ev => ev.allDay ? rdvDayIso(ev) >= getLocalIsoDate() : ev.end > now)
+        .sort((a, b) => a.start - b.start);
+    }
+
+    function renderAgendaStatus() {
+      const el = byId('agenda-status');
+      if (!el) return;
+      if (agendaLoading) { el.className = 'ag-status'; el.textContent = 'Mise à jour depuis Google Agenda…'; return; }
+      if (agendaError) { el.className = 'ag-status err'; el.textContent = agendaErrorText(agendaError); return; }
+      el.className = 'ag-status';
+      el.textContent = agenda.lastOk
+        ? `Synchronisé avec Google Agenda (« 🩺 RDV médicaux ») · ${new Date(agenda.lastOk).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
+        : 'Relié à ton Google Agenda, agenda « 🩺 RDV médicaux ».';
+    }
+
+    function agendaItem(ev, past) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ag-item' + (past ? ' past' : '');
+      const wd = fmtRdvDay(ev, { weekday: 'short' }).replace('.', '');
+      b.innerHTML = `<div class="ag-date"><small>${esc(wd)}</small><b>${esc(fmtRdvDay(ev, { day: 'numeric' }))}</b><small>${esc(fmtRdvDay(ev, { month: 'short' }).replace('.', ''))}</small></div>
+        <div class="ag-main"><div class="ag-title"></div><div class="ag-sub"></div></div>`;
+      b.querySelector('.ag-title').textContent = `${rdvIcon(ev.title)} ${ev.title}`;
+      b.querySelector('.ag-sub').textContent = [fmtRdvTime(ev), ev.location].filter(Boolean).join(' · ');
+      const when = past ? '' : whenLabel(ev);
+      if (when) {
+        const w = document.createElement('span');
+        w.className = 'ag-when';
+        w.textContent = when;
+        b.querySelector('.ag-main').appendChild(w);
+      }
+      b.onclick = () => openRdvSheet(ev);
+      return b;
+    }
+
+    function renderAgenda() {
+      renderAgendaStatus();
+      const box = byId('agenda-list');
+      if (!box) return;
+      box.innerHTML = '';
+      const up = upcomingEvents();
+      const upIds = new Set(up.map(e => e.id + '|' + e.start));
+      const past = agenda.events.filter(e => !upIds.has(e.id + '|' + e.start)).sort((a, b) => b.start - a.start);
+      if (!up.length) {
+        box.innerHTML = `<div class="ag-empty">${agenda.lastOk || agenda.events.length ? 'Aucun rendez-vous à venir.' : 'Tes rendez-vous apparaîtront ici et dans ton Google Agenda.'}</div>`;
+      }
+      let month = '';
+      up.forEach(ev => {
+        const m = fmtRdvDay(ev, { month: 'long', year: 'numeric' });
+        if (m !== month) {
+          month = m;
+          const h = document.createElement('div');
+          h.className = 'ag-month';
+          h.textContent = m;
+          box.appendChild(h);
+        }
+        box.appendChild(agendaItem(ev, false));
+      });
+      if (past.length) {
+        const t = document.createElement('button');
+        t.type = 'button';
+        t.className = 'drink-more';
+        t.textContent = agendaShowPast ? 'Masquer les rendez-vous passés' : `Voir les rendez-vous passés (${past.length})`;
+        t.onclick = () => { agendaShowPast = !agendaShowPast; renderAgenda(); };
+        box.appendChild(t);
+        if (agendaShowPast) past.forEach(ev => box.appendChild(agendaItem(ev, true)));
+      }
+    }
+
+
+    function renderAgendaSettings() {
+      const el = byId('set-agenda-status');
+      if (!el) return;
+      el.textContent = agendaError
+        ? agendaErrorText(agendaError)
+        : `Tes rendez-vous sont dans l'agenda « 🩺 RDV médicaux » de ton Google Agenda (visible dans Gmail et sur tous tes appareils).${agenda.lastOk ? ` ${agenda.events.length} RDV sur ±13 mois · mis à jour à ${new Date(agenda.lastOk).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}.` : ''}`;
+    }
+
+    // ----- Fiche RDV -----
+    function openRdvSheet(ev) {
+      const now = new Date();
+      const start = ev ? new Date(ev.allDay ? ev.day + 'T09:00:00' : ev.start) : null;
+      const pad = n => String(n).padStart(2, '0');
+      const tomorrow = new Date(now.getTime() + 86400000);
+      rdvSheet = {
+        id: ev ? ev.id : null,
+        recurring: ev ? !!ev.recurring : false,
+        allDay: ev ? !!ev.allDay : false,
+        title: ev ? ev.title : '',
+        date: ev ? rdvDayIso(ev) : getLocalIsoDate(tomorrow),
+        time: start && !ev.allDay ? `${pad(start.getHours())}:${pad(start.getMinutes())}` : '09:00',
+        duration: ev && !ev.allDay ? Math.max(5, Math.round((ev.end - ev.start) / 60000)) : 30,
+        location: ev ? ev.location || '' : '',
+        notes: ev ? ev.notes || '' : '',
+        ev: ev || null
+      };
+      // Un RDV enregistré s'ouvre en lecture seule ; la modification demande un appui long
+      if (ev) renderRdvView(); else renderRdvSheet();
+    }
+
+    const RDV_UNLOCK_MS = 1500;
+    function renderRdvView() {
+      const st = rdvSheet;
+      const ev = st.ev;
+      byId('rdv-sheet-title').textContent = '📅 Rendez-vous';
+      const dayLong = fmtRdvDay(ev, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      const when = whenLabel(ev);
+      const past = ev.allDay ? rdvDayIso(ev) < getLocalIsoDate() : ev.end <= Date.now();
+      const dur = ev.allDay ? '' : Math.round((ev.end - ev.start) / 60000);
+      const durTxt = dur ? (dur < 60 ? `${dur} min` : `${Math.floor(dur / 60)} h${dur % 60 ? ' ' + String(dur % 60).padStart(2, '0') : ''}`) : '';
+      byId('rdv-sheet-body').innerHTML = `
+        <div class="rv-head">
+          <div class="rv-icon">${rdvIcon(ev.title)}</div>
+          <div class="rv-title"></div>
+        </div>
+        <div class="rv-block">
+          <div class="rv-line"><span>📆</span><div><b class="rv-day"></b>${when && !past ? `<span class="ag-when" style="margin-left: 6px;">${esc(when)}</span>` : ''}${past ? '<span class="rv-past">passé</span>' : ''}</div></div>
+          <div class="rv-line"><span>🕒</span><div>${esc(fmtRdvTime(ev))}${durTxt ? ` <span class="rv-muted">(${esc(durTxt)})</span>` : ''}</div></div>
+          ${ev.location ? `<div class="rv-line"><span>📍</span><div><span class="rv-loc"></span><br><a class="rv-map" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location)}">Ouvrir l'itinéraire</a></div></div>` : ''}
+          ${ev.notes ? '<div class="rv-line"><span>📝</span><div class="rv-notes"></div></div>' : ''}
+        </div>
+        <div class="rv-src">Enregistré dans Google Agenda, agenda « 🩺 RDV médicaux ».</div>
+        ${st.recurring ? '<div class="sync-note">Ce rendez-vous se répète : il se modifie dans Google Agenda.</div>' : `
+        <button type="button" class="rv-unlock" id="rv-unlock"><span class="rv-fill"></span><span class="rv-label">🔒 Maintenir appuyé pour modifier</span></button>`}
+        <button class="sync-btn" type="button" style="margin-top: 10px; background: #0f766e;" onclick="closeRdvSheet()">Fermer</button>`;
+      byId('rdv-sheet-body').querySelector('.rv-title').textContent = ev.title;
+      byId('rdv-sheet-body').querySelector('.rv-day').textContent = dayLong.charAt(0).toUpperCase() + dayLong.slice(1);
+      if (ev.location) byId('rdv-sheet-body').querySelector('.rv-loc').textContent = ev.location;
+      if (ev.notes) byId('rdv-sheet-body').querySelector('.rv-notes').textContent = ev.notes;
+      const btn = byId('rv-unlock');
+      if (btn) {
+        let timer = null;
+        const label = btn.querySelector('.rv-label');
+        const start = e => {
+          e.preventDefault();
+          if (timer) return;
+          btn.classList.add('holding');
+          label.textContent = '🔓 Continue d\'appuyer…';
+          timer = setTimeout(() => {
+            timer = null;
+            if (navigator.vibrate) { try { navigator.vibrate(30); } catch (err) {} }
+            st.mode = 'edit';
+            renderRdvSheet();
+          }, RDV_UNLOCK_MS);
+        };
+        const cancel = () => {
+          if (!timer) return;
+          clearTimeout(timer);
+          timer = null;
+          btn.classList.remove('holding');
+          label.textContent = '🔒 Maintenir appuyé pour modifier';
+        };
+        btn.addEventListener('pointerdown', start);
+        ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => btn.addEventListener(t, cancel));
+        btn.addEventListener('contextmenu', e => e.preventDefault());
+        btn.addEventListener('click', e => { e.preventDefault(); if (!btn.classList.contains('holding')) { label.textContent = '🔒 Appui long (1,5 s) pour modifier'; } });
+      }
+      byId('rdv-sheet').style.display = 'flex';
+      updateModalState();
+    }
+
+    function closeRdvSheet() {
+      const el = byId('rdv-sheet');
+      if (!el || el.style.display !== 'flex') return;
+      el.style.display = 'none';
+      rdvSheet = null;
+      updateModalState();
+    }
+
+    function renderRdvSheet() {
+      const st = rdvSheet;
+      const ro = st.recurring;
+      byId('rdv-sheet-title').textContent = st.id ? (ro ? '📅 Rendez-vous répété' : '✏️ Modifier le rendez-vous') : '📅 Nouveau rendez-vous';
+      const durs = RDV_DURATIONS.includes(st.duration) ? RDV_DURATIONS : RDV_DURATIONS.concat([st.duration]).sort((a, b) => a - b);
+      byId('rdv-sheet-body').innerHTML = `
+        ${ro ? '<div class="sync-note" style="margin-top: 0;">Ce rendez-vous se répète : il se modifie dans Google Agenda.</div>' : ''}
+        <div class="action-label">Avec qui / pour quoi</div>
+        <input type="text" id="rdv-title" class="date-picker-input" maxlength="120" placeholder="Ex : Gastro-entérologue — Dr Martin" value="${esc(st.title)}" style="margin-top: 0;" ${ro ? 'disabled' : ''}>
+        ${st.id ? '' : '<div class="chip-row" id="rdv-quick" style="margin-top: 6px;"></div>'}
+        <div class="action-row" style="margin-top: 10px;">
+          <div style="flex: 1;"><div class="action-label">Date</div><input type="date" id="rdv-date" class="date-picker-input" value="${esc(st.date)}" style="margin-top: 0;" ${ro ? 'disabled' : ''}></div>
+          ${st.allDay ? '' : `<div style="flex: 1;"><div class="action-label">Heure</div><input type="time" id="rdv-time" class="date-picker-input" value="${esc(st.time)}" style="margin-top: 0;" ${ro ? 'disabled' : ''}></div>`}
+        </div>
+        ${st.allDay ? '<div class="sync-note">Rendez-vous sur toute la journée (créé dans Google Agenda).</div>' : `
+        <div class="action-label" style="margin-top: 10px;">Durée</div>
+        <div class="chip-row" id="rdv-durations">${durs.map(d => `<button type="button" class="chip${d === st.duration ? ' active' : ''}" data-d="${d}" ${ro ? 'disabled' : ''}>${d < 60 ? d + ' min' : (d / 60).toString().replace('.', ',') + ' h'}</button>`).join('')}</div>`}
+        <div class="action-label" style="margin-top: 10px;">Lieu (facultatif)</div>
+        <input type="text" id="rdv-location" class="date-picker-input" maxlength="200" placeholder="Ex : Hôpital Sainte-Musse, Toulon" value="${esc(st.location)}" style="margin-top: 0;" ${ro ? 'disabled' : ''}>
+        <div class="action-label" style="margin-top: 10px;">Notes (facultatif)</div>
+        <textarea id="rdv-notes" class="date-picker-input" rows="3" maxlength="2000" placeholder="À apporter, questions à poser…" style="margin-top: 0; resize: vertical; font-family: inherit;" ${ro ? 'disabled' : ''}>${esc(st.notes)}</textarea>
+        ${ro ? '' : `<button class="sync-btn" type="button" id="rdv-save" style="margin-top: 12px; background: #0f766e;">${st.id ? '💾 Enregistrer' : '📅 Ajouter à mon agenda'}</button>`}
+        ${st.id && !ro ? '<button class="btn-sub" type="button" id="rdv-delete" style="width: 100%; margin-top: 8px;">🗑 Supprimer ce rendez-vous</button>' : ''}
+        ${st.id ? '<button class="gate-link" type="button" id="rdv-cancel-edit" style="display: block; margin: 10px auto 0;">Annuler la modification</button>' : ''}
+        <div id="rdv-msg" class="weight-feedback"></div>`;
+      const quick = byId('rdv-quick');
+      if (quick) {
+        RDV_QUICK.forEach(q => {
+          const c = document.createElement('button');
+          c.type = 'button';
+          c.className = 'chip';
+          c.textContent = `${rdvIcon(q)} ${q}`;
+          c.onclick = () => {
+            const input = byId('rdv-title');
+            const rest = input.value.replace(new RegExp('^(' + RDV_QUICK.join('|') + ')( — )?'), '').trim();
+            input.value = q + (rest ? ' — ' + rest : ' — ');
+            input.focus();
+          };
+          quick.appendChild(c);
+        });
+      }
+      document.querySelectorAll('#rdv-durations .chip').forEach(c => {
+        c.onclick = () => {
+          st.duration = Number(c.dataset.d);
+          document.querySelectorAll('#rdv-durations .chip').forEach(x => x.classList.toggle('active', x === c));
+        };
+      });
+      if (byId('rdv-save')) byId('rdv-save').onclick = saveRdv;
+      if (byId('rdv-cancel-edit')) byId('rdv-cancel-edit').onclick = () => { st.mode = 'view'; renderRdvView(); };
+      const del = byId('rdv-delete');
+      if (del) {
+        del.onclick = () => confirmTap(del, deleteRdv, {
+          arm: () => { del.textContent = '🗑 Confirmer la suppression ?'; del.style.background = '#dc2626'; del.style.color = 'white'; },
+          disarm: () => { del.textContent = '🗑 Supprimer ce rendez-vous'; del.style.background = ''; del.style.color = ''; }
+        });
+      }
+      byId('rdv-sheet').style.display = 'flex';
+      updateModalState();
+    }
+
+    function rdvMsg(text, kind) {
+      const el = byId('rdv-msg');
+      el.className = 'weight-feedback' + (kind ? ' ' + kind : '');
+      el.textContent = text;
+    }
+
+    async function saveRdv() {
+      const st = rdvSheet;
+      const title = byId('rdv-title').value.trim().replace(/\s+—\s*$/, '');
+      const date = byId('rdv-date').value;
+      if (!title) return rdvMsg('Indique avec qui ou pour quoi.', 'err');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return rdvMsg('Indique la date.', 'err');
+      let start, end;
+      if (st.allDay) {
+        start = new Date(date + 'T00:00:00').getTime();
+        end = start + 86400000;
+      } else {
+        const time = byId('rdv-time').value;
+        if (!/^\d{2}:\d{2}/.test(time)) return rdvMsg('Indique l\'heure.', 'err');
+        start = new Date(`${date}T${time}:00`).getTime();
+        end = start + st.duration * 60000;
+      }
+      if (!navigator.onLine) return rdvMsg('Pas de connexion Internet : le rendez-vous doit être enregistré dans Google Agenda.', 'err');
+      const btn = byId('rdv-save');
+      btn.disabled = true;
+      rdvMsg('Enregistrement dans Google Agenda…');
+      try {
+        const data = await sessionCall({ action: 'agenda_save', event: { id: st.id || undefined, title: title, start: start, end: end, allDay: st.allDay, location: byId('rdv-location').value.trim(), notes: byId('rdv-notes').value.trim() } });
+        const ev = data.event;
+        agenda.events = agenda.events.filter(e => e.id !== ev.id).concat([ev]);
+        lsSet(LS_AGENDA, agenda);
+        closeRdvSheet();
+        renderAgenda();
+        showToast(st.id ? '📅 Rendez-vous modifié' : '📅 Ajouté à ton Google Agenda');
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        btn.disabled = false;
+        rdvMsg(agendaErrorText(e.message), 'err');
+      }
+    }
+
+    async function deleteRdv() {
+      const st = rdvSheet;
+      if (!navigator.onLine) return rdvMsg('Pas de connexion Internet.', 'err');
+      rdvMsg('Suppression…');
+      try {
+        await sessionCall({ action: 'agenda_delete', id: st.id });
+        agenda.events = agenda.events.filter(e => e.id !== st.id);
+        lsSet(LS_AGENDA, agenda);
+        closeRdvSheet();
+        renderAgenda();
+        showToast('🗑 Rendez-vous supprimé de Google Agenda');
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        rdvMsg(agendaErrorText(e.message), 'err');
+      }
+    }
+
+    // ================== NAVIGATION ==================
+    function switchTab(tabName) {
+      if (tabName !== 'docs') lockDocs();
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + tabName));
+      if (tabName === 'agenda') {
+        renderAgenda();
+        refreshAgenda(false);
+      } else {
+        renderDocs();
+      }
+    }
+
+    // ================== CONNEXION & SYNCHRONISATION SÉCURISÉE ==================
+    // Identifiant de connexion Google (il n'est pas secret) : le même que GOOGLE_CLIENT_ID dans le script Google.
+    const GOOGLE_CLIENT_ID = '473355473317-ag0su1sgdfj8jpn0d7j54914co1m1h8q.apps.googleusercontent.com';
+
+    let gisInitialized = false;
+    let gisLoading = false;
+
+    function saveSyncConf() {
+      lsSet(LS_SYNC, syncConf);
+    }
+
+    function isValidSyncUrl(url) {
+      return typeof url === 'string' && url.startsWith(SYNC_URL_PREFIX) && url.endsWith('/exec');
+    }
+
+    function hasSession() {
+      const s = syncConf.session;
+      return !!(s && s.token && Number(s.exp) > Date.now());
+    }
+
+    async function apiCall(payload) {
+      const response = await fetch(syncConf.url, {
+        method: 'POST',
+        cache: 'no-store',
+        redirect: 'follow',
+        body: JSON.stringify(payload)
+      });
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        throw new Error('format');
+      }
+      if (!data || typeof data.ok !== 'boolean') throw new Error('format');
+      return data;
+    }
+
+    // ----- Portail de connexion -----
+    function setGateMsg(text, kind) {
+      const el = document.getElementById('gate-msg');
+      el.textContent = text || '';
+      el.className = 'gate-msg' + (kind ? ' ' + kind : '');
+    }
+
+    function showGateCode() {
+      document.getElementById('gate-code').style.display = 'block';
+      document.getElementById('gate-code-input').focus();
+    }
+
+    function lockApp(message) {
+      document.body.classList.add('locked');
+      setGateMsg(message || '', message ? 'err' : '');
+      initGoogleButton();
+    }
+
+    function unlockApp() {
+      document.body.classList.remove('locked');
+      renderAgenda();
+      refreshAgenda(true);
+    }
+
+    function loadGis() {
+      if (gisLoading) return;
+      gisLoading = true;
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.onload = initGoogleButton;
+      script.onerror = () => {
+        gisLoading = false;
+        setGateMsg('Impossible de charger la connexion Google. Vérifie ta connexion Internet.', 'err');
+      };
+      document.head.appendChild(script);
+    }
+
+    function initGoogleButton() {
+      const box = document.getElementById('gate-google');
+      if (!GOOGLE_CLIENT_ID) {
+        box.innerHTML = '';
+        setGateMsg('La connexion Google n\'est pas encore configurée : utilise le code secret.');
+        showGateCode();
+        return;
+      }
+      if (!(window.google && google.accounts && google.accounts.id)) {
+        loadGis();
+        return;
+      }
+      if (!gisInitialized) {
+        google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: onGoogleCredential,
+          auto_select: true,
+          cancel_on_tap_outside: false,
+          use_fedcm_for_prompt: true
+        });
+        gisInitialized = true;
+      }
+      box.innerHTML = '';
+      google.accounts.id.renderButton(box, { theme: 'filled_blue', size: 'large', shape: 'pill', text: 'signin_with', locale: 'fr', width: 260 });
+      const docsBox = document.getElementById('docs-google');
+      if (docsBox && docsGoogleFallback) {
+        docsBox.innerHTML = '';
+        google.accounts.id.renderButton(docsBox, { theme: 'filled_blue', size: 'large', shape: 'pill', text: 'continue_with', locale: 'fr', width: 260 });
+      }
+      google.accounts.id.prompt();
+    }
+
+    function loginErrorMessage(err) {
+      const code = err && err.message;
+      if (code === 'forbidden_email') return `Le compte ${err.email || ''} n'est pas autorisé à ouvrir cette appli.`;
+      const messages = {
+        bad_token: 'Connexion Google refusée. Réessaie.',
+        unauthorized: 'Code secret refusé.',
+        locked: 'Trop de tentatives : accès bloqué 15 minutes.',
+        google_not_configured: 'Le script Google n\'a pas encore l\'identifiant de connexion (GOOGLE_CLIENT_ID).',
+        format: 'Le script Google ne répond pas comme prévu (pas encore mis à jour ?).'
+      };
+      return messages[code] || (navigator.onLine ? 'Erreur de connexion au serveur. Réessaie.' : 'Pas de connexion Internet.');
+    }
+
+    async function onGoogleCredential(resp) {
+      if (!resp || !resp.credential) return;
+      setGateMsg('Vérification de ton compte…');
+      try {
+        const data = await apiCall({ action: 'login_google', idToken: resp.credential });
+        if (!data.ok) {
+          const err = new Error(data.error || 'server');
+          err.email = data.email;
+          throw err;
+        }
+        startSession(data);
+        if (pendingDocsGoogle) grantDocs();
+      } catch (err) {
+        setGateMsg(loginErrorMessage(err), 'err');
+        if (pendingDocsGoogle) setDocsLockMsg(loginErrorMessage(err), 'err');
+      }
+    }
+
+    async function loginWithCode() {
+      const input = document.getElementById('gate-code-input');
+      const code = input.value.trim();
+      if (!code) return;
+      setGateMsg('Vérification du code…');
+      try {
+        const data = await apiCall({ action: 'login_code', token: code });
+        if (!data.ok) throw new Error(data.error || 'server');
+        input.value = '';
+        startSession(data);
+      } catch (err) {
+        setGateMsg(loginErrorMessage(err), 'err');
+      }
+    }
+
+    function startSession(data) {
+      syncConf.session = { token: data.session, email: data.email, exp: Number(data.expires) };
+      saveSyncConf();
+      setGateMsg('');
+      unlockApp();
+    }
+
+    function endSession(message) {
+      syncConf.session = null;
+      saveSyncConf();
+      if (window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
+      lockDocs();
+      closeSettings();
+      closeRdvSheet();
+      lockApp(message);
+    }
+
+    async function logout() {
+      if (!confirm('Se déconnecter de cet appareil ?')) return;
+      const wipe = confirm('Effacer aussi les rendez-vous gardés sur cet appareil ?\n\nConseillé sur un appareil partagé. Ils restent dans ton Google Agenda et reviendront à la prochaine connexion.');
+      const token = syncConf.session && syncConf.session.token;
+      if (token) apiCall({ action: 'logout', session: token }).catch(() => {});
+      if (wipe) {
+        agenda = { events: [], lastOk: 0 };
+        lsSet(LS_AGENDA, agenda);
+        renderAgenda();
+      }
+      endSession('Tu es déconnecté.');
+    }
+
+    // ----- Réglages (propres à chaque appareil) -----
+    function openSyncSettings() {
+      const s = syncConf.session;
+      const account = document.getElementById('sync-account');
+      if (s) {
+        const until = new Date(Number(s.exp)).toLocaleDateString('fr-FR');
+        account.innerHTML = '';
+        const who = document.createElement('div');
+        who.textContent = `👤 Connecté : ${s.email || 'compte autorisé'}`;
+        const exp = document.createElement('div');
+        exp.style.color = '#64748b';
+        exp.style.fontSize = '0.78rem';
+        exp.textContent = `Session valable jusqu'au ${until} sur cet appareil · Version ${APP_VERSION}`;
+        account.appendChild(who);
+        account.appendChild(exp);
+      }
+      document.getElementById('sync-url').value = syncConf.url || DEFAULT_SYNC_URL;
+      document.getElementById('sync-settings-msg').textContent = '';
+    }
+
+    function openSettings() {
+      openSyncSettings();
+      byId('set-version').textContent = `Version ${APP_VERSION} · tes données restent sur ton compte Google (dossier médical chiffré dans Drive, agenda « 🩺 RDV médicaux »).`;
+      renderAgendaSettings();
+      byId('settings').style.display = 'flex';
+      updateModalState();
+    }
+
+    function closeSettings() {
+      const el = byId('settings');
+      if (!el || el.style.display !== 'flex') return;
+      el.style.display = 'none';
+      updateModalState();
+    }
+
+    function saveSyncSettings() {
+      const msg = document.getElementById('sync-settings-msg');
+      const url = document.getElementById('sync-url').value.trim() || DEFAULT_SYNC_URL;
+      if (!isValidSyncUrl(url)) {
+        msg.className = 'weight-feedback err';
+        msg.textContent = 'L\'adresse doit commencer par https://script.google.com/ et finir par /exec.';
+        return;
+      }
+      if (url !== syncConf.url) {
+        // Nouveau serveur : il faut s'y reconnecter
+        syncConf.url = url;
+        saveSyncConf();
+        endSession('Nouvelle adresse enregistrée : connecte-toi.');
+        return;
+      }
+      msg.className = 'weight-feedback ok';
+      msg.textContent = 'Adresse inchangée.';
+    }
+
+    // ----- Déclencheurs automatiques -----
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') refreshAgenda(false);
+    });
+    window.addEventListener('online', () => refreshAgenda(false));
+
+    document.getElementById('gate-code-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') loginWithCode();
+    });
+
+    byId('gate-version').textContent = `Version ${APP_VERSION}`;
+
+    // ================== DÉMARRAGE ==================
+    renderAgenda();
+    if (hasSession()) unlockApp();
+    else lockApp(syncConf.session ? 'Ta session a expiré : reconnecte-toi.' : '');
+  </script>
+</body>
+</html>
