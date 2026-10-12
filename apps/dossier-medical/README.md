@@ -11,3 +11,5 @@ Publiée avec GitHub Pages, elle est accessible à l'adresse :
 https://maxencedevos83.github.io/Suivi-Hydratation/apps/dossier-medical/
 
 Comme les deux applis sont sur le même site, la session, l'empreinte et la clé du dossier enregistrées sur un appareil sont partagées entre elles.
+
+Pour l'héberger sur ton propre serveur (ex : VPS Oracle Cloud), suis [deploy/GUIDE-VPS-ORACLE.md](deploy/GUIDE-VPS-ORACLE.md).
