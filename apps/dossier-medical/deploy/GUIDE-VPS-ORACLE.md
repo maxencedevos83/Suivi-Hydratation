@@ -14,7 +14,10 @@ Compte environ 30 minutes.
 
 1. Dans la console Oracle Cloud : **Menu ☰ › Compute › Instances › Create instance**.
 2. **Image** : clique sur *Change image* et choisis **Canonical Ubuntu 24.04**.
-3. **Shape** : garde une forme marquée *Always Free-eligible* (`VM.Standard.A1.Flex` avec 1 OCPU et 6 Go, ou `VM.Standard.E2.1.Micro`).
+3. **Shape** : clique sur *Change shape* › **Ampere** › **VM.Standard.A1.Flex**, avec 1 OCPU et 6 Go de mémoire (gratuit).
+   - L'image Ubuntu doit correspondre au processeur : avec A1.Flex (ARM), prends la version **aarch64** d'Ubuntu 24.04. Si Oracle affiche « Shape … is not valid for image … », c'est que les deux ne correspondent pas : change l'image ou la forme.
+   - `VM.Standard.E2.1.Micro` (AMD) marche aussi, mais seulement avec l'image Ubuntu 24.04 **sans** « aarch64 », et elle est souvent indisponible.
+   - Si Oracle répond « Out of capacity », réessaie plus tard ou change d'*Availability domain*.
 4. **Add SSH keys** : choisis *Generate a key pair for me* puis **Save private key**. Garde ce fichier `.key` précieusement : c'est ta clé pour entrer sur le serveur.
 5. Clique sur **Create**. Quand l'instance est « Running », note son **Public IP address**.
 
