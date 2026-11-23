@@ -161,6 +161,38 @@
     .sheet-box { width: 100%; max-width: 450px; max-height: 92vh; overflow-y: auto; background: white; border-radius: 20px 20px 0 0; padding: 16px; box-sizing: border-box; }
     .sheet-head { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 1rem; margin-bottom: 10px; }
     .sheet-head button { border: none; background: #f1f5f9; border-radius: 50%; width: 32px; height: 32px; font-size: 1rem; cursor: pointer; }
+    /* Médicaments */
+    .med-banner { display: none; margin-bottom: 12px; padding: 12px 14px; border-radius: 14px; background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; font-weight: 700; font-size: 0.9rem; cursor: pointer; line-height: 1.4; }
+    .med-banner.show { display: block; }
+    .med-moment { border: 1px solid #e2e8f0; border-radius: 14px; padding: 10px; margin-bottom: 10px; }
+    .med-moment-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: 700; font-size: 0.9rem; }
+    .med-chip { font-size: 0.72rem; padding: 3px 9px; border-radius: 20px; font-weight: 700; background: #f1f5f9; color: #64748b; white-space: nowrap; }
+    .med-chip.done { background: #dcfce7; color: #166534; }
+    .med-chip.late { background: #fee2e2; color: #991b1b; }
+    .med-chip.upcoming { background: #e0f2fe; color: #075985; }
+    .med-row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; margin-bottom: 6px; border: 1px solid #e2e8f0; border-radius: 10px; background: white; cursor: pointer; font-family: inherit; text-align: left; font-size: 0.88rem; color: #1e293b; }
+    .med-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: white; flex-shrink: 0; }
+    .med-row.taken { background: #f0fdf4; border-color: #bbf7d0; }
+    .med-row.taken .med-check { background: #16a34a; border-color: #16a34a; }
+    .med-name { flex: 1; font-weight: 600; }
+    .med-dose { display: block; font-weight: 400; font-size: 0.75rem; color: #64748b; }
+    .med-time { font-size: 0.75rem; color: #16a34a; font-weight: 600; text-align: right; }
+    .med-time.late { color: #b45309; }
+    .med-all { width: 100%; padding: 10px; border: none; border-radius: 10px; background: #16a34a; color: white; font-weight: 700; cursor: pointer; font-family: inherit; font-size: 0.88rem; }
+    .med-empty { text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 8px 4px 12px; line-height: 1.4; }
+    .med-editor { margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; }
+    .med-times { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .med-times label { font-size: 0.75rem; color: #64748b; font-weight: 600; }
+    .med-times input { width: 100%; padding: 8px 4px; border-radius: 8px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 0.85rem; box-sizing: border-box; margin-top: 3px; }
+    .med-edit-item { border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; margin-bottom: 8px; background: #f8fafc; }
+    .med-edit-item input { margin-top: 0; margin-bottom: 6px; background: white; }
+    .med-edit-foot { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+    .med-del { border: none; background: transparent; color: #b91c1c; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; padding: 6px; }
+    #med-card .chip.active { background: #4f46e5; border-color: #4f46e5; }
+    .med-reminders:not(:empty) { margin: 0; }
+    .med-rem-title { font-weight: 700; font-size: 0.85rem; color: #3730a3; margin-bottom: 4px; }
+    .med-rem-status { font-size: 0.82rem; color: #334155; line-height: 1.45; }
+
     /* Dossier médical */
     .doc-year { border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 8px; background: #f8fafc; overflow: hidden; }
     .doc-year > summary { display: flex; align-items: baseline; gap: 8px; padding: 10px 12px; cursor: pointer; list-style: none; font-weight: 800; color: #0f766e; font-size: 1rem; }
@@ -286,17 +318,62 @@
   <!-- Barre du haut : réglages -->
   <div class="topbar">
     <div class="tb-brand"><img src="./logo-512x512.png" alt=""><span>Dossier médical</span></div>
+    <button id="sync-btn" class="tb-sync" type="button" onclick="syncNow(false)" title="Synchroniser maintenant" data-state=""><i class="sync-dot"></i><span id="sync-status">Prêt</span></button>
+    <button id="tb-bell" class="tb-icon" type="button" onclick="openReminders()" title="Rappels" aria-label="Rappels">🔔</button>
     <button class="tb-icon" type="button" onclick="openSettings()" title="Réglages" aria-label="Réglages">⚙️</button>
   </div>
 
   <!-- Navigation -->
   <div class="tabs">
-    <button class="tab-btn active" data-tab="agenda" onclick="switchTab('agenda')"><span>📅</span>Agenda</button>
+    <button class="tab-btn active" data-tab="meds" onclick="switchTab('meds')"><span>💊</span>Médicaments</button>
+    <button class="tab-btn" data-tab="agenda" onclick="switchTab('agenda')"><span>📅</span>Agenda</button>
     <button class="tab-btn" data-tab="docs" onclick="switchTab('docs')"><span>📁</span>Dossier médical</button>
   </div>
 
+  <!-- ONGLET MÉDICAMENTS -->
+  <div id="tab-meds" class="tab-content active">
+    <div id="med-banner" class="med-banner" role="alert" onclick="byId('med-card').scrollIntoView({ behavior: 'smooth' })"></div>
+    <div class="card" id="med-card">
+      <div class="card-title">💊 Mes médicaments du jour</div>
+      <div id="med-moments"></div>
+      <button class="drink-more" id="med-editor-btn" onclick="toggleMedEditor()">⚙️ Gérer mes médicaments</button>
+
+      <div id="med-editor" class="med-editor" style="display: none;">
+        <div class="action-label">Heures de prise</div>
+        <div class="med-times" id="med-times"></div>
+
+        <div class="action-label" style="margin-top: 12px;">Mes médicaments</div>
+        <div id="med-edit-list"></div>
+
+        <div class="med-edit-item" style="background: white; border-style: dashed;">
+          <input type="text" id="med-new-name" class="date-picker-input" maxlength="60" placeholder="Nom (ex : Doliprane)">
+          <input type="text" id="med-new-dose" class="date-picker-input" maxlength="60" placeholder="Dose (ex : 1 comprimé)">
+          <div class="med-edit-foot">
+            <div class="chip-row" id="med-new-moments"></div>
+            <button class="chip" style="color: #4f46e5; border-color: #4f46e5;" type="button" onclick="addMedToDraft()">+ Ajouter</button>
+          </div>
+        </div>
+
+        <div class="action-row" style="margin-top: 6px;">
+          <button class="btn-add" style="background: #4f46e5; color: white;" onclick="saveMedEditor()">💾 Enregistrer</button>
+          <button class="btn-sub" onclick="toggleMedEditor(false)">Annuler</button>
+        </div>
+        <div id="med-editor-msg" class="weight-feedback"></div>
+        <div class="sync-note">
+          Rappels : notification sur ton téléphone à l'heure prévue, puis 30 et 90 minutes après,
+          tant que la prise n'est pas cochée (ici ou avec le bouton « C'est pris » de la notification).
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="rem-card">
+      <div class="card-title">🔔 Rappels</div>
+      <div id="med-reminders" class="med-reminders"></div>
+    </div>
+  </div>
+
   <!-- ONGLET AGENDA MÉDICAL -->
-  <div id="tab-agenda" class="tab-content active">
+  <div id="tab-agenda" class="tab-content">
     <div class="card" id="agenda-card">
       <div class="food-head">
         <div class="card-title" style="margin: 0;">📅 Mes rendez-vous</div>
@@ -365,6 +442,12 @@
           <div id="sync-settings-msg" class="weight-feedback"></div>
         </details>
       </section>
+      <section class="set-sec" id="set-sync">
+        <h4>☁️ Synchronisation des prises</h4>
+        <div id="set-sync-status" class="set-line"></div>
+        <button class="btn-add" type="button" style="width: 100%; background: #e0e7ff; color: #3730a3;" onclick="syncNow(false)">🔄 Synchroniser maintenant</button>
+        <div class="sync-note">Les prises cochées sont enregistrées dans ton Google Sheet (le même que Suivi Hydrique) : automatique à l'ouverture, après chaque prise et toutes les minutes ; hors ligne, elles partent dès que le réseau revient.</div>
+      </section>
       <section class="set-sec" id="set-agenda">
         <h4>📅 Agenda médical</h4>
         <div id="set-agenda-status" class="set-line"></div>
@@ -420,7 +503,7 @@
 
   <script>
     // ================== SERVICE WORKER ==================
-    const APP_VERSION = '2026-10-12 · v1';
+    const APP_VERSION = '2026-11-23 · v2';
     if ('serviceWorker' in navigator) {
       // Quand une nouvelle version de l'appli est installée, on recharge une fois pour l'afficher
       const hadController = !!navigator.serviceWorker.controller;
@@ -447,7 +530,10 @@
     // Même script Google que Suivi Hydrique Pro : même connexion, même agenda, même dossier chiffré.
     const DEFAULT_SYNC_URL = "https://script.google.com/macros/s/AKfycbzl_Fq5YbC2vGCPkt-Ep5PNO-TnxAdtgVZcd6JlIeonorWzIXE9DoJYzgyCdGAWr0hL9A/exec";
     const SYNC_URL_PREFIX = 'https://script.google.com/';
+    const LS_RECORDS = 'hydra_logs';     // toutes les saisies (y compris supprimées, pour la synchro)
+    const LS_PENDING = 'hydra_pending';  // ids modifiés localement, pas encore confirmés par le serveur
     const LS_SYNC = 'hydra_sync';        // réglages de synchro de CET appareil
+    const AUTO_SYNC_INTERVAL_MS = 60000;
 
     function lsGet(key, fallback) {
       try {
@@ -466,7 +552,12 @@
       }
     }
 
-    let syncConf = Object.assign({ url: DEFAULT_SYNC_URL }, lsGet(LS_SYNC, {}));
+    let syncConf = Object.assign({ url: DEFAULT_SYNC_URL, lastSrv: 0, lastOk: 0 }, lsGet(LS_SYNC, {}));
+    // Saisies partagées avec Suivi Hydrique (même stockage) : ici, seuls le plan de médicaments et les prises sont utilisés
+    let records = lsGet(LS_RECORDS, []);
+    if (!Array.isArray(records)) records = [];
+    let pending = new Set((lsGet(LS_PENDING, []) || []).map(String));
+    let logs = [];   // saisies visibles (non supprimées), de la plus récente à la plus ancienne
 
     function prefGet(key, fallback) {
       try { return localStorage.getItem(key) || fallback; } catch (e) { return fallback; }
@@ -475,12 +566,59 @@
       try { localStorage.setItem(key, value); } catch (e) {}
     }
 
+    function refreshView() {
+      logs = records.filter(r => !r.deleted).sort((a, b) => Number(b.id) - Number(a.id));
+    }
+
+    function persist() {
+      lsSet(LS_RECORDS, records);
+      lsSet(LS_PENDING, [...pending]);
+    }
+
+    // Identifiant unique, chronologique, sans collision entre appareils
+    function newId() {
+      return Date.now() * 1000 + Math.floor(Math.random() * 1000);
+    }
+
+    function upsertLocal(entry) {
+      entry.updatedAt = Date.now();
+      const i = records.findIndex(r => String(r.id) === String(entry.id));
+      if (i >= 0) records[i] = entry; else records.push(entry);
+      pending.add(String(entry.id));
+    }
+
+    // Suppression « propre » : l'entrée est marquée supprimée pour que tous les appareils l'apprennent
+    function deleteWhere(predicate) {
+      const now = Date.now();
+      records.forEach(r => {
+        if (!r.deleted && predicate(r)) {
+          r.deleted = true;
+          r.updatedAt = now;
+          pending.add(String(r.id));
+        }
+      });
+    }
+
+    function commitChanges() {
+      refreshView();
+      persist();
+      renderMeds();
+      updateSyncStatusIdle();
+      scheduleSync();
+    }
+
+    refreshView();
+
     // ================== OUTILS ==================
     function getLocalIsoDate(date = new Date()) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
+    }
+
+    function nowTimeStr() {
+      return new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     }
 
     function byId(id) { return document.getElementById(id); }
@@ -1847,6 +1985,617 @@
       return data;
     }
 
+    // ================== COMPLÉMENTS ==================
+    const MED_PLAN_ID = 1;   // le plan est une seule saisie synchronisée, toujours avec cet id
+    const MOMENTS = [
+      { key: 'matin', name: 'Matin', icon: '🌅', defaultTime: '08:00' },
+      { key: 'midi', name: 'Midi', icon: '☀️', defaultTime: '12:30' },
+      { key: 'soir', name: 'Soir', icon: '🌙', defaultTime: '20:00' }
+    ];
+    const MED_LATE_MIN = 60;  // au-delà de ce délai après l'heure prévue, la prise est notée « en retard »
+    let medDraft = null;      // copie du plan pendant la modification
+    let medNewMoments = ['matin'];
+
+    function hhmmToMin(s) {
+      const m = /^(\d{1,2}):(\d{2})/.exec(String(s || ''));
+      return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+    }
+
+    function fmtDuration(min) {
+      if (min < 60) return `${min} min`;
+      const h = Math.floor(min / 60), m = min % 60;
+      return m ? `${h} h ${String(m).padStart(2, '0')}` : `${h} h`;
+    }
+
+    function getMedPlan() {
+      const rec = records.find(r => Number(r.id) === MED_PLAN_ID && r.type === 'med_plan' && !r.deleted);
+      let plan = null;
+      if (rec && rec.plan) { try { plan = JSON.parse(rec.plan); } catch (e) {} }
+      plan = plan || {};
+      const times = {};
+      MOMENTS.forEach(m => { times[m.key] = (plan.times && plan.times[m.key]) || m.defaultTime; });
+      plan.times = times;
+      plan.meds = Array.isArray(plan.meds) ? plan.meds.filter(m => m && m.id && m.name) : [];
+      return plan;
+    }
+
+    function saveMedPlan(plan) {
+      const now = new Date();
+      upsertLocal({
+        id: MED_PLAN_ID,
+        type: 'med_plan',
+        volume: 0,
+        label: `Plan de médicaments (${plan.meds.length})`,
+        plan: JSON.stringify({ times: plan.times, meds: plan.meds }),
+        isoDate: getLocalIsoDate(now),
+        dateStr: now.toLocaleDateString('fr-FR'),
+        timeStr: nowTimeStr()
+      });
+      commitChanges();
+    }
+
+    // Prises cochées pour une date : clé « idMédicament|moment » → saisie
+    function getMedIntakes(iso) {
+      const map = {};
+      logs.forEach(l => {
+        if (l.type === 'med_prise' && l.isoDate === iso && l.detail) {
+          if (!map[l.detail] || Number(l.id) < Number(map[l.detail].id)) map[l.detail] = l;
+        }
+      });
+      return map;
+    }
+
+    function getMomentStatus(plan, iso, moment) {
+      const meds = plan.meds.filter(m => (m.moments || []).includes(moment.key));
+      const intakes = getMedIntakes(iso);
+      const taken = meds.filter(m => intakes[`${m.id}|${moment.key}`]);
+      const dueMin = hhmmToMin(plan.times[moment.key]);
+      const today = getLocalIsoDate();
+      const now = new Date();
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+      let state = 'upcoming', lateBy = 0;
+      if (!meds.length) state = 'none';
+      else if (taken.length === meds.length) state = 'done';
+      else if (iso < today) state = 'missed';
+      else if (iso === today && dueMin !== null && nowMin >= dueMin) { state = 'late'; lateBy = nowMin - dueMin; }
+      return { meds, intakes, taken, dueMin, state, lateBy };
+    }
+
+    function getMedAdherence(iso) {
+      const plan = getMedPlan();
+      let due = 0, done = 0;
+      MOMENTS.forEach(moment => {
+        const st = getMomentStatus(plan, iso, moment);
+        due += st.meds.length;
+        done += st.taken.length;
+      });
+      return { due, done };
+    }
+
+    function renderMeds() {
+      const plan = getMedPlan();
+      const today = getLocalIsoDate();
+      const box = document.getElementById('med-moments');
+      box.innerHTML = '';
+      const banner = [];
+
+      if (!plan.meds.length) {
+        box.innerHTML = '<div class="med-empty">Aucun médicament enregistré.<br>Ajoute ton traitement avec « ⚙️ Gérer mes médicaments ».</div>';
+      }
+
+      MOMENTS.forEach(moment => {
+        const st = getMomentStatus(plan, today, moment);
+        if (st.state === 'none') return;
+
+        const block = document.createElement('div');
+        block.className = 'med-moment';
+        const head = document.createElement('div');
+        head.className = 'med-moment-head';
+        const title = document.createElement('span');
+        title.textContent = `${moment.icon} ${moment.name} · ${plan.times[moment.key]}`;
+        const chip = document.createElement('span');
+        chip.className = 'med-chip';
+        if (st.state === 'done') {
+          chip.classList.add('done');
+          chip.textContent = '✅ Tout pris';
+        } else if (st.state === 'late') {
+          chip.classList.add('late');
+          chip.textContent = `⚠️ En retard de ${fmtDuration(st.lateBy)}`;
+          banner.push(`${moment.name.toLowerCase()} (en retard de ${fmtDuration(st.lateBy)})`);
+        } else {
+          chip.classList.add('upcoming');
+          chip.textContent = `⏰ À ${plan.times[moment.key]}`;
+        }
+        head.appendChild(title);
+        head.appendChild(chip);
+        block.appendChild(head);
+
+        st.meds.forEach(med => {
+          const intake = st.intakes[`${med.id}|${moment.key}`];
+          const row = document.createElement('button');
+          row.type = 'button';
+          row.className = 'med-row' + (intake ? ' taken' : '');
+          row.innerHTML = '<span class="med-check"></span><span class="med-name"><span class="n"></span><span class="med-dose"></span></span><span class="med-time"></span>';
+          row.querySelector('.med-check').textContent = intake ? '✓' : '';
+          row.querySelector('.n').textContent = med.name;
+          row.querySelector('.med-dose').textContent = med.dose || '';
+          if (intake) {
+            const t = row.querySelector('.med-time');
+            const takenMin = hhmmToMin(intake.timeStr);
+            const late = st.dueMin !== null && takenMin !== null && takenMin - st.dueMin > MED_LATE_MIN;
+            t.textContent = late ? `${intake.timeStr}\nen retard` : intake.timeStr;
+            t.style.whiteSpace = 'pre-line';
+            if (late) t.classList.add('late');
+          }
+          row.setAttribute('aria-pressed', intake ? 'true' : 'false');
+          row.onclick = () => {
+            if (!intake) return checkIntakes([med], moment);
+            confirmTap(row, () => uncheckIntake(intake), {
+              arm: () => { row.dataset.prev = row.querySelector('.med-time').textContent; row.querySelector('.med-time').textContent = 'Décocher ?'; },
+              disarm: () => { row.querySelector('.med-time').textContent = row.dataset.prev || ''; }
+            });
+          };
+          block.appendChild(row);
+        });
+
+        const missing = st.meds.filter(m => !st.intakes[`${m.id}|${moment.key}`]);
+        if (missing.length > 1) {
+          const all = document.createElement('button');
+          all.type = 'button';
+          all.className = 'med-all';
+          all.textContent = `✅ Tout pris (${missing.length})`;
+          all.onclick = () => checkIntakes(missing, moment);
+          block.appendChild(all);
+        }
+        box.appendChild(block);
+      });
+
+      const bannerEl = document.getElementById('med-banner');
+      if (banner.length) {
+        bannerEl.textContent = `💊 Médicaments à prendre : ${banner.join(', ')}. Touche pour cocher.`;
+        bannerEl.classList.add('show');
+      } else {
+        bannerEl.classList.remove('show');
+      }
+      saveReminderState();
+      renderReminders();
+    }
+
+    function checkIntakes(meds, moment) {
+      const now = new Date();
+      const ids = [];
+      meds.forEach(med => {
+        const entry = {
+          id: newId(),
+          type: 'med_prise',
+          volume: 0,
+          label: `${med.name}${med.dose ? ' (' + med.dose + ')' : ''} — ${moment.name.toLowerCase()}`,
+          detail: `${med.id}|${moment.key}`,
+          isoDate: getLocalIsoDate(now),
+          dateStr: now.toLocaleDateString('fr-FR'),
+          timeStr: nowTimeStr()
+        };
+        ids.push(String(entry.id));
+        upsertLocal(entry);
+      });
+      commitChanges();
+      if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
+      const text = meds.length === 1 ? `💊 ${meds[0].name} coché` : `💊 ${meds.length} médicaments ${moment.name.toLowerCase()} cochés`;
+      showToast(text, () => {
+        deleteWhere(r => ids.includes(String(r.id)));
+        commitChanges();
+        showToast('Prise décochée');
+      });
+    }
+
+    function uncheckIntake(intake) {
+      // Décoche toutes les saisies de ce médicament pour ce moment (cas de doublons entre appareils)
+      const removed = [];
+      deleteWhere(r => {
+        const match = r.type === 'med_prise' && r.isoDate === intake.isoDate && r.detail === intake.detail;
+        if (match) removed.push(String(r.id));
+        return match;
+      });
+      commitChanges();
+      showToast('Prise décochée', () => {
+        removed.forEach(id => {
+          const r = records.find(x => String(x.id) === id);
+          if (r && r.deleted) {
+            const copy = Object.assign({}, r);
+            delete copy.deleted;
+            upsertLocal(copy);
+          }
+        });
+        commitChanges();
+      });
+    }
+
+    // ----- Gestion du plan -----
+    function toggleMedEditor(force) {
+      const editor = document.getElementById('med-editor');
+      const open = force !== undefined ? force : editor.style.display !== 'block';
+      editor.style.display = open ? 'block' : 'none';
+      document.getElementById('med-editor-btn').style.display = open ? 'none' : 'block';
+      document.getElementById('med-editor-msg').textContent = '';
+      if (open) {
+        medDraft = JSON.parse(JSON.stringify(getMedPlan()));
+        medNewMoments = ['matin'];
+        renderMedEditor();
+      }
+    }
+
+    function momentChips(container, selected, onToggle) {
+      container.innerHTML = '';
+      MOMENTS.forEach(m => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'chip' + (selected.includes(m.key) ? ' active' : '');
+        chip.textContent = `${m.icon} ${m.name}`;
+        chip.onclick = () => onToggle(m.key);
+        container.appendChild(chip);
+      });
+    }
+
+    function toggleInList(list, key) {
+      const i = list.indexOf(key);
+      if (i >= 0) list.splice(i, 1); else list.push(key);
+    }
+
+    function renderMedEditor() {
+      const times = document.getElementById('med-times');
+      times.innerHTML = '';
+      MOMENTS.forEach(m => {
+        const label = document.createElement('label');
+        label.textContent = `${m.icon} ${m.name}`;
+        const input = document.createElement('input');
+        input.type = 'time';
+        input.value = medDraft.times[m.key];
+        input.oninput = () => { medDraft.times[m.key] = input.value; };
+        label.appendChild(input);
+        times.appendChild(label);
+      });
+
+      const list = document.getElementById('med-edit-list');
+      list.innerHTML = '';
+      if (!medDraft.meds.length) {
+        list.innerHTML = '<div class="med-empty" style="padding: 4px 0 10px;">Aucun médicament pour l\'instant.</div>';
+      }
+      medDraft.meds.forEach((med, idx) => {
+        const item = document.createElement('div');
+        item.className = 'med-edit-item';
+        const name = document.createElement('input');
+        name.className = 'date-picker-input';
+        name.maxLength = 60;
+        name.value = med.name;
+        name.placeholder = 'Nom';
+        name.oninput = () => { med.name = name.value; };
+        const dose = document.createElement('input');
+        dose.className = 'date-picker-input';
+        dose.maxLength = 60;
+        dose.value = med.dose || '';
+        dose.placeholder = 'Dose';
+        dose.oninput = () => { med.dose = dose.value; };
+        const foot = document.createElement('div');
+        foot.className = 'med-edit-foot';
+        const chips = document.createElement('div');
+        chips.className = 'chip-row';
+        med.moments = med.moments || [];
+        momentChips(chips, med.moments, key => { toggleInList(med.moments, key); renderMedEditor(); });
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'med-del';
+        del.textContent = '🗑 Retirer';
+        del.onclick = () => { medDraft.meds.splice(idx, 1); renderMedEditor(); };
+        foot.appendChild(chips);
+        foot.appendChild(del);
+        item.appendChild(name);
+        item.appendChild(dose);
+        item.appendChild(foot);
+        list.appendChild(item);
+      });
+
+      momentChips(document.getElementById('med-new-moments'), medNewMoments, key => {
+        toggleInList(medNewMoments, key);
+        renderMedEditor();
+      });
+    }
+
+    function addMedToDraft() {
+      const msg = document.getElementById('med-editor-msg');
+      const nameEl = document.getElementById('med-new-name');
+      const doseEl = document.getElementById('med-new-dose');
+      const name = nameEl.value.trim();
+      if (!name) {
+        msg.className = 'weight-feedback err';
+        msg.textContent = 'Indique le nom du médicament.';
+        return;
+      }
+      if (!medNewMoments.length) {
+        msg.className = 'weight-feedback err';
+        msg.textContent = 'Choisis au moins un moment de prise.';
+        return;
+      }
+      medDraft.meds.push({
+        id: 'm' + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36),
+        name: name.slice(0, 60),
+        dose: doseEl.value.trim().slice(0, 60),
+        moments: medNewMoments.slice()
+      });
+      nameEl.value = '';
+      doseEl.value = '';
+      msg.textContent = '';
+      renderMedEditor();
+    }
+
+    function saveMedEditor() {
+      const msg = document.getElementById('med-editor-msg');
+      // Un médicament tapé mais pas encore ajouté : on l'ajoute
+      if (document.getElementById('med-new-name').value.trim()) addMedToDraft();
+      for (const m of MOMENTS) {
+        if (hhmmToMin(medDraft.times[m.key]) === null) {
+          msg.className = 'weight-feedback err';
+          msg.textContent = `Heure invalide pour « ${m.name} ».`;
+          return;
+        }
+      }
+      for (const med of medDraft.meds) {
+        med.name = String(med.name || '').trim();
+        if (!med.name) {
+          msg.className = 'weight-feedback err';
+          msg.textContent = 'Un médicament n\'a pas de nom.';
+          return;
+        }
+        if (!med.moments || !med.moments.length) {
+          msg.className = 'weight-feedback err';
+          msg.textContent = `Choisis au moins un moment pour « ${med.name} ».`;
+          return;
+        }
+      }
+      saveMedPlan(medDraft);
+      toggleMedEditor(false);
+      showToast('💊 Plan de médicaments enregistré');
+    }
+
+    setInterval(() => {
+      if (!document.body.classList.contains('locked')) renderMeds();
+    }, 60000);
+
+    // ================== RAPPELS : NOTIFICATIONS SUR LE TÉLÉPHONE ==================
+    // Le script Google envoie un signal push au moment du rappel ; le service worker (ws.js)
+    // affiche la notification à partir du plan enregistré ici dans IndexedDB « hydra-sw ».
+    let reminderInfo = null;     // { devices, channel } renvoyé par le script
+    let reminderLoading = false;
+    let pushResynced = false;    // abonnement de ce téléphone renvoyé au script une fois par ouverture
+    let reminderStateTimer = null;
+    const REMINDER_CHANNELS = [
+      { key: 'push', name: '🔔 Notification' },
+      { key: 'both', name: '🔔 + ✉️ Les deux' },
+      { key: 'email', name: '✉️ E-mail seulement' }
+    ];
+
+    function pushSupported() {
+      return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+    }
+
+    function swKvSet(key, value) {
+      return new Promise((resolve, reject) => {
+        const r = indexedDB.open('hydra-sw', 1);
+        r.onupgradeneeded = () => r.result.createObjectStore('kv');
+        r.onerror = () => reject(r.error);
+        r.onsuccess = () => {
+          const db = r.result;
+          const tx = db.transaction('kv', 'readwrite');
+          tx.objectStore('kv').put(value, key);
+          tx.oncomplete = () => { db.close(); resolve(); };
+          tx.onerror = () => { db.close(); reject(tx.error); };
+        };
+      });
+    }
+
+    // Plan, prises du jour et session, pour que le service worker puisse afficher le bon rappel appli fermée
+    function saveReminderState() {
+      clearTimeout(reminderStateTimer);
+      reminderStateTimer = setTimeout(() => {
+        const plan = getMedPlan();
+        const today = getLocalIsoDate();
+        swKvSet('reminder', {
+          url: syncConf.url,
+          session: hasSession() ? syncConf.session.token : null,
+          plan: { times: plan.times, meds: plan.meds },
+          taken: { iso: today, details: Object.keys(getMedIntakes(today)) },
+          updated: Date.now()
+        }).catch(() => {});
+      }, 300);
+    }
+
+
+    async function currentPushSub() {
+      if (!pushSupported()) return null;
+      const reg = await navigator.serviceWorker.ready;
+      return reg.pushManager.getSubscription();
+    }
+
+    function deviceLabel() {
+      const ua = navigator.userAgent;
+      const kind = /Android/i.test(ua) ? 'Téléphone Android' : /iPhone|iPad/i.test(ua) ? 'iPhone' : 'Ordinateur';
+      return `${kind} · ajouté le ${new Date().toLocaleDateString('fr-FR')}`;
+    }
+
+    function remMsg(text, kind) {
+      const el = byId('rem-msg');
+      if (!el) return;
+      el.className = 'weight-feedback' + (kind ? ' ' + kind : '');
+      el.textContent = text || '';
+    }
+
+    function remErrorMessage(code) {
+      const messages = {
+        unknown_action: 'Le script Google n\'est pas encore à jour (version 6 nécessaire).',
+        bad_subscription: 'Service de notification non reconnu.',
+        server: 'Le script Google a rencontré une erreur.',
+        format: 'Le script Google ne répond pas comme prévu.'
+      };
+      return messages[code] || (navigator.onLine ? 'Erreur de communication. Réessaie.' : 'Pas de connexion Internet.');
+    }
+
+    // Cloche de la barre du haut : 🔔 notifications actives sur ce téléphone, 🔕 sinon
+    function setBell(state) {
+      const bell = byId('tb-bell');
+      if (!bell) return;
+      bell.textContent = state === 'on' || state === 'none' ? '🔔' : '🔕';
+      bell.title = state === 'on' ? 'Rappels : notifications actives sur ce téléphone'
+        : state === 'none' ? 'Rappels' : 'Rappels : notifications non activées sur ce téléphone';
+      bell.classList.toggle('tb-alert', state === 'off' || state === 'blocked');
+    }
+
+    async function renderReminders() {
+      const box = byId('med-reminders');
+      if (!box) return;
+      const plan = getMedPlan();
+      if (!hasSession()) { box.innerHTML = ''; return; }
+      if (!plan.meds.length) {
+        setBell('none');
+        box.innerHTML = '<div class="set-line">Ajoute d\'abord tes médicaments (onglet Médicaments › « ⚙️ Gérer mes médicaments ») pour recevoir des rappels.</div>';
+        return;
+      }
+      if (!reminderInfo && !reminderLoading && navigator.onLine) {
+        reminderLoading = true;
+        sessionCall({ action: 'push_key' })
+          .then(info => { reminderInfo = { devices: info.devices, channel: info.channel, publicKey: info.publicKey }; })
+          .catch(() => { reminderInfo = { devices: 0, channel: null, error: true }; })
+          .finally(() => { reminderLoading = false; renderReminders(); });
+      }
+      const supported = pushSupported();
+      const perm = supported ? Notification.permission : 'unsupported';
+      let sub = null;
+      if (supported && perm === 'granted') { try { sub = await currentPushSub(); } catch (e) { sub = null; } }
+      if (sub && !pushResynced && navigator.onLine) {
+        // Ré-enregistre ce téléphone à chaque ouverture : répare un abonnement expiré ou renouvelé par Android
+        pushResynced = true;
+        sessionCall({ action: 'push_subscribe', subscription: sub.toJSON(), label: deviceLabel() })
+          .then(r => { if (reminderInfo && reminderInfo.devices !== r.devices) { reminderInfo.devices = r.devices; renderReminders(); } })
+          .catch(() => { pushResynced = false; });
+      }
+      setBell(sub ? 'on' : perm === 'denied' ? 'blocked' : 'off');
+      let status, buttons = '';
+      if (!supported) {
+        status = 'Ce navigateur ne peut pas recevoir de notifications : les rappels arrivent par e-mail.';
+      } else if (perm === 'denied') {
+        status = '⛔ Notifications bloquées pour cette appli. Pour les autoriser : Paramètres Android › Applications › Chrome (ou Dossier médical) › Notifications, puis reviens ici.';
+      } else if (sub) {
+        status = '✅ Notifications activées sur ce téléphone : à l\'heure prévue, tu reçois une notification avec un bouton « C\'est pris ».';
+        buttons = `<div class="action-row" style="margin-top: 8px;">
+            <button class="btn-add" type="button" id="rem-test" style="background: #e0e7ff; color: #3730a3;">🔔 Tester</button>
+            <button class="btn-sub" type="button" id="rem-off">Désactiver ici</button>
+          </div>`;
+      } else {
+        status = 'Les rappels peuvent s\'afficher comme une notification classique, même appli fermée.';
+        buttons = '<button class="sync-btn" type="button" id="rem-on" style="background: #4f46e5; margin-top: 8px;">🔔 Activer les notifications sur ce téléphone</button>';
+      }
+      box.innerHTML = `
+        <div class="med-rem-status">${status}</div>
+        ${buttons}
+        ${reminderInfo && reminderInfo.channel ? `<div class="action-label" style="margin-top: 10px;">Recevoir les rappels par</div><div class="chip-row" id="rem-channels"></div>
+          <div class="sync-note" style="margin-top: 6px;">Téléphone(s) avec notifications : ${reminderInfo.devices}. Sans téléphone joignable, le rappel arrive quand même par e-mail.</div>` : ''}
+        <div id="rem-msg" class="weight-feedback"></div>`;
+      if (byId('rem-on')) byId('rem-on').onclick = enablePush;
+      if (byId('rem-test')) byId('rem-test').onclick = testPush;
+      if (byId('rem-off')) byId('rem-off').onclick = disablePush;
+      const chips = byId('rem-channels');
+      if (chips) {
+        REMINDER_CHANNELS.forEach(c => {
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'chip' + (reminderInfo.channel === c.key ? ' active' : '');
+          chip.textContent = c.name;
+          chip.onclick = () => setReminderChannel(c.key);
+          chips.appendChild(chip);
+        });
+      }
+    }
+
+    async function enablePush() {
+      const btn = byId('rem-on');
+      btn.disabled = true;
+      try {
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted') {
+          await renderReminders();
+          remMsg('Notifications refusées : les rappels continueront par e-mail.', 'err');
+          return;
+        }
+        remMsg('Activation…');
+        const info = await sessionCall({ action: 'push_key' });
+        const key = b64uToBuf(info.publicKey);
+        const reg = await navigator.serviceWorker.ready;
+        let sub = await reg.pushManager.getSubscription();
+        if (sub) {
+          const cur = sub.options && sub.options.applicationServerKey ? new Uint8Array(sub.options.applicationServerKey) : null;
+          if (!cur || cur.length !== key.length || cur.some((b, i) => b !== key[i])) { await sub.unsubscribe(); sub = null; }
+        }
+        if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+        const r = await sessionCall({ action: 'push_subscribe', subscription: sub.toJSON(), label: deviceLabel() });
+        reminderInfo = { devices: r.devices, channel: info.channel, publicKey: info.publicKey };
+        saveReminderState();
+        await renderReminders();
+        remMsg('✅ Activé ! Touche « Tester » pour vérifier que la notification arrive.', 'ok');
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        await renderReminders();
+        remMsg(e && e.name === 'NotAllowedError' ? 'Notifications refusées par le téléphone.' : (e && e.name === 'AbortError') ? 'Le service de notification du téléphone ne répond pas. Réessaie plus tard.' : remErrorMessage(e.message), 'err');
+      }
+    }
+
+    async function testPush() {
+      const btn = byId('rem-test');
+      btn.disabled = true;
+      remMsg('Envoi d\'une notification de test…');
+      try {
+        await swKvSet('reminder-test', Date.now());
+        const r = await sessionCall({ action: 'push_test' });
+        reminderInfo = Object.assign({}, reminderInfo, { devices: r.devices });
+        remMsg(r.sent ? `✅ Notification envoyée (${r.sent} appareil${r.sent > 1 ? 's' : ''}). Elle doit apparaître dans quelques secondes.` : 'Aucun téléphone joignable : réactive les notifications.', r.sent ? 'ok' : 'err');
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        remMsg(remErrorMessage(e.message), 'err');
+      } finally {
+        if (byId('rem-test')) byId('rem-test').disabled = false;
+      }
+    }
+
+    async function disablePush() {
+      try {
+        const sub = await currentPushSub();
+        if (sub) {
+          await sessionCall({ action: 'push_unsubscribe', endpoint: sub.endpoint }).catch(() => {});
+          await sub.unsubscribe();
+        }
+        reminderInfo = null;
+        await renderReminders();
+        remMsg('Notifications désactivées sur ce téléphone.');
+      } catch (e) {
+        remMsg(remErrorMessage(e.message), 'err');
+      }
+    }
+
+    async function setReminderChannel(channel) {
+      try {
+        const r = await sessionCall({ action: 'reminder_prefs', channel: channel });
+        reminderInfo = Object.assign({}, reminderInfo, { channel: r.channel });
+        await renderReminders();
+        remMsg(channel === 'email' ? 'Les rappels arriveront uniquement par e-mail.' : channel === 'both' ? 'Rappels par notification et par e-mail.' : 'Rappels par notification (e-mail seulement en secours).', 'ok');
+      } catch (e) {
+        if (e.message === 'unauthorized') return;
+        remMsg(remErrorMessage(e.message), 'err');
+      }
+    }
+
+    function openReminders() {
+      closeSettings();
+      switchTab('meds');
+      setTimeout(() => byId('rem-card').scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    }
+
     // ================== AGENDA MÉDICAL (Google Agenda « 🩺 RDV médicaux ») ==================
     const LS_AGENDA = 'hydra_agenda';
     const RDV_QUICK = ['Médecin traitant', 'Gastro-entérologue', 'Néphrologue', 'Prise de sang', 'Examen', 'Hôpital'];
@@ -2213,7 +2962,9 @@
       if (tabName !== 'docs') lockDocs();
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + tabName));
-      if (tabName === 'agenda') {
+      if (tabName === 'meds') {
+        renderMeds();
+      } else if (tabName === 'agenda') {
         renderAgenda();
         refreshAgenda(false);
       } else {
@@ -2225,6 +2976,9 @@
     // Identifiant de connexion Google (il n'est pas secret) : le même que GOOGLE_CLIENT_ID dans le script Google.
     const GOOGLE_CLIENT_ID = '473355473317-ag0su1sgdfj8jpn0d7j54914co1m1h8q.apps.googleusercontent.com';
 
+    let syncing = false;
+    let syncAgain = false;
+    let syncTimer = null;
     let gisInitialized = false;
     let gisLoading = false;
 
@@ -2278,7 +3032,10 @@
 
     function unlockApp() {
       document.body.classList.remove('locked');
+      renderMeds();
       renderAgenda();
+      updateSyncStatusIdle();
+      syncNow(true);
       refreshAgenda(true);
     }
 
@@ -2383,6 +3140,7 @@
 
     function endSession(message) {
       syncConf.session = null;
+      saveReminderState();
       saveSyncConf();
       if (window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
       lockDocs();
@@ -2393,15 +3151,156 @@
 
     async function logout() {
       if (!confirm('Se déconnecter de cet appareil ?')) return;
-      const wipe = confirm('Effacer aussi les rendez-vous gardés sur cet appareil ?\n\nConseillé sur un appareil partagé. Ils restent dans ton Google Agenda et reviendront à la prochaine connexion.');
+      if (pending.size && navigator.onLine) await syncNow(true);
+      let wipe = false;
+      if (pending.size) {
+        alert(`${pending.size} prise(s) ne sont pas encore synchronisées : elles restent sur cet appareil et partiront à la prochaine connexion.`);
+      } else {
+        wipe = confirm('Effacer aussi les données gardées sur cet appareil ?\n\nConseillé sur un appareil partagé. Elles restent sur ton compte Google et reviendront à la prochaine connexion.');
+      }
       const token = syncConf.session && syncConf.session.token;
       if (token) apiCall({ action: 'logout', session: token }).catch(() => {});
       if (wipe) {
         agenda = { events: [], lastOk: 0 };
         lsSet(LS_AGENDA, agenda);
+        records = [];
+        pending = new Set();
+        syncConf.lastSrv = 0;
+        syncConf.lastOk = 0;
+        refreshView();
+        persist();
         renderAgenda();
+        renderMeds();
       }
       endSession('Tu es déconnecté.');
+    }
+
+    // ----- Statut de synchro -----
+    function setSyncStatus(text, kind) {
+      // Barre du haut : un point de couleur et un mot ; le détail est dans les Réglages
+      const btn = document.getElementById('sync-btn');
+      btn.dataset.state = kind || 'busy';
+      btn.title = text;
+      const short = kind === 'ok' ? 'à jour'
+        : kind === 'err' ? 'erreur'
+        : kind === 'warn' ? (/hors ligne/i.test(text) ? 'hors ligne' : /non connecté/i.test(text) ? 'déconnecté' : 'en attente')
+        : 'synchro…';
+      document.getElementById('sync-status').textContent = short;
+      const full = document.getElementById('set-sync-status');
+      if (full) full.textContent = text;
+    }
+
+    function formatLastSync() {
+      if (!syncConf.lastOk) return '';
+      const d = new Date(syncConf.lastOk);
+      const sameDay = getLocalIsoDate(d) === getLocalIsoDate();
+      const t = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      return sameDay ? `à ${t}` : `le ${d.toLocaleDateString('fr-FR')} à ${t}`;
+    }
+
+    function updateSyncStatusIdle() {
+      if (syncing) return;
+      if (!hasSession()) {
+        setSyncStatus('🔒 Non connecté', 'warn');
+        return;
+      }
+      const waiting = pending.size ? ` · ${pending.size} prise(s) en attente` : '';
+      if (!navigator.onLine) {
+        setSyncStatus(`📴 Hors ligne${waiting}`, 'warn');
+      } else if (syncConf.lastOk) {
+        setSyncStatus(`✅ Synchronisé ${formatLastSync()}${waiting}`, pending.size ? 'warn' : 'ok');
+      } else {
+        setSyncStatus(`Pas encore synchronisé${waiting}`, 'warn');
+      }
+    }
+
+    function scheduleSync(delay = 1500) {
+      if (!hasSession()) return;
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(() => syncNow(true), delay);
+    }
+
+    async function syncNow(silent = false) {
+      if (!hasSession()) {
+        if (syncConf.session) endSession('Ta session a expiré : reconnecte-toi.');
+        else updateSyncStatusIdle();
+        return;
+      }
+      if (!navigator.onLine) {
+        updateSyncStatusIdle();
+        return;
+      }
+      if (syncing) {
+        syncAgain = true;
+        return;
+      }
+
+      syncing = true;
+      const btn = document.getElementById('sync-btn');
+      btn.disabled = true;
+      setSyncStatus('Synchronisation en cours…');
+
+      const sent = records.filter(r => pending.has(String(r.id))).map(r => Object.assign({}, r));
+      const sentVersion = new Map(sent.map(r => [String(r.id), r.updatedAt]));
+
+      try {
+        const data = await apiCall({ action: 'sync', session: syncConf.session.token, since: syncConf.lastSrv || 0, records: sent });
+        if (!data.ok) throw new Error(data.error || 'server');
+
+        // Les saisies envoyées sont confirmées (sauf si elles ont été re-modifiées pendant l'envoi)
+        const byId = new Map(records.map((r, i) => [String(r.id), i]));
+        sentVersion.forEach((version, id) => {
+          const i = byId.get(id);
+          if (i === undefined || records[i].updatedAt === version) pending.delete(id);
+        });
+
+        // Fusion : pour chaque saisie, la version la plus récente l'emporte
+        let changed = 0;
+        (Array.isArray(data.records) ? data.records : []).forEach(remote => {
+          if (!remote || remote.id === undefined) return;
+          const id = String(remote.id);
+          const i = byId.get(id);
+          const remoteVersion = Number(remote.updatedAt) || 0;
+          if (i === undefined) {
+            records.push(remote);
+            byId.set(id, records.length - 1);
+          } else if (remoteVersion > (Number(records[i].updatedAt) || 0)) {
+            records[i] = remote;
+            pending.delete(id);
+          } else {
+            return;
+          }
+          changed++;
+        });
+
+        syncConf.lastSrv = Number(data.serverTime) || syncConf.lastSrv;
+        syncConf.lastOk = Date.now();
+        saveSyncConf();
+        refreshView();
+        persist();
+
+        if (changed) renderMeds();
+        syncing = false;
+        updateSyncStatusIdle();
+      } catch (err) {
+        syncing = false;
+        if (err.message === 'unauthorized') {
+          endSession('Ta session a expiré ou a été fermée : reconnecte-toi.');
+        } else {
+          const messages = {
+            locked: '⛔ Trop de tentatives refusées : synchro bloquée 15 min',
+            format: '⚠️ Le script Google ne répond pas comme prévu (pas encore mis à jour ?)'
+          };
+          const waiting = pending.size ? ` · ${pending.size} en attente` : '';
+          setSyncStatus((messages[err.message] || '⚠️ Échec de la synchro, nouvel essai plus tard') + waiting, 'err');
+        }
+      } finally {
+        btn.disabled = false;
+        if (syncAgain) {
+          syncAgain = false;
+          scheduleSync(300);
+        }
+      }
     }
 
     // ----- Réglages (propres à chaque appareil) -----
@@ -2426,6 +3325,7 @@
 
     function openSettings() {
       openSyncSettings();
+      updateSyncStatusIdle();
       byId('set-version').textContent = `Version ${APP_VERSION} · tes données restent sur ton compte Google (dossier médical chiffré dans Drive, agenda « 🩺 RDV médicaux »).`;
       renderAgendaSettings();
       byId('settings').style.display = 'flex';
@@ -2448,8 +3348,11 @@
         return;
       }
       if (url !== syncConf.url) {
-        // Nouveau serveur : il faut s'y reconnecter
+        // Nouveau serveur : il faut s'y reconnecter, puis tout renvoyer et tout récupérer
         syncConf.url = url;
+        syncConf.lastSrv = 0;
+        records.forEach(r => pending.add(String(r.id)));
+        persist();
         saveSyncConf();
         endSession('Nouvelle adresse enregistrée : connecte-toi.');
         return;
@@ -2460,9 +3363,18 @@
 
     // ----- Déclencheurs automatiques -----
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') refreshAgenda(false);
+      if (document.visibilityState === 'visible') {
+        scheduleSync(300);              // retour sur l'appli : on récupère les nouveautés
+        refreshAgenda(false);
+      } else if (pending.size) {
+        syncNow(true);                  // l'appli passe en arrière-plan : on envoie ce qui reste
+      }
     });
-    window.addEventListener('online', () => refreshAgenda(false));
+    window.addEventListener('online', () => { updateSyncStatusIdle(); scheduleSync(300); refreshAgenda(false); });
+    window.addEventListener('offline', updateSyncStatusIdle);
+    setInterval(() => {
+      if (document.visibilityState === 'visible') syncNow(true);
+    }, AUTO_SYNC_INTERVAL_MS);
 
     document.getElementById('gate-code-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') loginWithCode();
